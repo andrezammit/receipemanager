@@ -1,7 +1,9 @@
 $(document).ready(
 	function()
 	{
-		fillCalendarView(0);
+		var month = getCurrentMonth();
+		fillCalendarView(month);
+
 	    setContainerWidth();
 	});
 
@@ -25,12 +27,37 @@ function setContainerWidth()
     calendarDiv.width(maxBoxPerRow * blockWidth);
 }
 
+function getCurrentMonth()
+{
+	var date = new Date();
+	return date.getMonth();
+}
+
+function getDaysInMonth(month)
+{
+	switch (month)
+	{
+		case 4:
+		case 6:
+		case 9:
+		case 11:
+			return 30;
+
+		case 2:
+			return 28;
+	}
+
+	return 31;
+}
+
 function fillCalendarView(month)
 {
 	var contentDiv = $("#calendar");
 
-	for (var cnt = 0; cnt < 31; cnt++)
+	var days = getDaysInMonth(month);
+	for (var cnt = 0; cnt < days; cnt++)
 	{
-		contentDiv.append("<div class='day'>" + cnt + "</div>");
+		var day = cnt + 1;
+		contentDiv.append("<div class='day'>" + day + "</div>");
 	}
 }
