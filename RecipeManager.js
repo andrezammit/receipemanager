@@ -1,3 +1,5 @@
+var _sidebarVisible = false;
+
 $(document).ready(
 	function()
 	{
@@ -12,6 +14,7 @@ function setHandlers()
 {
 	$(window).resize(setContainerWidth);
 	$("#searchBox").on("input propertychange paste", onSearchBoxChanged);
+	$("#title").on("click", onTitleClick);
 }
 
 function onSearchBoxChanged()
@@ -38,6 +41,32 @@ function onSearchBoxChanged()
     calendarDiv.css("opacity", 0);
 }
 
+function onTitleClick()
+{
+	var sidebarDiv = $("#sidebar");
+	var contentDiv = $("#content");
+
+	var sidebarWidth = sidebarDiv.width();
+
+	if (_sidebarVisible)
+	{
+		sidebarDiv.css("margin-left", "-" + sidebarWidth + "px");
+		contentDiv.css("margin-left", "0px");
+
+		setContainerWidth();
+
+		_sidebarVisible = false;
+		return;
+	}
+
+	contentDiv.css("margin-left", sidebarWidth + "px");
+	sidebarDiv.css("margin-left", "0px");
+
+	setContainerWidth();
+
+	_sidebarVisible = true;
+}
+
 function setContainerWidth()
 {
 	var dayDiv = $(".day");
@@ -45,7 +74,7 @@ function setContainerWidth()
 
     calendarDiv.css("width", "auto");
     
-    var windowWidth = $(document).width();
+    var windowWidth = $("#content").width();
     var blockWidth = dayDiv.outerWidth(true);
     
     var maxBoxPerRow = Math.floor(windowWidth / blockWidth);

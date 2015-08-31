@@ -33,6 +33,21 @@ html
     font-size: large;
 }
 
+#sidebar
+{
+	float: left;
+
+	background-color: yellow;
+
+	margin-right: 5px;
+	margin-left: -160px;
+
+	width: 160px;
+	height: 100%;
+
+	transition: margin 0.5s;
+}
+
 #content
 {
 	text-align: center;
@@ -58,6 +73,8 @@ html
 	text-align: left;
 
 	opacity: 0;
+	pointer-events: none;
+
 	transition: opacity 0.5s;
 
 	font-size: large;
