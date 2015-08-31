@@ -3,6 +3,24 @@ html
 	overflow: auto;
 }
 
+#header
+{
+	height: 70px;
+	width: 100%;
+}
+
+#title
+{
+	display: inline-block;
+
+	width: 200px;
+}
+
+#search
+{
+	display: inline-block;
+}
+
 #content
 {
 	text-align: center;
@@ -13,6 +31,14 @@ html
 {
 	text-align: left;
 	margin: 0px auto;
+}
+
+#results
+{
+	text-align: left;
+	margin: 0px auto;
+
+	display: none;
 }
 
 .day
