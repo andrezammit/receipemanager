@@ -5,13 +5,33 @@ $(document).ready(
 		fillCalendarView(month);
 
 	    setContainerWidth();
+	    setHandlers();
 	});
 
-$(window).resize(
-	function()
+function setHandlers()
+{
+	$(window).resize(setContainerWidth);
+	$("#searchBox").on("input propertychange paste", onSearchBoxChanged);
+}
+
+function onSearchBoxChanged()
+{
+	var resultsDiv = $("#results");
+	var calendarDiv = $("#calendar");
+
+	var searchBox = $("#searchBox");
+	var searchText = searchBox.val();
+
+	if (searchText == "")
 	{
-	   setContainerWidth();
-	});
+		resultsDiv.css("opacity", 0);
+		calendarDiv.css("opacity", 100);
+		return;
+	}
+
+	resultsDiv.css("opacity", 100);
+    calendarDiv.css("opacity", 0);
+}
 
 function setContainerWidth()
 {
