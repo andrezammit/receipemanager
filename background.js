@@ -5,8 +5,10 @@ chrome.app.runtime.onLaunched.addListener(
   		{
     		"bounds": 
     		{
-      			"width": 500,
-      			"height": 650
+      			"width": 700,
+      			"height": 650,
+            "left": 100,
+            "top": 100
     		}
   		});
 });
