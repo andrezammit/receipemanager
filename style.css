@@ -1,5 +1,25 @@
+
+#content
+{
+	text-align: center;
+	margin: 0px auto;
+}
+
+#calendar
+{
+	text-align: left;
+	margin: 0px auto;
+}
+
 .day
 {
+	position: relative;
+	display: inline-block;
+
 	width: 100px;
 	height: 100px;
+
+	border: 1px solid;
+
+	text-align: left;
 }
