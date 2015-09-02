@@ -84,7 +84,7 @@ function setContainerWidth()
 function getCurrentMonth()
 {
 	var date = new Date();
-	return date.getMonth();
+	return date.getMonth() + 1;
 }
 
 function getDaysInMonth(month)
@@ -104,14 +104,61 @@ function getDaysInMonth(month)
 	return 31;
 }
 
+function getMonthName(month)
+{
+	switch (month)
+	{
+		case 1:
+			return "January";
+
+		case 2:
+			return "February";
+
+		case 3:
+			return "March";
+
+		case 4:
+			return "April";
+
+		case 5:
+			return "May";
+
+		case 6:
+			return "June";
+
+		case 7:
+			return "July";
+
+		case 8:
+			return "August";
+
+		case 9:
+			return "September";
+
+		case 10:
+			return "October";
+
+		case 11:
+			return "November";
+
+		case 12:
+			return "December";
+	}
+}
+
 function fillCalendarView(month)
 {
-	var contentDiv = $("#calendar");
+	var monthName = getMonthName(month);
+
+	var monthTitleDiv = $("#month");
+	monthTitleDiv.text(monthName);
+
+	var daysDiv = $("#days");
 
 	var days = getDaysInMonth(month);
 	for (var cnt = 0; cnt < days; cnt++)
 	{
 		var day = cnt + 1;
-		contentDiv.append("<div class='day'>" + day + "</div>");
+		daysDiv.append("<div class='day'>" + day + "</div>");
 	}
 }
