@@ -42,20 +42,16 @@ function onSearchBoxChanged()
 function onTitleClick()
 {
 	var sidebarDiv = $("#sidebar");
-	var contentDiv = $("#content");
-
 	var sidebarWidth = sidebarDiv.width();
 
 	if (_sidebarVisible)
 	{
 		sidebarDiv.css("margin-left", "-" + sidebarWidth + "px");
-		contentDiv.css("margin-left", "0px");
 
 		_sidebarVisible = false;
 		return;
 	}
 
-	contentDiv.css("margin-left", sidebarWidth + "px");
 	sidebarDiv.css("margin-left", "0px");
 
 	_sidebarVisible = true;

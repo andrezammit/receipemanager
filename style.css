@@ -35,11 +35,11 @@ html
 
 #sidebar
 {
-	float: left;
-
+	position: absolute;
+	z-index: 1;
+	
 	background-color: yellow;
 
-	margin-right: 5px;
 	margin-left: -160px;
 
 	width: 160px;
