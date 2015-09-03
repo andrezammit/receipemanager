@@ -37,7 +37,7 @@ html
 {
 	position: absolute;
 	z-index: 1;
-	
+
 	background-color: yellow;
 
 	margin-left: -160px;
@@ -141,6 +141,36 @@ html
 	text-align: center;
     font-size: 24px;
     margin-bottom: 5px;
+
+    height: 40px;
+}
+
+#prevMonth
+{
+	width: 50px;
+	float: left;
+}
+
+#prevMonth:hover
+{
+	cursor: pointer;
+}
+
+#currMonth
+{
+	width: 608px;
+	float: left;
+}
+
+#nextMonth
+{
+	width: 40px;
+	float: right;
+}
+
+#nextMonth:hover
+{
+	cursor: pointer;
 }
 
 #dayName

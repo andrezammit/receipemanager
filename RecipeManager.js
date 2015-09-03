@@ -1,11 +1,12 @@
 var _sidebarVisible = false;
+var _currMonth = 0;
 
 $(document).ready(
 	function()
 	{
-		var month = getCurrentMonth();
-		fillCalendarView(month);
+		_currMonth = getCurrentMonth();
 
+		fillCalendarView(_currMonth);
 	    setHandlers();
 	});
 
@@ -13,6 +14,8 @@ function setHandlers()
 {
 	$("#searchBox").on("input propertychange paste", onSearchBoxChanged);
 	$("#title").on("click", onTitleClick);
+	$("#prevMonth").on("click", onPrevMonthClick);
+	$("#nextMonth").on("click", onNextMonthClick);
 }
 
 function onSearchBoxChanged()
@@ -55,6 +58,18 @@ function onTitleClick()
 	sidebarDiv.css("margin-left", "0px");
 
 	_sidebarVisible = true;
+}
+
+function onPrevMonthClick()
+{
+	_currMonth--;
+	fillCalendarView(_currMonth);
+}
+
+function onNextMonthClick()
+{
+	_currMonth++;
+	fillCalendarView(_currMonth);
 }
 
 function getCurrentMonth()
@@ -126,10 +141,11 @@ function fillCalendarView(month)
 {
 	var monthName = getMonthName(month);
 
-	var monthTitleDiv = $("#month");
+	var monthTitleDiv = $("#currMonth");
 	monthTitleDiv.text(monthName);
 
 	var daysDiv = $("#days");
+	daysDiv.empty();
 
 	var firstDay = getDayOfWeek(1, month, 2015);
 	for (var cnt = 0; cnt < firstDay; cnt++)
