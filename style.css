@@ -58,7 +58,7 @@ html
 {
 	text-align: left;
 	margin: 0px auto;
-	width: 750px;
+	width: 708px;
 
 	opacity: 100;
 	transition: opacity 0.5s;
@@ -109,9 +109,10 @@ html
 	width: 100px;
 	height: 100px;
 
-	border: 1px solid;
-
 	text-align: left;
+
+	border-top: 1px solid;
+    border-right: 1px solid;
 }
 
 .dummyDay
@@ -122,9 +123,17 @@ html
 	width: 100px;
 	height: 100px;
 
-	border: 1px solid;
 	background-color: lightgrey;
 	text-align: left;
+
+	border-top: 1px solid;
+    border-right: 1px solid;
+}
+
+#days
+{
+	border-left: 1px solid;
+    border-bottom: 1px solid;
 }
 
 #month
@@ -146,4 +155,5 @@ html
     text-align: center;
     width: 100px;
     font-size: 16px;
+    margin-right: 1px;
 }
