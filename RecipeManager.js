@@ -6,13 +6,11 @@ $(document).ready(
 		var month = getCurrentMonth();
 		fillCalendarView(month);
 
-	    setContainerWidth();
 	    setHandlers();
 	});
 
 function setHandlers()
 {
-	$(window).resize(setContainerWidth);
 	$("#searchBox").on("input propertychange paste", onSearchBoxChanged);
 	$("#title").on("click", onTitleClick);
 }
@@ -53,8 +51,6 @@ function onTitleClick()
 		sidebarDiv.css("margin-left", "-" + sidebarWidth + "px");
 		contentDiv.css("margin-left", "0px");
 
-		setContainerWidth();
-
 		_sidebarVisible = false;
 		return;
 	}
@@ -62,29 +58,13 @@ function onTitleClick()
 	contentDiv.css("margin-left", sidebarWidth + "px");
 	sidebarDiv.css("margin-left", "0px");
 
-	setContainerWidth();
-
 	_sidebarVisible = true;
-}
-
-function setContainerWidth()
-{
-	var dayDiv = $(".day");
-	var calendarDiv = $("#calendar");
-
-    calendarDiv.css("width", "auto");
-    
-    var windowWidth = $("#content").width();
-    var blockWidth = dayDiv.outerWidth(true);
-    
-    var maxBoxPerRow = Math.floor(windowWidth / blockWidth);
-    calendarDiv.width(maxBoxPerRow * blockWidth);
 }
 
 function getCurrentMonth()
 {
 	var date = new Date();
-	return date.getMonth() + 1;
+	return date.getMonth();
 }
 
 function getDaysInMonth(month)
@@ -108,40 +88,40 @@ function getMonthName(month)
 {
 	switch (month)
 	{
-		case 1:
+		case 0:
 			return "January";
 
-		case 2:
+		case 1:
 			return "February";
 
-		case 3:
+		case 2:
 			return "March";
 
-		case 4:
+		case 3:
 			return "April";
 
-		case 5:
+		case 4:
 			return "May";
 
-		case 6:
+		case 5:
 			return "June";
 
-		case 7:
+		case 6:
 			return "July";
 
-		case 8:
+		case 7:
 			return "August";
 
-		case 9:
+		case 8:
 			return "September";
 
-		case 10:
+		case 9:
 			return "October";
 
-		case 11:
+		case 10:
 			return "November";
 
-		case 12:
+		case 11:
 			return "December";
 	}
 }
@@ -155,10 +135,30 @@ function fillCalendarView(month)
 
 	var daysDiv = $("#days");
 
+	var firstDay = getDayOfWeek(1, month, 2015);
+	for (var cnt = 0; cnt < firstDay; cnt++)
+	{
+		daysDiv.append("<div class='dummyDay'>&nbsp</div>");
+	}
+
 	var days = getDaysInMonth(month);
 	for (var cnt = 0; cnt < days; cnt++)
 	{
 		var day = cnt + 1;
 		daysDiv.append("<div class='day'>" + day + "</div>");
 	}
+
+	var lastDay = getDayOfWeek(days, month, 2015);
+	var daysToAdd = 6 - lastDay;
+	
+	for (var cnt = 0; cnt < daysToAdd; cnt++)
+	{
+		daysDiv.append("<div class='dummyDay'>&nbsp</div>");
+	}
+}
+
+function getDayOfWeek(day, month, year)
+{
+	var date = new Date(year, month, day, 1, 1, 1, 1);
+	return date.getDay();
 }

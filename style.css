@@ -58,6 +58,7 @@ html
 {
 	text-align: left;
 	margin: 0px auto;
+	width: 750px;
 
 	opacity: 100;
 	transition: opacity 0.5s;
@@ -113,9 +114,36 @@ html
 	text-align: left;
 }
 
+.dummyDay
+{
+	position: relative;
+	display: inline-block;
+
+	width: 100px;
+	height: 100px;
+
+	border: 1px solid;
+	background-color: lightgrey;
+	text-align: left;
+}
+
 #month
 {
 	text-align: center;
     font-size: 24px;
     margin-bottom: 5px;
+}
+
+#dayName
+{
+    font-size: 0px;
+    margin-bottom: 5px;
+}
+
+.dayName
+{
+	display: inline-block;
+    text-align: center;
+    width: 100px;
+    font-size: 16px;
 }
