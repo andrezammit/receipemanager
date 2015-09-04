@@ -3,10 +3,17 @@ html
 	overflow: auto;
 }
 
+body
+{
+	margin: 0px;
+}
+
 #header
 {
 	height: 70px;
 	width: 100%;
+
+	background-color: lightblue;
 }
 
 #title
@@ -38,30 +45,60 @@ html
 	position: absolute;
 	z-index: 1;
 
-	background-color: yellow;
+	background-color: lightcyan;
 
 	margin-left: -160px;
 
 	width: 160px;
-	height: 100%;
+	height: calc(100% - 70px);
 
 	transition: margin 0.5s;
+}
+
+.sidebarItem
+{
+	height: 32px;
+
+	padding-left: 20px;
+
+	font-size: 16px;
+	font-weight: bold;
+
+	display: flex;
+    align-items: center;
+
+	transition: background-color 0.3s;
+}
+
+.sidebarItem:hover
+{
+	background-color: lightblue;
+}
+
+.sidebarSep
+{
+	height: 10px;
 }
 
 #content
 {
 	text-align: center;
 	margin: 0px auto;
+	overflow: auto;	
 }
 
 #calendar
 {
 	text-align: left;
+	
 	margin: 0px auto;
+	margin-top: 5px;
+
 	width: 708px;
 
 	opacity: 100;
 	transition: opacity 0.5s;
+
 }
 
 #results
