@@ -139,7 +139,7 @@ body
 	background-color: #F3F2F2;
 }
 
-.day
+.dayCell
 {
 	position: relative;
 	display: inline-block;
@@ -151,6 +151,25 @@ body
 
 	border-top: 1px solid;
     border-right: 1px solid;
+
+    border-color: darkgrey;
+
+	transition: background-color 0.2s;
+}
+
+.dayCell:hover
+{
+	background-color: lightblue;
+	cursor: pointer;
+}
+
+.day
+{
+	width: 10px;
+    height: 10px;
+    top: 5px;
+    left: 5px;
+    position: relative;
 }
 
 .dummyDay
@@ -166,12 +185,16 @@ body
 
 	border-top: 1px solid;
     border-right: 1px solid;
+
+    border-color: darkgrey;
 }
 
 #days
 {
 	border-left: 1px solid;
     border-bottom: 1px solid;
+
+    border-color: darkgrey;
 }
 
 #month
@@ -210,6 +233,7 @@ body
 	width: 100%;
 	text-align: center;
     margin-bottom: 7px;
+    font-size: 12px;
 }
 
 #nextMonth:hover
@@ -228,6 +252,6 @@ body
 	display: inline-block;
     text-align: center;
     width: 100px;
-    font-size: 16px;
+    font-size: 14px;
     margin-right: 1px;
 }

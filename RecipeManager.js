@@ -182,7 +182,7 @@ function fillCalendarView(date)
 	for (var cnt = 0; cnt < days; cnt++)
 	{
 		var day = cnt + 1;
-		daysDiv.append("<div class='day'>" + day + "</div>");
+		daysDiv.append("<div class='dayCell'><div class='day'>" + day + "</div></div>");
 	}
 
 	var lastDay = getDayOfWeek(days, date.month, date.year);
