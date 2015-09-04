@@ -14,6 +14,7 @@ body
 	width: 100%;
 
 	background-color: lightblue;
+	border-bottom: 1px #A7A7E4 solid;
 }
 
 #title
