@@ -51,7 +51,7 @@ body
 	margin-left: -160px;
 
 	width: 160px;
-	height: calc(100% - 70px);
+	height: calc(100% - 71px);
 
 	transition: margin 0.5s;
 }
@@ -74,6 +74,7 @@ body
 .sidebarItem:hover
 {
 	background-color: lightblue;
+	cursor: pointer;
 }
 
 .sidebarSep
@@ -99,7 +100,6 @@ body
 
 	opacity: 100;
 	transition: opacity 0.5s;
-
 }
 
 #results
