@@ -140,9 +140,8 @@ html
 {
 	text-align: center;
     font-size: 24px;
-    margin-bottom: 5px;
 
-    height: 40px;
+    height: 35px;
 }
 
 #prevMonth
@@ -166,6 +165,13 @@ html
 {
 	width: 40px;
 	float: right;
+}
+
+#year
+{
+	width: 100%;
+	text-align: center;
+    margin-bottom: 7px;
 }
 
 #nextMonth:hover

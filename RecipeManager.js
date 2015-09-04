@@ -1,12 +1,12 @@
 var _sidebarVisible = false;
-var _currMonth = 0;
+var _currDate = 0;
 
 $(document).ready(
 	function()
 	{
-		_currMonth = getCurrentMonth();
+		_currDate = getCurrentMonth();
 
-		fillCalendarView(_currMonth);
+		fillCalendarView(_currDate);
 	    setHandlers();
 	});
 
@@ -62,20 +62,42 @@ function onTitleClick()
 
 function onPrevMonthClick()
 {
-	_currMonth--;
-	fillCalendarView(_currMonth);
+	if (_currDate.month == 0)
+	{
+		_currDate.year--;
+		_currDate.month = 11;
+	}
+	else
+	{
+		_currDate.month--;
+	}
+
+	fillCalendarView(_currDate);
 }
 
 function onNextMonthClick()
 {
-	_currMonth++;
-	fillCalendarView(_currMonth);
+	if (_currDate.month == 11)
+	{
+		_currDate.year++;
+		_currDate.month = 0;
+	}
+	else
+	{
+		_currDate.month++;
+	}
+
+	fillCalendarView(_currDate);
 }
 
 function getCurrentMonth()
 {
 	var date = new Date();
-	return date.getMonth();
+
+	return {
+		month: date.getMonth(),
+		year: date.getFullYear()
+	}
 }
 
 function getDaysInMonth(month)
@@ -137,17 +159,20 @@ function getMonthName(month)
 	}
 }
 
-function fillCalendarView(month)
+function fillCalendarView(date)
 {
-	var monthName = getMonthName(month);
+	var monthName = getMonthName(date.month);
 
 	var monthTitleDiv = $("#currMonth");
 	monthTitleDiv.text(monthName);
 
+	var yearDiv = $("#year");
+	yearDiv.text(date.year);
+
 	var daysDiv = $("#days");
 	daysDiv.empty();
 
-	var firstDay = getDayOfWeek(1, month, 2015);
+	var firstDay = getDayOfWeek(1, date.month, date.year);
 	for (var cnt = 0; cnt < firstDay; cnt++)
 	{
 		daysDiv.append("<div class='dummyDay'>&nbsp</div>");
@@ -160,7 +185,7 @@ function fillCalendarView(month)
 		daysDiv.append("<div class='day'>" + day + "</div>");
 	}
 
-	var lastDay = getDayOfWeek(days, month, 2015);
+	var lastDay = getDayOfWeek(days, date.month, date.year);
 	var daysToAdd = 6 - lastDay;
 	
 	for (var cnt = 0; cnt < daysToAdd; cnt++)
