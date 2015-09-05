@@ -16,6 +16,7 @@ function setHandlers()
 	$("#title").on("click", onTitleClick);
 	$("#prevMonth").on("click", onPrevMonthClick);
 	$("#nextMonth").on("click", onNextMonthClick);
+	$("#loadData").on("click", onLoadDataClick);
 }
 
 function onSearchBoxChanged()
@@ -40,6 +41,40 @@ function onSearchBoxChanged()
 	resultsDiv.css("pointer-events", "auto");
 
     calendarDiv.css("opacity", 0);
+}
+
+function loadDataSuccess(dataFileEntry)
+{
+	dataFileEntry.file(
+		function(dataFile) 
+		{
+			fileReader = new FileReader();
+
+			fileReader.onload = 
+				function(event) 
+				{ 
+			    	var data = event.target.result;
+		        	var dataObj = JSON.parse(data);
+		        };  
+
+			fileReader.readAsText(dataFile, "UTF-8");
+		});
+}
+
+function loadDataFailed(error)
+{
+}
+
+function onLoadDataClick()
+{
+	chrome.syncFileSystem.requestFileSystem(
+		function (fs) 
+		{
+	  	 	fs.root.getFile('/RecipeManager.json', 
+	  	 		{ create: false }, 
+	  	 		loadDataSuccess, 
+	  	 		loadDataFailed);
+		});
 }
 
 function onTitleClick()
