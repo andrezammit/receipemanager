@@ -29,18 +29,14 @@ function onSearchBoxChanged()
 
 	if (searchText == "")
 	{
-		resultsDiv.css("opacity", 0);
-		resultsDiv.css("pointer-events", "none");
-
-		calendarDiv.css("opacity", 100);
+		resultsDiv.hide();
+		calendarDiv.show();
 
 		return;
 	}
 
-	resultsDiv.css("opacity", 100);
-	resultsDiv.css("pointer-events", "auto");
-
-    calendarDiv.css("opacity", 0);
+	resultsDiv.show();
+    calendarDiv.hide();
 }
 
 function loadDataSuccess(dataFileEntry)

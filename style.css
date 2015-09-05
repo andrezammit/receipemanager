@@ -109,38 +109,34 @@ body
 	border-bottom: 1px #A7A7E4 solid;
 
 	width: 708px;
-
-	opacity: 100;
-	transition: opacity 0.5s;
 }
 
 #results
 {
-	position: fixed;
-
-	top: 80px;
-	width: calc(100% - 55px);
-
 	text-align: left;
+	
+	margin: 0px auto;
+	
+	padding-top: 15px;
+	padding-left: 15px;
+	padding-right: 15px;
 
-	opacity: 0;
-	pointer-events: none;
+	background-color: lightcyan;
 
-	transition: opacity 0.5s;
+	border-left: 1px #A7A7E4 solid;
+	border-right: 1px #A7A7E4 solid;
+	border-bottom: 1px #A7A7E4 solid;
 
 	font-size: large;
-    
-    margin-left: 20px;
-    margin-right: 20px;
+
+	width: 708px;
 }
 
 .result
 {
 	padding-top: 5px;
     padding-bottom: 5px;
-    padding-left: 5px;
-
-	width: 100%;
+    padding-left: 10px;
 
 	transition: background-color 0.2s;
 }
@@ -149,6 +145,25 @@ body
 {
 	cursor: pointer;
 	background-color: #F3F2F2;
+}
+
+.sectionTitle
+{
+	font-size: 20px;
+
+    color: lightcyan;
+
+    padding-bottom: 5px;
+    padding-top: 5px;
+    padding-left: 10px;
+}
+
+.resultSection
+{
+	background-color: lightblue;
+	padding-top: 10px;
+    padding-bottom: 10px;
+    margin-bottom: 15px;
 }
 
 .dayCell
