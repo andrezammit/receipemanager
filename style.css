@@ -87,8 +87,10 @@ body
 #content
 {
 	text-align: center;
-	margin: 0px auto;
 	overflow: auto;	
+
+	margin-bottom: 15px;
+    position: relative;
 }
 
 #calendar
