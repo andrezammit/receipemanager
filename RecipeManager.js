@@ -153,6 +153,7 @@ function loadRecipes(dataObj)
 		_db.recipes.push(
 		{
 			id: recipe[0],
+			sectionId: null,
 			name: recipe[1],
 			page: recipe[2],
 			isCooked: recipe[3],
@@ -174,6 +175,11 @@ function loadSectionRecipes(dataObj)
 
 		if (section != null)
 			section.recipes.push(sectionRecipe[1]);
+
+		var recipe = getRecipeById(sectionRecipe[1]);
+
+		if (recipe != null)
+			recipe.sectionId = sectionRecipe[0];
    	}
 }
 
@@ -494,6 +500,33 @@ function addSectionResults(sectionDiv, entries)
 	}
 }
 
+function addRecipeResults(sectionDiv, entries)
+{
+	var recipeGroups = [];
+	groupRecipesBySection(entries, recipeGroups);
+
+	var groups = recipeGroups.length;
+	for (var i = 0; i < groups; i++)
+	{
+		var recipeGroup = recipeGroups[i];
+		
+		var section = getSectionById(recipeGroup.sectionId);
+		var book = getBookById(section.bookId);
+
+		var resultPath = $("<div class='resultPath'>Book: " + book.name + "<br/>Section: " + section.name + "</div>");
+		sectionDiv.append(resultPath);
+
+		var recipes = recipeGroup.recipes.length;
+		for (var j = 0; j < recipes; j++)
+		{
+			var recipe = recipeGroup.recipes[j];
+			var entryDiv = $("<div class='result'>" + recipe.name + "</div>");
+
+			addResultEntry(sectionDiv, RESULT_TYPE_RECIPE, section, entryDiv);
+		}	
+	}
+}
+
 function addResultEntry(sectionDiv, type, entry, entryDiv)
 {
 	entryDiv.on("click", 
@@ -591,11 +624,50 @@ function addSectionToSectionGroup(section, groups)
 	groupToAddTo.sections.push(section);
 }
 
+function addRecipeToRecipeGroup(recipe, groups)
+{
+	var groupToAddTo = null;
+
+	var size = groups.length;
+	for (var cnt = 0; cnt < size; cnt++)
+	{
+		var recipeGroup = groups[cnt];
+
+		if (recipeGroup.sectionId == recipe.sectionId)
+		{
+			groupToAddTo = recipeGroup;
+			break;
+		}
+	}
+
+	if (groupToAddTo == null)
+	{
+		groupToAddTo = 
+			{ 
+				sectionId: recipe.sectionId,
+				recipes: [] 
+			};
+
+		groups.push(groupToAddTo);
+	}
+
+	groupToAddTo.recipes.push(recipe);
+}
+
 function groupSectionsByBook(sections, groups)
 {
 	var size = sections.length;
 	for (var cnt = 0; cnt < size; cnt++)
 	{
 		addSectionToSectionGroup(sections[cnt], groups);
+	}
+}
+
+function groupRecipesBySection(recipes, groups)
+{
+	var size = recipes.length;
+	for (var cnt = 0; cnt < size; cnt++)
+	{
+		addRecipeToRecipeGroup(recipes[cnt], groups);
 	}
 }
