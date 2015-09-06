@@ -1,11 +1,20 @@
 var _sidebarVisible = false;
 var _currDate = 0;
 
-var _db = { books: [] };
+var _db = 
+	{ 
+		books: [], 
+		sections: []
+	};
+
+var RESULT_TYPE_BOOK 	= 1;
+var RESULT_TYPE_SECTION = 2;
 
 $(document).ready(
 	function()
 	{
+		loadData();
+
 		_currDate = getCurrentMonth();
 
 		fillCalendarView(_currDate);
@@ -19,26 +28,66 @@ function setHandlers()
 	$("#prevMonth").on("click", onPrevMonthClick);
 	$("#nextMonth").on("click", onNextMonthClick);
 	$("#loadData").on("click", onLoadDataClick);
+	$("#books").on("click", showBooks);
 }
 
-function onSearchBoxChanged()
+function showResultsView(show)
 {
 	var resultsDiv = $("#results");
 	var calendarDiv = $("#calendar");
 
+	if (show == true)
+	{
+		resultsDiv.show();
+		calendarDiv.hide();
+
+		return;
+	}
+
+	resultsDiv.hide();
+	calendarDiv.show();
+}
+
+function onSearchBoxChanged()
+{
 	var searchBox = $("#searchBox");
 	var searchText = searchBox.val();
 
 	if (searchText == "")
 	{
-		resultsDiv.hide();
-		calendarDiv.show();
-
+		showResultsView(false);
 		return;
 	}
 
-	resultsDiv.show();
-    calendarDiv.hide();
+	showResultsView(true);
+}
+
+function getBookByID(id)
+{
+	var size = _db.books.length;
+	for(var cnt = 0; cnt < size; cnt++) 
+	{
+		var book = _db.books[cnt];
+
+		if (book.id == id)
+			return book;
+   	}
+
+   	return null;
+}
+
+function getSectionByID(id)
+{
+	var size = _db.sections.length;
+	for(var cnt = 0; cnt < size; cnt++) 
+	{
+		var section = _db.sections[cnt];
+
+		if (section.id == id)
+			return section;
+   	}
+
+   	return null;
 }
 
 function loadBooks(dataObj)
@@ -52,12 +101,42 @@ function loadBooks(dataObj)
 		_db.books.push(
 		{
 			id: book[0],
-			name: book[1]
+			name: book[1],
+			sections: []
 		})
    	}
+}
 
-   	var results = { books: _db.books };
-   	showSearchResults(results);
+function loadSections(dataObj)
+{
+	var sectionTable = dataObj.objects[2];
+
+	for(var cnt = 0; cnt < sectionTable.rows.length; cnt++) 
+	{
+		var section = sectionTable.rows[cnt];
+
+		_db.sections.push(
+		{
+			id: section[0],
+			name: section[1],
+			recipes: []
+		})
+   	}
+}
+
+function loadBookSections(dataObj)
+{
+	var bookSectionTable = dataObj.objects[7];
+
+	var size = bookSectionTable.rows.length;
+	for(var cnt = 0; cnt < size; cnt++) 
+	{
+		var bookSection = bookSectionTable.rows[cnt];
+		var book = getBookByID(bookSection[0]);
+
+		if (book != null)
+			book.sections.push(bookSection[1]);
+   	}
 }
 
 function loadDataSuccess(dataFileEntry)
@@ -74,6 +153,9 @@ function loadDataSuccess(dataFileEntry)
 		        	var dataObj = JSON.parse(data);
 
 		        	loadBooks(dataObj);
+		        	loadBookSections(dataObj);
+
+		        	loadSections(dataObj);
 		        };  
 
 			fileReader.readAsText(dataFile, "UTF-8");
@@ -84,7 +166,7 @@ function loadDataFailed(error)
 {
 }
 
-function onLoadDataClick()
+function loadData()
 {
 	chrome.syncFileSystem.requestFileSystem(
 		function (fs) 
@@ -94,6 +176,11 @@ function onLoadDataClick()
 	  	 		loadDataSuccess, 
 	  	 		loadDataFailed);
 		});
+}
+
+function onLoadDataClick()
+{
+	loadData();
 }
 
 function onTitleClick()
@@ -256,13 +343,27 @@ function getDayOfWeek(day, month, year)
 
 function showSearchResults(results)
 {
+	clearSearchResults();
+	showResultsView(true);
+
 	if (results.books)
 	{
-		addResultsSection("Books", results.books)
+		addResultsSection("Books", RESULT_TYPE_BOOK, results.books)
+	}
+
+	if (results.sections)
+	{
+		addResultsSection("Sections", RESULT_TYPE_SECTION, results.sections)
 	}
 }
 
-function addResultsSection(name, entries)
+function clearSearchResults()
+{
+	var resultsDiv = $("#results");
+	resultsDiv.empty();
+}
+
+function addResultsSection(name, type, entries)
 {
 	var sectionDiv = $("<div class='resultSection'></div>");
 	sectionDiv.append("<div class='sectionTitle'>" + name + "</div>");
@@ -271,9 +372,55 @@ function addResultsSection(name, entries)
 	for (var cnt = 0; cnt < size; cnt++)
 	{
 		var entry = entries[cnt];
-		sectionDiv.append("<div class='result'>" + entry.name + "</div>");
+		addResultEntry(sectionDiv, type, entry)
 	}
 
 	var resultsDiv = $("#results");
 	resultsDiv.append(sectionDiv);
+}
+
+function addResultEntry(sectionDiv, type, entry)
+{
+	var entryDiv = $("<div class='result'>" + entry.name + "</div>");
+	entryDiv.on("click", 
+		function()
+		{
+			onSearchResultClick(type, entry.id);
+		});
+
+	sectionDiv.append(entryDiv);
+}
+
+function onSearchResultClick(type, id)
+{
+	switch (type)
+	{
+		case RESULT_TYPE_BOOK:
+			showBookSections(id);
+			return;
+	}
+}
+
+function showBooks()
+{
+	var results = { books: _db.books };
+   	showSearchResults(results);
+}
+
+function showBookSections(id)
+{
+	var book = getBookByID(id);
+	var results = { sections: [] };
+
+	var size = book.sections.length;
+	for (var cnt = 0; cnt < size; cnt++)
+	{
+		var sectionID = book.sections[cnt];
+		var section = getSectionByID(sectionID);
+
+		if (section != null)
+			results.sections.push(section);
+	}
+
+	showSearchResults(results);
 }
