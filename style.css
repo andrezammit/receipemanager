@@ -154,6 +154,14 @@ body
 	background-color: #F3F2F2;
 }
 
+.resultPath
+{
+	padding-left: 10px;
+    color: lightcyan;
+    font-size: 12px;
+    border-bottom: 1px lightcyan solid;
+}
+
 .sectionTitle
 {
 	font-size: 24px;

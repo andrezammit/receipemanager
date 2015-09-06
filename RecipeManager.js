@@ -64,7 +64,7 @@ function onSearchBoxChanged()
 	showResultsView(true);
 }
 
-function getBookByID(id)
+function getBookById(id)
 {
 	var size = _db.books.length;
 	for(var cnt = 0; cnt < size; cnt++) 
@@ -78,7 +78,7 @@ function getBookByID(id)
    	return null;
 }
 
-function getSectionByID(id)
+function getSectionById(id)
 {
 	var size = _db.sections.length;
 	for(var cnt = 0; cnt < size; cnt++) 
@@ -92,7 +92,7 @@ function getSectionByID(id)
    	return null;
 }
 
-function getRecipeByID(id)
+function getRecipeById(id)
 {
 	var size = _db.recipes.length;
 	for(var cnt = 0; cnt < size; cnt++) 
@@ -135,6 +135,7 @@ function loadSections(dataObj)
 		_db.sections.push(
 		{
 			id: section[0],
+			bookId: null,
 			name: section[1],
 			recipes: []
 		})
@@ -169,7 +170,7 @@ function loadSectionRecipes(dataObj)
 	for(var cnt = 0; cnt < size; cnt++) 
 	{
 		var sectionRecipe = sectionRecipeTable.rows[cnt];
-		var section = getSectionByID(sectionRecipe[0]);
+		var section = getSectionById(sectionRecipe[0]);
 
 		if (section != null)
 			section.recipes.push(sectionRecipe[1]);
@@ -184,10 +185,15 @@ function loadBookSections(dataObj)
 	for(var cnt = 0; cnt < size; cnt++) 
 	{
 		var bookSection = bookSectionTable.rows[cnt];
-		var book = getBookByID(bookSection[0]);
+		var book = getBookById(bookSection[0]);
 
 		if (book != null)
 			book.sections.push(bookSection[1]);
+
+		var section = getSectionById(bookSection[1]);
+
+		if (section != null)
+			section.bookId = bookSection[0];
    	}
 }
 
@@ -205,12 +211,11 @@ function loadDataSuccess(dataFileEntry)
 		        	var dataObj = JSON.parse(data);
 
 		        	loadBooks(dataObj);
-		        	loadBookSections(dataObj);
-
 		        	loadSections(dataObj);
-		        	loadSectionRecipes(dataObj);
-
 		        	loadRecipes(dataObj);
+
+		        	loadBookSections(dataObj);
+		        	loadSectionRecipes(dataObj);
 		        };  
 
 			fileReader.readAsText(dataFile, "UTF-8");
@@ -428,20 +433,69 @@ function addResultsSection(name, type, entries)
 	var sectionDiv = $("<div class='resultSection'></div>");
 	sectionDiv.append("<div class='sectionTitle'>" + name + "</div>");
 
-	var size = entries.length;
-	for (var cnt = 0; cnt < size; cnt++)
-	{
-		var entry = entries[cnt];
-		addResultEntry(sectionDiv, type, entry)
-	}
+	addResults(sectionDiv, type, entries);
 
 	var resultsDiv = $("#results");
 	resultsDiv.append(sectionDiv);
 }
 
-function addResultEntry(sectionDiv, type, entry)
+function addResults(sectionDiv, type, entries)
 {
-	var entryDiv = $("<div class='result'>" + entry.name + "</div>");
+	switch (type)
+	{
+		case RESULT_TYPE_BOOK:
+			addBookResults(sectionDiv, entries);
+			return;
+
+		case RESULT_TYPE_SECTION:
+			addSectionResults(sectionDiv, entries);
+			return;
+
+		case RESULT_TYPE_RECIPE:
+			addRecipeResults(sectionDiv, entries);
+			return;
+	}
+}
+
+function addBookResults(sectionDiv, entries)
+{
+	var size = entries.length;
+	for (var cnt = 0; cnt < size; cnt++)
+	{
+		var book = entries[cnt];
+		var entryDiv = $("<div class='result'>" + book.name + "</div>");
+
+		addResultEntry(sectionDiv, RESULT_TYPE_BOOK, book, entryDiv);
+	}
+}
+
+function addSectionResults(sectionDiv, entries)
+{
+	var sectionGroups = [];
+	groupSectionsByBook(entries, sectionGroups);
+
+	var groups = sectionGroups.length;
+	for (var i = 0; i < groups; i++)
+	{
+		var sectionGroup = sectionGroups[i];
+		var book = getBookById(sectionGroup.bookId);
+
+		var resultPath = $("<div class='resultPath'>Book: " + book.name + "</div>");
+		sectionDiv.append(resultPath);
+
+		var sections = sectionGroup.sections.length;
+		for (var j = 0; j < sections; j++)
+		{
+			var section = sectionGroup.sections[j];
+			var entryDiv = $("<div class='result'>" + section.name + "</div>");
+
+			addResultEntry(sectionDiv, RESULT_TYPE_SECTION, section, entryDiv);
+		}	
+	}
+}
+
+function addResultEntry(sectionDiv, type, entry, entryDiv)
+{
 	entryDiv.on("click", 
 		function()
 		{
@@ -473,14 +527,14 @@ function showBooks()
 
 function showBookSections(id)
 {
-	var book = getBookByID(id);
+	var book = getBookById(id);
 	var results = { sections: [] };
 
 	var size = book.sections.length;
 	for (var cnt = 0; cnt < size; cnt++)
 	{
 		var sectionID = book.sections[cnt];
-		var section = getSectionByID(sectionID);
+		var section = getSectionById(sectionID);
 
 		if (section != null)
 			results.sections.push(section);
@@ -491,18 +545,57 @@ function showBookSections(id)
 
 function showSectionRecipes(id)
 {
-	var section = getSectionByID(id);
+	var section = getSectionById(id);
 	var results = { recipes: [] };
 
 	var size = section.recipes.length;
 	for (var cnt = 0; cnt < size; cnt++)
 	{
 		var recipeID = section.recipes[cnt];
-		var recipe = getRecipeByID(recipeID);
+		var recipe = getRecipeById(recipeID);
 
 		if (section != null)
 			results.recipes.push(recipe);
 	}
 
 	showSearchResults(results);
+}
+
+function addSectionToSectionGroup(section, groups)
+{
+	var groupToAddTo = null;
+
+	var size = groups.length;
+	for (var cnt = 0; cnt < size; cnt++)
+	{
+		var sectionGroup = groups[cnt];
+
+		if (sectionGroup.bookId == section.bookId)
+		{
+			groupToAddTo = sectionGroup;
+			break;
+		}
+	}
+
+	if (groupToAddTo == null)
+	{
+		groupToAddTo = 
+			{ 
+				bookId: section.bookId,
+				sections: [] 
+			};
+
+		groups.push(groupToAddTo);
+	}
+
+	groupToAddTo.sections.push(section);
+}
+
+function groupSectionsByBook(sections, groups)
+{
+	var size = sections.length;
+	for (var cnt = 0; cnt < size; cnt++)
+	{
+		addSectionToSectionGroup(sections[cnt], groups);
+	}
 }
