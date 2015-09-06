@@ -138,6 +138,10 @@ body
     padding-bottom: 5px;
     padding-left: 10px;
 
+    font-size: 14px;
+
+	border-bottom: 1px lightcyan solid;
+
 	transition: background-color 0.2s;
 }
 
@@ -149,19 +153,20 @@ body
 
 .sectionTitle
 {
-	font-size: 20px;
+	font-size: 24px;
 
     color: lightcyan;
 
     padding-bottom: 5px;
     padding-top: 5px;
     padding-left: 10px;
+
+    border-bottom: 1px lightcyan solid;
 }
 
 .resultSection
 {
 	background-color: lightblue;
-	padding-top: 10px;
     padding-bottom: 10px;
     margin-bottom: 15px;
 }
