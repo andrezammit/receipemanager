@@ -55,6 +55,9 @@ function loadBooks(dataObj)
 			name: book[1]
 		})
    	}
+
+   	var results = { books: _db.books };
+   	showSearchResults(results);
 }
 
 function loadDataSuccess(dataFileEntry)
@@ -249,4 +252,28 @@ function getDayOfWeek(day, month, year)
 {
 	var date = new Date(year, month, day, 1, 1, 1, 1);
 	return date.getDay();
+}
+
+function showSearchResults(results)
+{
+	if (results.books)
+	{
+		addResultsSection("Books", results.books)
+	}
+}
+
+function addResultsSection(name, entries)
+{
+	var sectionDiv = $("<div class='resultSection'></div>");
+	sectionDiv.append("<div class='sectionTitle'>" + name + "</div>");
+
+	var size = entries.length;
+	for (var cnt = 0; cnt < size; cnt++)
+	{
+		var entry = entries[cnt];
+		sectionDiv.append("<div class='result'>" + entry.name + "</div>");
+	}
+
+	var resultsDiv = $("#results");
+	resultsDiv.append(sectionDiv);
 }
