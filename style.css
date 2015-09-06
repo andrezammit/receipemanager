@@ -159,11 +159,21 @@ body
 	padding-left: 10px;
 	padding-top: 5px;
 	padding-bottom: 5px;
-	
+
     color: lightcyan;
     font-size: 12px;
 
     border-bottom: 1px lightcyan solid;
+}
+
+.resultSubPath
+{
+	transition: color 0.2s;
+}
+
+.resultSubPath:hover
+{
+	color: black;
 }
 
 .sectionTitle

@@ -484,10 +484,7 @@ function addSectionResults(sectionDiv, entries)
 	for (var i = 0; i < groups; i++)
 	{
 		var sectionGroup = sectionGroups[i];
-		var book = getBookById(sectionGroup.bookId);
-
-		var resultPath = $("<div class='resultPath'>Book: " + book.name + "</div>");
-		sectionDiv.append(resultPath);
+		addSectionResultPath(sectionDiv, sectionGroup.bookId);
 
 		var sections = sectionGroup.sections.length;
 		for (var j = 0; j < sections; j++)
@@ -500,6 +497,25 @@ function addSectionResults(sectionDiv, entries)
 	}
 }
 
+function addSectionResultPath(sectionDiv, bookId)
+{
+	var book = getBookById(bookId);
+
+	var resultPathDiv = $("<div class='resultPath'></div>");
+
+	var bookPathDiv = $("<div class='resultSubPath'>Book: " + book.name + "</div>");
+	bookPathDiv.on("click", 
+		function()
+		{
+			onSearchResultClick(RESULT_TYPE_BOOK, book.id);
+		});
+
+
+	resultPathDiv.append(bookPathDiv);
+
+	sectionDiv.append(resultPathDiv);
+}
+
 function addRecipeResults(sectionDiv, entries)
 {
 	var recipeGroups = [];
@@ -509,22 +525,44 @@ function addRecipeResults(sectionDiv, entries)
 	for (var i = 0; i < groups; i++)
 	{
 		var recipeGroup = recipeGroups[i];
+		addRecipeResultPath(sectionDiv, recipeGroup.sectionId);
 		
-		var section = getSectionById(recipeGroup.sectionId);
-		var book = getBookById(section.bookId);
-
-		var resultPath = $("<div class='resultPath'>Book: " + book.name + "<br/>Section: " + section.name + "</div>");
-		sectionDiv.append(resultPath);
-
 		var recipes = recipeGroup.recipes.length;
 		for (var j = 0; j < recipes; j++)
 		{
 			var recipe = recipeGroup.recipes[j];
 			var entryDiv = $("<div class='result'>" + recipe.name + "</div>");
 
-			addResultEntry(sectionDiv, RESULT_TYPE_RECIPE, section, entryDiv);
+			addResultEntry(sectionDiv, RESULT_TYPE_RECIPE, recipe, entryDiv);
 		}	
 	}
+}
+
+function addRecipeResultPath(sectionDiv, sectionID)
+{
+	var section = getSectionById(sectionID);
+	var book = getBookById(section.bookId);
+
+	var resultPathDiv = $("<div class='resultPath'></div>");
+
+	var bookPathDiv = $("<div class='resultSubPath'>Book: " + book.name + "</div>");
+	bookPathDiv.on("click", 
+		function()
+		{
+			onSearchResultClick(RESULT_TYPE_BOOK, book.id);
+		});
+
+	var sectionPathDiv = $("<div class='resultSubPath'>Section: " + section.name + "</div>");
+		sectionPathDiv.on("click", 
+		function()
+		{
+			onSearchResultClick(RESULT_TYPE_SECTION, section.id);
+		});
+
+	resultPathDiv.append(bookPathDiv);
+	resultPathDiv.append(sectionPathDiv);
+
+	sectionDiv.append(resultPathDiv);
 }
 
 function addResultEntry(sectionDiv, type, entry, entryDiv)
