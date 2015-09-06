@@ -327,3 +327,59 @@ body
     color: gray;
     top: 3px;
 }
+
+#recipe
+{
+    position: absolute;
+
+	width: 500px;
+    height: 500px;
+
+    padding: 15px;
+    
+    background-color: antiquewhite;
+
+    top: 50px;
+    left: calc(100% / 2 - 250px);
+}
+
+.recipeEntry
+{
+	display: flex;
+	width: 100%;
+	height: 20px;
+}
+
+.label
+{
+	width: 30%;
+
+    display: flex;
+    align-items: center;
+}
+
+.control
+{
+	width: 70%;
+
+	display:flex;
+}
+
+.closeButton
+{
+    position: absolute;
+    display: flex;
+
+ 	border-radius: 50%;
+    background-color: black;
+
+    color: white;
+
+    width: 20px;
+    height: 20px;
+    right: -7px;
+    top: -7px;    
+
+    align-items: center;
+    justify-content: center;
+}
