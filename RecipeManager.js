@@ -531,11 +531,28 @@ function addRecipeResults(sectionDiv, entries)
 		for (var j = 0; j < recipes; j++)
 		{
 			var recipe = recipeGroup.recipes[j];
-			var entryDiv = $("<div class='result'>" + recipe.name + "</div>");
-
-			addResultEntry(sectionDiv, RESULT_TYPE_RECIPE, recipe, entryDiv);
+			addRecipeResult(sectionDiv, recipe);
 		}	
 	}
+}
+
+function addRecipeResult(sectionDiv, recipe)
+{
+	var entryDiv = $("<div class='result'></div>");
+
+	entryDiv.append("<div class='recipeName'>" + recipe.name + "</div>");
+
+	var recipeInfo = "pg. " + recipe.page;
+
+	if (recipe.isCooked == true)
+		recipeInfo += "; Cooked";
+
+	if (recipe.isInteresting == true)
+		recipeInfo += "; Interesting";
+
+	entryDiv.append("<div class='recipeInfo'>" + recipeInfo + "</div>");
+
+	addResultEntry(sectionDiv, RESULT_TYPE_RECIPE, recipe, entryDiv);
 }
 
 function addRecipeResultPath(sectionDiv, sectionID)

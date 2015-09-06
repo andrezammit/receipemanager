@@ -137,6 +137,8 @@ body
 
 .result
 {
+	display: flex;
+
 	padding-top: 5px;
     padding-bottom: 5px;
     padding-left: 10px;
@@ -311,4 +313,17 @@ body
     width: 100px;
     font-size: 14px;
     margin-right: 1px;
+}
+
+.recipeName
+{
+	padding-right: 10px
+}
+
+.recipeInfo
+{
+    position: relative;
+    font-size: 10px;
+    color: gray;
+    top: 3px;
 }
