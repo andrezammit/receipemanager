@@ -1,6 +1,8 @@
 var _sidebarVisible = false;
 var _currDate = 0;
 
+var _db = { books: [] };
+
 $(document).ready(
 	function()
 	{
@@ -39,6 +41,22 @@ function onSearchBoxChanged()
     calendarDiv.hide();
 }
 
+function loadBooks(dataObj)
+{
+	var bookTable = dataObj.objects[1];
+
+	for(var cnt = 0; cnt < bookTable.rows.length; cnt++) 
+	{
+		var book = bookTable.rows[cnt];
+
+		_db.books.push(
+		{
+			id: book[0],
+			name: book[1]
+		})
+   	}
+}
+
 function loadDataSuccess(dataFileEntry)
 {
 	dataFileEntry.file(
@@ -51,6 +69,8 @@ function loadDataSuccess(dataFileEntry)
 				{ 
 			    	var data = event.target.result;
 		        	var dataObj = JSON.parse(data);
+
+		        	loadBooks(dataObj);
 		        };  
 
 			fileReader.readAsText(dataFile, "UTF-8");
