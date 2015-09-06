@@ -465,6 +465,8 @@ function addResults(sectionDiv, type, entries)
 
 function addBookResults(sectionDiv, entries)
 {
+	sortBooks(entries);
+
 	var size = entries.length;
 	for (var cnt = 0; cnt < size; cnt++)
 	{
@@ -485,6 +487,8 @@ function addSectionResults(sectionDiv, entries)
 	{
 		var sectionGroup = sectionGroups[i];
 		addSectionResultPath(sectionDiv, sectionGroup.bookId);
+
+		sortSections(sectionGroup.sections);
 
 		var sections = sectionGroup.sections.length;
 		for (var j = 0; j < sections; j++)
@@ -510,7 +514,6 @@ function addSectionResultPath(sectionDiv, bookId)
 			onSearchResultClick(RESULT_TYPE_BOOK, book.id);
 		});
 
-
 	resultPathDiv.append(bookPathDiv);
 
 	sectionDiv.append(resultPathDiv);
@@ -527,6 +530,8 @@ function addRecipeResults(sectionDiv, entries)
 		var recipeGroup = recipeGroups[i];
 		addRecipeResultPath(sectionDiv, recipeGroup.sectionId);
 		
+		sortRecipes(recipeGroup.recipes);
+
 		var recipes = recipeGroup.recipes.length;
 		for (var j = 0; j < recipes; j++)
 		{
@@ -725,4 +730,49 @@ function groupRecipesBySection(recipes, groups)
 	{
 		addRecipeToRecipeGroup(recipes[cnt], groups);
 	}
+}
+
+function sortBooks(books)
+{
+	books.sort(
+		function(a, b)
+		{
+			if (a.name < b.name)
+				return -1;
+
+			if (a.name == b.name)
+				return 0;
+
+			return 1;
+		});
+}
+
+function sortSections(sections)
+{
+	sections.sort(
+		function(a, b)
+		{
+			if (a.name < b.name)
+				return -1;
+
+			if (a.name == b.name)
+				return 0;
+
+			return 1;
+		});
+}
+
+function sortRecipes(recipes)
+{
+	recipes.sort(
+		function(a, b)
+		{
+			if (a.page < b.page)
+				return -1;
+
+			if (a.page == b.page)
+				return 0;
+
+			return 1;
+		});
 }
