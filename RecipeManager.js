@@ -4,11 +4,13 @@ var _currDate = 0;
 var _db = 
 	{ 
 		books: [], 
-		sections: []
+		sections: [],
+		recipes: []
 	};
 
 var RESULT_TYPE_BOOK 	= 1;
 var RESULT_TYPE_SECTION = 2;
+var RESULT_TYPE_RECIPE	= 3;
 
 $(document).ready(
 	function()
@@ -90,6 +92,21 @@ function getSectionByID(id)
    	return null;
 }
 
+function getRecipeByID(id)
+{
+	var size = _db.recipes.length;
+	for(var cnt = 0; cnt < size; cnt++) 
+	{
+		var recipe = _db.recipes[cnt];
+
+		if (recipe.id == id)
+			return recipe;
+   	}
+
+   	return null;
+}
+
+
 function loadBooks(dataObj)
 {
 	var bookTable = dataObj.objects[1];
@@ -121,6 +138,41 @@ function loadSections(dataObj)
 			name: section[1],
 			recipes: []
 		})
+   	}
+}
+
+function loadRecipes(dataObj)
+{
+	var recipeTable = dataObj.objects[3];
+
+	for(var cnt = 0; cnt < recipeTable.rows.length; cnt++) 
+	{
+		var recipe = recipeTable.rows[cnt];
+
+		_db.recipes.push(
+		{
+			id: recipe[0],
+			name: recipe[1],
+			page: recipe[2],
+			isCooked: recipe[3],
+			isInteresting: recipe[4],
+			comment: recipe[5]
+		})
+   	}
+}
+
+function loadSectionRecipes(dataObj)
+{
+	var sectionRecipeTable = dataObj.objects[6];
+
+	var size = sectionRecipeTable.rows.length;
+	for(var cnt = 0; cnt < size; cnt++) 
+	{
+		var sectionRecipe = sectionRecipeTable.rows[cnt];
+		var section = getSectionByID(sectionRecipe[0]);
+
+		if (section != null)
+			section.recipes.push(sectionRecipe[1]);
    	}
 }
 
@@ -156,6 +208,9 @@ function loadDataSuccess(dataFileEntry)
 		        	loadBookSections(dataObj);
 
 		        	loadSections(dataObj);
+		        	loadSectionRecipes(dataObj);
+
+		        	loadRecipes(dataObj);
 		        };  
 
 			fileReader.readAsText(dataFile, "UTF-8");
@@ -355,6 +410,11 @@ function showSearchResults(results)
 	{
 		addResultsSection("Sections", RESULT_TYPE_SECTION, results.sections)
 	}
+
+	if (results.recipes)
+	{
+		addResultsSection("Recipes", RESULT_TYPE_RECIPE, results.recipes)
+	}
 }
 
 function clearSearchResults()
@@ -398,6 +458,10 @@ function onSearchResultClick(type, id)
 		case RESULT_TYPE_BOOK:
 			showBookSections(id);
 			return;
+
+		case RESULT_TYPE_SECTION:
+			showSectionRecipes(id);
+			return;
 	}
 }
 
@@ -420,6 +484,24 @@ function showBookSections(id)
 
 		if (section != null)
 			results.sections.push(section);
+	}
+
+	showSearchResults(results);
+}
+
+function showSectionRecipes(id)
+{
+	var section = getSectionByID(id);
+	var results = { recipes: [] };
+
+	var size = section.recipes.length;
+	for (var cnt = 0; cnt < size; cnt++)
+	{
+		var recipeID = section.recipes[cnt];
+		var recipe = getRecipeByID(recipeID);
+
+		if (section != null)
+			results.recipes.push(recipe);
 	}
 
 	showSearchResults(results);

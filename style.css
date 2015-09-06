@@ -115,6 +115,7 @@ body
 
 #results
 {
+	display: none;
 	text-align: left;
 	
 	margin: 0px auto;
