@@ -335,7 +335,7 @@ body
 	width: 500px;
     height: 500px;
 
-    padding: 15px;
+    padding: 35px 25px 25px 25px;
     
     background-color: antiquewhite;
 
@@ -347,22 +347,32 @@ body
 {
 	display: flex;
 	width: 100%;
-	height: 20px;
+	height: 23px;
+
+	margin-bottom: 10px;
 }
 
 .label
 {
-	width: 30%;
+	width: 25%;
 
     display: flex;
+
     align-items: center;
+    justify-content: flex-end;
 }
 
 .control
 {
-	width: 70%;
+	width: 85%;
+    display: flex;
+    align-items: center;
+    padding-left: 10px;
+}
 
-	display:flex;
+.control > *
+{
+	width: 100%;
 }
 
 .closeButton
