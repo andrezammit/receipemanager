@@ -333,14 +333,15 @@ body
     position: absolute;
 
 	width: 500px;
-    height: 500px;
 
-    padding: 35px 25px 25px 25px;
+    padding: 35px 25px 12px 25px;
     
     background-color: antiquewhite;
 
     top: 50px;
     left: calc(100% / 2 - 250px);
+
+    box-shadow: 0px 0px 14px 1px rgba(50, 50, 50, 0.75);
 }
 
 .recipeEntry
@@ -351,6 +352,17 @@ body
 	height: 30px;
 
     margin-bottom: 15px;
+}
+
+#recipeComment
+{
+	height: 300px;
+}
+
+#recipeComment > .label
+{
+	align-items: flex-start;
+    padding-top: 3px;
 }
 
 .label
@@ -376,6 +388,12 @@ body
 .control > input[type="text"]
 {
 	width: 100%;
+}
+
+.control > textarea
+{
+	width: 100%;
+	height: 300px;
 }
 
 input[type="text"]
@@ -408,4 +426,18 @@ input[type="text"]:focus
     top: -7px;    
 
     justify-content: center;
+}
+
+#recipeFooter
+{
+	display: flex;
+	justify-content: flex-end;
+
+	width: 93%;
+}
+
+button
+{
+	margin: 5px;
+	width: 75px;
 }

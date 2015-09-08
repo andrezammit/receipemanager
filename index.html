@@ -61,23 +61,30 @@
 				<div class="closeButton">x</div>
 				<div class="recipeEntry">
 					<div class="label">Title:</div>
-					<div class="control"><input id="recipeTitle" type="text" value="test" readonly></div>
+					<div class="control"><input id="titleCtrl" type="text" value="test" readonly></div>
 				</div>
 				<div class="recipeEntry">
 					<div class="label">Page:</div>
-					<div class="control"><input id="recipePage" type="text" value="test" readonly></div>
+					<div class="control"><input id="pageCtrl" type="text" value="test" readonly></div>
 				</div>
 				<div class="recipeEntry">
 					<div class="label">Cooked:</div>
-					<div class="control"><input id="recipeCooked" type="checkbox" value="test" readonly></div>
+					<div class="control"><input id="cookedCtrl" type="checkbox" disabled></div>
 				</div>
 				<div class="recipeEntry">
 					<div class="label">Interesting:</div>
-					<div class="control"><input id="recipeInteresting" type="checkbox" value="test" readonly></div>
+					<div class="control"><input id="interestingCtrl" type="checkbox" disabled checked></div>
 				</div>
-				<div class="recipeEntry">
-					<div class="label">Comment:</div>
-					<div class="control"><input id="recipeComment" type="text" value="test" readonly></div>
+				<div id="recipeComment" class="recipeEntry">
+					<div id="labelComment" class="label">Comment:</div>
+					<div class="control">
+						<textarea id="commentCtrl" type="text" value="test" readonly>
+						</textarea>
+					</div>
+				</div>
+				<div id="recipeFooter">
+					<button type="recipeOK">OK</button>
+					<button type="recipeCancel">Cancel</button>
 				</div>
 			</div>
 		</div>
