@@ -38,8 +38,8 @@ function setHandlers()
 
 	var recipeView = $("#recipe");
 
-	recipeView.find("#btnOK").on("click", onRecipeOKClick);
-	recipeView.find("#btnCancel, #btnClose").on("click", onRecipeCancelClick);
+	recipeView.find("#btnEdit").on("click", onRecipeEditClick);
+	recipeView.find("#btnCancel, #btnClose, #btnCloseSmall").on("click", onRecipeCancelClick);
 }
 
 function showResultsView(show)
@@ -873,6 +873,15 @@ function showRecipe(id)
 	recipeView.find("#interestingCtrl").prop('checked', recipe.isInteresting);
 	recipeView.find("#commentCtrl").val(recipe.comment);
 
+	var btnOK = recipeView.find("#btnOK");
+	btnOK.off("click");
+
+	btnOK.on("click", 
+		function()
+		{
+			onRecipeOKClick(id);
+		})
+
 	recipeView.css("display", "flex");
 }
 
@@ -1041,9 +1050,42 @@ function showTags()
 function onRecipeCancelClick()
 {
 	$("#recipe").hide();
+	resetRecipeView();
 }
 
-function onRecipeOKClick()
+function onRecipeOKClick(id)
 {
-	$("#recipe").hide();
+	var recipe = getRecipeById(id);
+	var recipeView = $("#recipe");
+
+	recipe.name = recipeView.find("#titleCtrl").val();
+	recipe.page = recipeView.find("#pageCtrl").val();
+	recipe.isCooked = recipeView.find("#cookedCtrl").prop("checked");
+	recipe.isInteresting = recipeView.find("#interestingCtrl").prop("checked");
+	recipe.comment = recipeView.find("#commentCtrl").val();
+
+	recipeView.hide();
+	resetRecipeView();
+}
+
+function resetRecipeView()
+{
+	var recipeView = $("#recipe");
+
+	recipeView.find("#cookedCtrl, #interestingCtrl").attr("disabled", true);
+	recipeView.find("#titleCtrl, #pageCtrl, #commentCtrl").attr("readonly", true);
+
+	recipeView.find("#btnEdit, #btnClose").show();
+	recipeView.find("#btnOK, #btnCancel").hide();
+}
+
+function onRecipeEditClick()
+{
+	var recipeView = $("#recipe");
+
+	recipeView.find("#cookedCtrl, #interestingCtrl").removeAttr("disabled");
+	recipeView.find("#titleCtrl, #pageCtrl, #commentCtrl").removeAttr("readonly");
+
+	recipeView.find("#btnOK, #btnCancel").show();
+	recipeView.find("#btnEdit, #btnClose").hide();
 }
