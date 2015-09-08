@@ -31,6 +31,11 @@ function setHandlers()
 	$("#nextMonth").on("click", onNextMonthClick);
 	$("#loadData").on("click", onLoadDataClick);
 	$("#books").on("click", showBooks);
+
+	var recipeView = $("#recipe");
+
+	recipeView.find("#btnOK").on("click", onRecipeOKClick);
+	recipeView.find("#btnCancel, #btnClose").on("click", onRecipeCancelClick);
 }
 
 function showResultsView(show)
@@ -609,6 +614,10 @@ function onSearchResultClick(type, id)
 		case RESULT_TYPE_SECTION:
 			showSectionRecipes(id);
 			return;
+
+		case RESULT_TYPE_RECIPE:
+			showRecipe(id);
+			return;
 	}
 }
 
@@ -652,6 +661,24 @@ function showSectionRecipes(id)
 	}
 
 	showSearchResults(results);
+}
+
+function showRecipe(id)
+{
+	var recipe = getRecipeById(id);
+
+	if (recipe == null)
+		return;
+
+	var recipeView = $("#recipe");
+
+	recipeView.find("#titleCtrl").val(recipe.name);
+	recipeView.find("#pageCtrl").val(recipe.page);
+	recipeView.find("#cookedCtrl").prop('checked', recipe.isCooked);
+	recipeView.find("#interestingCtrl").prop('checked', recipe.isInteresting);
+	recipeView.find("#commentCtrl").val(recipe.comment);
+
+	recipeView.show();
 }
 
 function addSectionToSectionGroup(section, groups)
@@ -775,4 +802,14 @@ function sortRecipes(recipes)
 
 			return 1;
 		});
+}
+
+function onRecipeCancelClick()
+{
+	$("#recipe").hide();
+}
+
+function onRecipeOKClick()
+{
+	$("#recipe").hide();
 }
