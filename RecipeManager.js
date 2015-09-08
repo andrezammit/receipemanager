@@ -809,6 +809,10 @@ function onSearchResultClick(type, id)
 		case RESULT_TYPE_RECIPE:
 			showRecipe(id);
 			return;
+
+		case RESULT_TYPE_TAG:
+			showTagRecipes(id);
+			return;
 	}
 }
 
@@ -847,7 +851,7 @@ function showSectionRecipes(id)
 		var recipeID = section.recipeIds[cnt];
 		var recipe = getRecipeById(recipeID);
 
-		if (section != null)
+		if (recipe != null)
 			results.recipes.push(recipe);
 	}
 
@@ -870,6 +874,24 @@ function showRecipe(id)
 	recipeView.find("#commentCtrl").val(recipe.comment);
 
 	recipeView.css("display", "flex");
+}
+
+function showTagRecipes(id)
+{
+	var tag = getTagById(id);
+	var results = { recipes: [] };
+
+	var size = tag.recipeIds.length;
+	for (var cnt = 0; cnt < size; cnt++)
+	{
+		var recipeID = tag.recipeIds[cnt];
+		var recipe = getRecipeById(recipeID);
+
+		if (recipe != null)
+			results.recipes.push(recipe);
+	}
+
+	showSearchResults(results);
 }
 
 function addSectionToSectionGroup(section, groups)
