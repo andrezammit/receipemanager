@@ -30,6 +30,7 @@ function setHandlers()
 	$("#prevMonth").on("click", onPrevMonthClick);
 	$("#nextMonth").on("click", onNextMonthClick);
 	$("#loadData").on("click", onLoadDataClick);
+	$("#saveData").on("click", onSaveDataClick);
 	$("#books").on("click", showBooks);
 
 	var recipeView = $("#recipe");
@@ -124,7 +125,7 @@ function loadBooks(dataObj)
 		{
 			id: book[0],
 			name: book[1],
-			sections: []
+			sectionIds: []
 		})
    	}
 }
@@ -142,7 +143,7 @@ function loadSections(dataObj)
 			id: section[0],
 			bookId: null,
 			name: section[1],
-			recipes: []
+			recipeIds: []
 		})
    	}
 }
@@ -179,7 +180,7 @@ function loadSectionRecipes(dataObj)
 		var section = getSectionById(sectionRecipe[0]);
 
 		if (section != null)
-			section.recipes.push(sectionRecipe[1]);
+			section.recipeIds.push(sectionRecipe[1]);
 
 		var recipe = getRecipeById(sectionRecipe[1]);
 
@@ -199,7 +200,7 @@ function loadBookSections(dataObj)
 		var book = getBookById(bookSection[0]);
 
 		if (book != null)
-			book.sections.push(bookSection[1]);
+			book.sectionIds.push(bookSection[1]);
 
 		var section = getSectionById(bookSection[1]);
 
@@ -208,7 +209,7 @@ function loadBookSections(dataObj)
    	}
 }
 
-function loadDataSuccess(dataFileEntry)
+function onDBFileFound(dataFileEntry)
 {
 	dataFileEntry.file(
 		function(dataFile) 
@@ -233,7 +234,7 @@ function loadDataSuccess(dataFileEntry)
 		});
 }
 
-function loadDataFailed(error)
+function onFileNotFound(error)
 {
 }
 
@@ -242,16 +243,74 @@ function loadData()
 	chrome.syncFileSystem.requestFileSystem(
 		function (fs) 
 		{
-	  	 	fs.root.getFile('/RecipeManager.json', 
+	  	 	fs.root.getFile('RecipeManager-OldDB.json', 
 	  	 		{ create: false }, 
-	  	 		loadDataSuccess, 
-	  	 		loadDataFailed);
+	  	 		onDBFileFound, 
+	  	 		onFileNotFound);
 		});
 }
 
 function onLoadDataClick()
 {
 	loadData();
+}
+
+function onSaveFileFound(dataFileEntry)
+{
+	function replacer(key, value)
+	{
+		switch (key)
+		{
+			case "sectionIds":
+			case "recipeIds":
+				return undefined;
+		}
+
+		return value;
+	}
+
+	var jsonString = JSON.stringify(_db, replacer);
+	var jsonBlob = new Blob([jsonString]);
+
+	dataFileEntry.createWriter(
+		function(writer) 
+		{
+			var truncated = false;
+
+			writer.onerror = 
+				function(e)
+				{
+	      		  console.log("Write failed: " + e.toString());
+	      		};
+
+      		writer.onwriteend = 
+      			function(e) 
+      			{
+      				if (!truncated)
+      				{
+						this.truncate(jsonBlob.size);
+						truncated = true;
+
+						return;
+		      		}
+
+		      		console.log("Write success!. New size: " + jsonBlob.size);
+        		}
+
+			writer.write(jsonBlob);
+		});
+}
+
+function onSaveDataClick()
+{
+	chrome.syncFileSystem.requestFileSystem(
+		function (fs) 
+		{
+	  	 	fs.root.getFile('RecipeManager-new.json', 
+	  	 		{ create: true }, 
+	  	 		onSaveFileFound, 
+	  	 		onFileNotFound);
+		});
 }
 
 function onTitleClick()
@@ -632,10 +691,10 @@ function showBookSections(id)
 	var book = getBookById(id);
 	var results = { sections: [] };
 
-	var size = book.sections.length;
+	var size = book.sectionIds.length;
 	for (var cnt = 0; cnt < size; cnt++)
 	{
-		var sectionID = book.sections[cnt];
+		var sectionID = book.sectionIds[cnt];
 		var section = getSectionById(sectionID);
 
 		if (section != null)
@@ -650,10 +709,10 @@ function showSectionRecipes(id)
 	var section = getSectionById(id);
 	var results = { recipes: [] };
 
-	var size = section.recipes.length;
+	var size = section.recipeIds.length;
 	for (var cnt = 0; cnt < size; cnt++)
 	{
-		var recipeID = section.recipes[cnt];
+		var recipeID = section.recipeIds[cnt];
 		var recipe = getRecipeById(recipeID);
 
 		if (section != null)
@@ -678,7 +737,7 @@ function showRecipe(id)
 	recipeView.find("#interestingCtrl").prop('checked', recipe.isInteresting);
 	recipeView.find("#commentCtrl").val(recipe.comment);
 
-	recipeView.show();
+	recipeView.css("display", "flex");
 }
 
 function addSectionToSectionGroup(section, groups)
