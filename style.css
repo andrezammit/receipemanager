@@ -332,7 +332,7 @@ body
 {
     position: absolute;
 
-    display: flex;
+    display: none;
     flex-wrap: wrap;
 
 	width: 500px;
