@@ -5,12 +5,14 @@ var _db =
 	{ 
 		books: [], 
 		sections: [],
-		recipes: []
+		recipes: [],
+		tags: []
 	};
 
 var RESULT_TYPE_BOOK 	= 1;
 var RESULT_TYPE_SECTION = 2;
 var RESULT_TYPE_RECIPE	= 3;
+var RESULT_TYPE_TAG		= 4;
 
 $(document).ready(
 	function()
@@ -32,6 +34,7 @@ function setHandlers()
 	$("#loadData").on("click", onLoadDataClick);
 	$("#saveData").on("click", onSaveDataClick);
 	$("#books").on("click", showBooks);
+	$("#tags").on("click", showTags);
 
 	var recipeView = $("#recipe");
 
@@ -112,6 +115,19 @@ function getRecipeById(id)
    	return null;
 }
 
+function getTagById(id)
+{
+	var size = _db.tags.length;
+	for(var cnt = 0; cnt < size; cnt++) 
+	{
+		var tag = _db.tags[cnt];
+
+		if (tag.id == id)
+			return tag;
+   	}
+
+   	return null;
+}
 
 function loadBooks(dataObj)
 {
@@ -143,7 +159,8 @@ function loadSections(dataObj)
 			id: section[0],
 			bookId: null,
 			name: section[1],
-			recipeIds: []
+			recipeIds: [],
+			tagIds: []
 		})
    	}
 }
@@ -164,8 +181,70 @@ function loadRecipes(dataObj)
 			page: recipe[2],
 			isCooked: recipe[3],
 			isInteresting: recipe[4],
-			comment: recipe[5]
+			comment: recipe[5],
+			tagIds: []
 		})
+   	}
+}
+
+function loadTags(dataObj)
+{
+	var tagTable = dataObj.objects[0];
+
+	for(var cnt = 0; cnt < tagTable.rows.length; cnt++) 
+	{
+		var tag = tagTable.rows[cnt];
+
+		_db.tags.push(
+		{
+			id: tag[0],
+			name: tag[1],
+			recipeIds: [],
+			sectionIds: []
+		})
+   	}
+}
+
+function loadRecipesTags(dataObj)
+{
+	var recipeTagTable = dataObj.objects[5];
+
+	var size = recipeTagTable.rows.length;
+	for(var cnt = 0; cnt < size; cnt++) 
+	{
+		var recipeTag = recipeTagTable.rows[cnt];
+		var recipe = getRecipeById(recipeTag[0]);
+
+		if (recipe != null)
+			recipe.tagIds.push(recipeTag[1]);
+
+		var tag = getTagById(recipeTag[1]);
+
+		if (tag != null)
+			tag.recipeIds.push(recipeTag[0]);
+   	}
+}
+
+function loadSectionTags(dataObj)
+{
+	var sectionTagTable = dataObj.objects[4];
+
+	var size = sectionTagTable.rows.length;
+	for(var cnt = 0; cnt < size; cnt++) 
+	{
+		var sectionTag = sectionTagTable.rows[cnt];
+		var section = getSectionById(sectionTag[0]);
+
+		if (section != null)
+		{
+			section.tagIds.push(sectionTag[1]);
+			setTagInSectionRecipes(section, sectionTag[1]);
+		}	
+
+		var tag = getTagById(sectionTag[1]);
+
+		if (tag != null)
+			tag.sectionIds.push(sectionTag[0]);
    	}
 }
 
@@ -222,16 +301,32 @@ function onDBFileFound(dataFileEntry)
 			    	var data = event.target.result;
 		        	var dataObj = JSON.parse(data);
 
+		        	loadTags(dataObj);
 		        	loadBooks(dataObj);
-		        	loadSections(dataObj);
 		        	loadRecipes(dataObj);
+		        	loadSections(dataObj);
 
+		        	loadRecipesTags(dataObj);
 		        	loadBookSections(dataObj);
 		        	loadSectionRecipes(dataObj);
+
+		        	loadSectionTags(dataObj);
 		        };  
 
 			fileReader.readAsText(dataFile, "UTF-8");
 		});
+}
+
+function setTagInSectionRecipes(tagId, sectionId)
+{
+	var section = getSectionById(sectionId);
+
+	var size = section.recipeIds.length;
+	for(var cnt = 0; cnt < size; cnt++) 
+	{
+		var recipe = getRecipeById(section.recipeIds[cnt]);
+		recipe.tagIds.push(tagId);
+	}
 }
 
 function onFileNotFound(error)
@@ -490,6 +585,11 @@ function showSearchResults(results)
 	{
 		addResultsSection("Recipes", RESULT_TYPE_RECIPE, results.recipes)
 	}
+
+	if (results.tags)
+	{
+		addResultsSection("Tags", RESULT_TYPE_TAG, results.tags)
+	}
 }
 
 function clearSearchResults()
@@ -523,6 +623,10 @@ function addResults(sectionDiv, type, entries)
 
 		case RESULT_TYPE_RECIPE:
 			addRecipeResults(sectionDiv, entries);
+			return;
+
+		case RESULT_TYPE_TAG:
+			addTagResults(sectionDiv, entries);
 			return;
 	}
 }
@@ -649,6 +753,20 @@ function addRecipeResultPath(sectionDiv, sectionID)
 	resultPathDiv.append(sectionPathDiv);
 
 	sectionDiv.append(resultPathDiv);
+}
+
+function addTagResults(sectionDiv, entries)
+{
+	sortTags(entries);
+
+	var size = entries.length;
+	for (var cnt = 0; cnt < size; cnt++)
+	{
+		var tag = entries[cnt];
+		var entryDiv = $("<div class='result'>" + tag.name + "</div>");
+
+		addResultEntry(sectionDiv, RESULT_TYPE_TAG, tag, entryDiv);
+	}
 }
 
 function addResultEntry(sectionDiv, type, entry, entryDiv)
@@ -861,6 +979,27 @@ function sortRecipes(recipes)
 
 			return 1;
 		});
+}
+
+function sortTags(tags)
+{
+	tags.sort(
+		function(a, b)
+		{
+			if (a.name < b.name)
+				return -1;
+
+			if (a.name == b.name)
+				return 0;
+
+			return 1;
+		});
+}
+
+function showTags()
+{
+	var results = { tags: _db.tags };
+   	showSearchResults(results);
 }
 
 function onRecipeCancelClick()
