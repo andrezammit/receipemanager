@@ -301,6 +301,14 @@ function onDBFileFound(dataFileEntry)
 			    	var data = event.target.result;
 		        	var dataObj = JSON.parse(data);
 
+					_db = 
+						{ 
+							books: [], 
+							sections: [],
+							recipes: [],
+							tags: []
+						};
+
 		        	loadTags(dataObj);
 		        	loadBooks(dataObj);
 		        	loadRecipes(dataObj);
@@ -320,6 +328,12 @@ function onDBFileFound(dataFileEntry)
 function setTagInSectionRecipes(tagId, sectionId)
 {
 	var section = getSectionById(sectionId);
+
+	if (section == null)
+	{
+		console.log("Section " + sectionId + " does not exist!");
+		return;
+	}
 
 	var size = section.recipeIds.length;
 	for(var cnt = 0; cnt < size; cnt++) 
