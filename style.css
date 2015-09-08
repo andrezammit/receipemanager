@@ -346,33 +346,50 @@ body
 .recipeEntry
 {
 	display: flex;
-	width: 100%;
-	height: 23px;
 
-	margin-bottom: 10px;
+	width: 100%;
+	height: 30px;
+
+    margin-bottom: 15px;
 }
 
 .label
 {
-	width: 25%;
+	width: 20%;
 
     display: flex;
 
     align-items: center;
     justify-content: flex-end;
+
+    font-weight: bold;
 }
 
 .control
 {
-	width: 85%;
+	width: 70%;
     display: flex;
     align-items: center;
     padding-left: 10px;
 }
 
-.control > *
+.control > input[type="text"]
 {
 	width: 100%;
+}
+
+input[type="text"]
+{
+	padding: 7px;
+    border: solid 1px #dcdcdc;
+
+    transition: box-shadow 0.3s, border 0.3s;
+}
+
+input[type="text"]:focus
+{
+  border: solid 1px #707070;
+  box-shadow: 0 0 5px 1px #969696;
 }
 
 .closeButton
@@ -390,6 +407,5 @@ body
     right: -7px;
     top: -7px;    
 
-    align-items: center;
     justify-content: center;
 }
