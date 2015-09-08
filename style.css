@@ -330,7 +330,7 @@ body
 
 #recipe
 {
-    position: absolute;
+    position: fixed;
 
     display: flex;
     flex-wrap: wrap;
