@@ -382,15 +382,11 @@ body
     height: auto;
 }
 
-#recipeComment
-{
-	height: 300px;
-}
-
 .labelTextArea
 {
 	align-items: flex-start;
     padding-top: 8px;
+    height: 112px;
 }
 
 .control > input[type="checkbox"]
@@ -408,7 +404,7 @@ body
 textarea
 {
 	width: 100%;
-    height: 300px;
+    height: 120px;
     font-size: 13px;
     font-family: sans-serif;
     line-height: 20px;
@@ -458,4 +454,51 @@ button
 {
 	margin: 5px;
 	width: 75px;
+}
+
+#tagContainer
+{
+    background-color: white;
+    height: 120px;
+    width: 100%;
+    display: flex;
+    padding: 7px;
+}
+
+.tagLabels
+{
+	width: 20%;
+}
+
+.tagLabel
+{
+    display: flex;
+    padding-top: 1px;
+    padding-bottom: 5px;
+    height: 15px;
+}
+
+.tagControls
+{
+	width: 70%;
+}
+
+.tagControl
+{
+    display: flex;
+    height: 16px;
+    padding-bottom: 5px;
+}
+
+.tagControl > input[type="checkbox"]
+{
+    height: 10px;
+    margin-top: 2px;
+}
+
+#tagArea
+{
+	display: flex;
+    overflow: auto;
+    width: 100%;
 }

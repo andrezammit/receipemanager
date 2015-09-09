@@ -21,7 +21,9 @@ $(document).ready(
 
 		_currDate = getCurrentMonth();
 
+		fillTagContainers();
 		fillCalendarView(_currDate);
+
 	    setHandlers();
 	});
 
@@ -319,6 +321,8 @@ function onDBFileFound(dataFileEntry)
 		        	loadSectionRecipes(dataObj);
 
 		        	loadSectionTags(dataObj);
+
+		        	fillTagContainers();
 		        };  
 
 			fileReader.readAsText(dataFile, "UTF-8");
@@ -1088,4 +1092,24 @@ function onRecipeEditClick()
 
 	recipeView.find("#btnOK, #btnCancel").show();
 	recipeView.find("#btnEdit, #btnClose").hide();
+}
+
+function fillTagContainers()
+{
+	var tagContainer = $("#tagContainer");
+
+	var tagLabels = tagContainer.find("#tagLabels");
+	var tagControls = tagContainer.find("#tagControls");
+
+	var size = _db.tags.length;
+	for (var cnt = 0; cnt < size; cnt++)
+	{
+		var tag = _db.tags[cnt];
+
+		var tagLabel = $("<div class='tagLabel'>" + tag.name + "</div>");
+		var tagControl = $("<div class='tagControl'><input type='checkbox'/></div>");
+
+		tagLabels.append(tagLabel);
+		tagControls.append(tagControl);
+	}
 }
