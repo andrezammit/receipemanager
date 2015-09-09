@@ -1,6 +1,8 @@
 var _sidebarVisible = false;
 var _currDate = 0;
 
+var _recipeTagControls = [];
+
 var _db = 
 	{ 
 		books: [], 
@@ -877,6 +879,8 @@ function showRecipe(id)
 	recipeView.find("#interestingCtrl").prop('checked', recipe.isInteresting);
 	recipeView.find("#commentCtrl").val(recipe.comment);
 
+	setRecipeTags(recipe.tagIds);
+
 	var btnOK = recipeView.find("#btnOK");
 	btnOK.off("click");
 
@@ -1108,6 +1112,10 @@ function fillTagContainers()
 
 		var tagLabel = $("<div class='tagLabel'>" + tag.name + "</div>");
 		var tagControl = $("<div class='tagControl'><input type='checkbox'/></div>");
+
+		tagControl.data("id", tag.id);
+
+		_recipeTagControls.push(tagControl);
 
 		tagLabels.append(tagLabel);
 		tagControls.append(tagControl);
