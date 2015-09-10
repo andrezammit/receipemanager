@@ -463,6 +463,7 @@ button
     width: 100%;
     display: flex;
     padding: 7px;
+    border: 1px solid #DCDCDC;
 }
 
 .tagLabels
@@ -474,7 +475,7 @@ button
 {
     display: flex;
     padding-top: 1px;
-    padding-bottom: 5px;
+    padding-bottom: 6px;
     height: 15px;
 }
 
@@ -487,7 +488,8 @@ button
 {
     display: flex;
     height: 16px;
-    padding-bottom: 5px;
+    padding-bottom: 4px;
+    padding-top: 2px;
 }
 
 .tagControl > input[type="checkbox"]
