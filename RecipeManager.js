@@ -133,6 +133,20 @@ function getTagById(id)
    	return null;
 }
 
+function getTagControlById(id)
+{
+	var size = _recipeTagControls.length;
+	for (var cnt = 0; cnt < size; cnt++) 
+	{
+		var tagControl = _recipeTagControls[cnt];
+
+		if (tagControl.data("id") == id)
+			return tagControl;
+   	}
+
+   	return null;
+}
+
 function loadBooks(dataObj)
 {
 	var bookTable = dataObj.objects[1];
@@ -875,8 +889,8 @@ function showRecipe(id)
 
 	recipeView.find("#titleCtrl").val(recipe.name);
 	recipeView.find("#pageCtrl").val(recipe.page);
-	recipeView.find("#cookedCtrl").prop('checked', recipe.isCooked);
-	recipeView.find("#interestingCtrl").prop('checked', recipe.isInteresting);
+	recipeView.find("#cookedCtrl").prop("checked", recipe.isCooked);
+	recipeView.find("#interestingCtrl").prop("checked", recipe.isInteresting);
 	recipeView.find("#commentCtrl").val(recipe.comment);
 
 	setRecipeTags(recipe.tagIds);
@@ -1085,6 +1099,13 @@ function resetRecipeView()
 
 	recipeView.find("#btnEdit, #btnClose").show();
 	recipeView.find("#btnOK, #btnCancel").hide();
+
+	var size = _recipeTagControls.length;
+	for (var cnt = 0; cnt < size; cnt++) 
+	{
+		var tagControl = _recipeTagControls[cnt];
+		tagControl.prop("checked", false);
+   	}
 }
 
 function onRecipeEditClick()
@@ -1105,19 +1126,37 @@ function fillTagContainers()
 	var tagLabels = tagContainer.find("#tagLabels");
 	var tagControls = tagContainer.find("#tagControls");
 
+	sortTags(_db.tags);
+
 	var size = _db.tags.length;
 	for (var cnt = 0; cnt < size; cnt++)
 	{
 		var tag = _db.tags[cnt];
 
 		var tagLabel = $("<div class='tagLabel'>" + tag.name + "</div>");
-		var tagControl = $("<div class='tagControl'><input type='checkbox'/></div>");
+		var tagControlDiv = $("<div class='tagControl'></div>");
+		var tagControl = $("<input type='checkbox'/>");
 
+		tagControlDiv.append(tagControl);
 		tagControl.data("id", tag.id);
 
 		_recipeTagControls.push(tagControl);
 
 		tagLabels.append(tagLabel);
-		tagControls.append(tagControl);
+		tagControls.append(tagControlDiv);
+	}
+}
+
+function setRecipeTags(tagIds)
+{
+	var size = tagIds.length;
+	for (var cnt = 0; cnt < size; cnt++)
+	{
+		var tagControl = getTagControlById(tagIds[cnt]);
+
+		if (tagControl == null)
+			continue;
+
+		tagControl.prop("checked", true);
 	}
 }
