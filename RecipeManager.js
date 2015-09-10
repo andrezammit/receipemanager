@@ -1086,6 +1086,12 @@ function onRecipeOKClick(id)
 	recipe.isInteresting = recipeView.find("#interestingCtrl").prop("checked");
 	recipe.comment = recipeView.find("#commentCtrl").val();
 
+	recipe.tagIds = getCheckedTagIds();
+
+	updateTagRecipeReferences(recipe);
+
+	recipe.tagIds = filterRecipeSectionTagIds(recipe.tagIds, recipe.sectionId);
+
 	recipeView.hide();
 	resetRecipeView();
 }
@@ -1158,5 +1164,93 @@ function setRecipeTags(tagIds)
 			continue;
 
 		tagControl.prop("checked", true);
+	}
+}
+
+function getCheckedTagIds()
+{
+	var checkedTagIds = [];
+
+	var size = _recipeTagControls.length;
+	for (var cnt = 0; cnt < size; cnt++) 
+	{
+		var tagControl = _recipeTagControls[cnt];
+		
+		if (!tagControl.prop("checked"))
+			continue;
+
+		checkedTagIds.push(tagControl.data("id"));
+   	}
+
+   	return checkedTagIds;
+}
+
+function filterRecipeSectionTagIds(tagIds, sectionId)
+{
+	var filteredTags = [];
+	var section = getSectionById(sectionId);
+
+	var size = tagIds.length;
+	for (var cnt = 0; cnt < size; cnt++) 
+	{
+		var tagId = tagIds[cnt];
+
+		if (section.tagIds.indexOf(tagId) == -1)
+			continue;
+
+		filteredTags.push(tagId);
+	}
+
+	return filteredTags;
+}
+
+function isSectionTag(sectionId, tagId)
+{
+	var section = getSectionById(sectionId);
+
+	if (section.tagIds.indexOf(tagId) == -1)
+		return false;
+
+	return true;
+}
+
+function removeRecipeFromTag(tag, recipeId)
+{
+	var index = tag.recipeIds.indexOf(recipeId)
+
+	if (index == -1)
+		return;
+
+    tag.recipeIds.splice(index, 1);
+}
+
+function addRecipeToTag(tag, recipeId)
+{
+	var index = tag.recipeIds.indexOf(recipeId)
+
+	if (index != -1)
+		return;
+
+    tag.recipeIds.push(recipeId);
+}
+
+function updateTagRecipeReferences(recipe)
+{
+	var size = _db.tags.length;
+	for (var cnt = 0; cnt < size; cnt++) 
+	{
+		var tag = _db.tags[cnt];
+
+		if (isSectionTag(recipe.sectionId, tag.id))
+			continue;
+
+		if (recipe.tagIds.indexOf(tag.id) == -1)
+		{
+			removeRecipeFromTag(tag, recipe.id);
+		}
+		else
+		{
+			addRecipeToTag(tag, recipe.id);
+		}
 	}
 }
