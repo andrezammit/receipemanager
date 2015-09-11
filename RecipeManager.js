@@ -1090,8 +1090,6 @@ function onRecipeOKClick(id)
 
 	updateTagRecipeReferences(recipe);
 
-	recipe.tagIds = filterRecipeSectionTagIds(recipe.tagIds, recipe.sectionId);
-
 	recipeView.hide();
 	resetRecipeView();
 }
