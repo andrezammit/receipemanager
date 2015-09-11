@@ -43,7 +43,7 @@ function setHandlers()
 	var recipeView = $("#recipe");
 
 	recipeView.find("#btnEdit").on("click", onRecipeEditClick);
-	recipeView.find("#btnCancel, #btnClose, #btnCloseSmall").on("click", onRecipeCancelClick);
+	recipeView.find("#btnClose, #btnCloseSmall").on("click", onRecipeCloseClick);
 }
 
 function showResultsView(show)
@@ -880,6 +880,8 @@ function showSectionRecipes(id)
 
 function showRecipe(id)
 {
+	resetRecipeView();
+
 	var recipe = getRecipeById(id);
 
 	if (recipe == null)
@@ -902,6 +904,15 @@ function showRecipe(id)
 		function()
 		{
 			onRecipeOKClick(id);
+		})
+
+	var btnCancel = recipeView.find("#btnCancel");
+	btnCancel.off("click");
+
+	btnCancel.on("click", 
+		function()
+		{
+			showRecipe(id);
 		})
 
 	recipeView.css("display", "flex");
@@ -1069,7 +1080,7 @@ function showTags()
    	showSearchResults(results);
 }
 
-function onRecipeCancelClick()
+function onRecipeCloseClick()
 {
 	$("#recipe").hide();
 	resetRecipeView();
@@ -1104,12 +1115,10 @@ function resetRecipeView()
 	recipeView.find("#btnEdit, #btnClose").show();
 	recipeView.find("#btnOK, #btnCancel").hide();
 
-	var size = _recipeTagControls.length;
-	for (var cnt = 0; cnt < size; cnt++) 
-	{
-		var tagControl = _recipeTagControls[cnt];
-		tagControl.prop("checked", false);
-   	}
+	var allTagControls = recipeView.find(".tagControl").children();
+
+	allTagControls.attr("disabled", true);
+	allTagControls.prop("checked", false);		
 }
 
 function onRecipeEditClick()
@@ -1118,6 +1127,8 @@ function onRecipeEditClick()
 
 	recipeView.find("#cookedCtrl, #interestingCtrl").removeAttr("disabled");
 	recipeView.find("#titleCtrl, #pageCtrl, #commentCtrl").removeAttr("readonly");
+
+	recipeView.find(".tagControl").children().removeAttr("disabled");
 
 	recipeView.find("#btnOK, #btnCancel").show();
 	recipeView.find("#btnEdit, #btnClose").hide();
@@ -1139,7 +1150,7 @@ function fillTagContainers()
 
 		var tagLabel = $("<div class='tagLabel'>" + tag.name + "</div>");
 		var tagControlDiv = $("<div class='tagControl'></div>");
-		var tagControl = $("<input type='checkbox'/>");
+		var tagControl = $("<input type='checkbox' disabled/>");
 
 		tagControlDiv.append(tagControl);
 		tagControl.data("id", tag.id);
