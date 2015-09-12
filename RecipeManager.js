@@ -1,8 +1,6 @@
 var _sidebarVisible = false;
 var _currDate = 0;
 
-var _recipeTagControls = [];
-
 var _db = 
 	{ 
 		books: [], 
@@ -23,7 +21,6 @@ $(document).ready(
 
 		_currDate = getCurrentMonth();
 
-		fillTagContainers();
 		fillCalendarView(_currDate);
 
 	    setHandlers();
@@ -42,8 +39,13 @@ function setHandlers()
 
 	var recipeView = $("#recipe");
 
-	recipeView.find("#btnEdit").on("click", onRecipeEditClick);
-	recipeView.find("#btnClose, #btnCloseSmall").on("click", onRecipeCloseClick);
+	recipeView.find(".btnEdit").on("click", onRecipeEditClick);
+	recipeView.find(".btnClose, .btnCloseSmall").on("click", onRecipeCloseClick);
+
+	var sectionView = $("#section");
+
+	sectionView.find(".btnEdit").on("click", onSectionEditClick);
+	sectionView.find(".btnClose, .btnCloseSmall").on("click", onSectionCloseClick);
 }
 
 function showResultsView(show)
@@ -133,12 +135,14 @@ function getTagById(id)
    	return null;
 }
 
-function getTagControlById(id)
+function getTagControlById(parent, id)
 {
-	var size = _recipeTagControls.length;
+	var tagControls = parent.find(".tagControl").children();
+
+	var size = tagControls.length;
 	for (var cnt = 0; cnt < size; cnt++) 
 	{
-		var tagControl = _recipeTagControls[cnt];
+		var tagControl = $(tagControls[cnt]);
 
 		if (tagControl.data("id") == id)
 			return tagControl;
@@ -895,7 +899,7 @@ function showRecipe(id)
 	recipeView.find("#interestingCtrl").prop("checked", recipe.isInteresting);
 	recipeView.find("#commentCtrl").val(recipe.comment);
 
-	setRecipeTags(recipe.tagIds);
+	checkTags(recipeView, recipe.tagIds);
 
 	var btnOK = recipeView.find("#btnOK");
 	btnOK.off("click");
@@ -1097,7 +1101,7 @@ function onRecipeOKClick(id)
 	recipe.isInteresting = recipeView.find("#interestingCtrl").prop("checked");
 	recipe.comment = recipeView.find("#commentCtrl").val();
 
-	recipe.tagIds = getCheckedTagIds();
+	recipe.tagIds = getCheckedTagIds(recipeView);
 
 	updateTagRecipeReferences(recipe);
 
@@ -1112,8 +1116,8 @@ function resetRecipeView()
 	recipeView.find("#cookedCtrl, #interestingCtrl").attr("disabled", true);
 	recipeView.find("#titleCtrl, #pageCtrl, #commentCtrl").attr("readonly", true);
 
-	recipeView.find("#btnEdit, #btnClose").show();
-	recipeView.find("#btnOK, #btnCancel").hide();
+	recipeView.find(".btnEdit, .btnClose").show();
+	recipeView.find(".btnOK, .btnCancel").hide();
 
 	var allTagControls = recipeView.find(".tagControl").children();
 
@@ -1130,16 +1134,16 @@ function onRecipeEditClick()
 
 	recipeView.find(".tagControl").children().removeAttr("disabled");
 
-	recipeView.find("#btnOK, #btnCancel").show();
-	recipeView.find("#btnEdit, #btnClose").hide();
+	recipeView.find(".btnOK, .btnCancel").show();
+	recipeView.find(".btnEdit, .btnClose").hide();
 }
 
 function fillTagContainers()
 {
-	var tagContainer = $("#tagContainer");
+	var tagContainer = $(".tagContainer");
 
-	var tagLabels = tagContainer.find("#tagLabels");
-	var tagControls = tagContainer.find("#tagControls");
+	var tagLabels = tagContainer.find(".tagLabels");
+	var tagControls = tagContainer.find(".tagControls");
 
 	sortTags(_db.tags);
 
@@ -1155,19 +1159,17 @@ function fillTagContainers()
 		tagControlDiv.append(tagControl);
 		tagControl.data("id", tag.id);
 
-		_recipeTagControls.push(tagControl);
-
 		tagLabels.append(tagLabel);
 		tagControls.append(tagControlDiv);
 	}
 }
 
-function setRecipeTags(tagIds)
+function checkTags(parent, tagIds)
 {
 	var size = tagIds.length;
 	for (var cnt = 0; cnt < size; cnt++)
 	{
-		var tagControl = getTagControlById(tagIds[cnt]);
+		var tagControl = getTagControlById(parent, tagIds[cnt]);
 
 		if (tagControl == null)
 			continue;
@@ -1176,14 +1178,14 @@ function setRecipeTags(tagIds)
 	}
 }
 
-function getCheckedTagIds()
+function getCheckedTagIds(parent)
 {
-	var checkedTagIds = [];
+	var tagControls = parent.find(".tagControl").children();
 
-	var size = _recipeTagControls.length;
+	var size = tagControls.length;
 	for (var cnt = 0; cnt < size; cnt++) 
 	{
-		var tagControl = _recipeTagControls[cnt];
+		var tagControl = $(tagControls[cnt]);
 		
 		if (!tagControl.prop("checked"))
 			continue;
@@ -1262,4 +1264,145 @@ function updateTagRecipeReferences(recipe)
 			addRecipeToTag(tag, recipe.id);
 		}
 	}
+}
+
+function showSection(id)
+{
+	resetRecipeView();
+
+	var section = getSectionById(id);
+
+	if (section == null)
+		return;
+
+	var sectionView = $("#section");
+
+	sectionView.find("#titleCtrl").val(section.name);
+	checkTags(sectionView, section.tagIds);
+
+	var btnOK = sectionView.find(".btnOK");
+	btnOK.off("click");
+
+	btnOK.on("click", 
+		function()
+		{
+			onSectionOKClick(id);
+		})
+
+	var btnCancel = sectionView.find(".btnCancel");
+	btnCancel.off("click");
+
+	btnCancel.on("click", 
+		function()
+		{
+			showSection(id);
+		})
+
+	sectionView.css("display", "flex");
+}
+
+function onSectionOKClick(id)
+{
+	var section = getSectionById(id);
+	var sectionView = $("#recipe");
+
+	section.name = sectionView.find("#titleCtrl").val();
+
+	var tagIdDiff = getCheckedTagsDiff(section.tagIds);
+	section.tagIds = getCheckedTagIds(sectionView);
+
+	var size = section.recipeIds.length;
+	for (var cnt = 0; cnt < size; cnt++)
+	{
+		var recipeId = section.recipeIds[cnt];
+		var recipe = getRecipeById(recipeId);
+
+		for (var j = 0; j < tagIdDiff.added.length; j++)
+		{
+			var tagId = tagIdDiff.added[j];
+			var index = recipe.tagIds.indexOf(tagId);
+
+			if (index != -1)
+				continue;
+
+			recipe.tagIds.push(tagId);
+		}
+
+		for (var j = 0; j < tagIdDiff.removed.length; j++)
+		{
+			var tagId = tagIdDiff.added[j];
+			var index = recipe.tagIds.indexOf(tagId);
+
+			if (index == -1)
+				continue;
+
+			recipe.tagIds.splice(index, 1);
+		}
+		
+		updateTagRecipeReferences(recipe);
+	}
+
+	sectionView.hide();
+	resetRecipeView();
+}
+
+function resetSectionView()
+{
+	var sectionView = $("#section");
+
+	sectionView.find("#titleCtrl").attr("readonly", true);
+
+	sectionView.find(".btnEdit, .btnClose").show();
+	sectionView.find(".btnOK, .btnCancel").hide();
+
+	var allTagControls = sectionView.find(".tagControl").children();
+
+	allTagControls.attr("disabled", true);
+	allTagControls.prop("checked", false);		
+}
+
+function onSectionEditClick()
+{
+	var sectionView = $("#section");
+
+	sectionView.find("#titleCtrl").removeAttr("readonly");
+	sectionView.find(".tagControl").children().removeAttr("disabled");
+
+	sectionView.find(".btnOK, .btnCancel").show();
+	sectionView.find(".btnEdit, .btnClose").hide();
+}
+
+function onSectionCloseClick()
+{
+	$("#section").hide();
+	resetSectionView();
+}
+
+function getCheckedTagsDiff(parent, oldTagIds)
+{
+	var tagsDiff = 
+	{
+		added: [],
+		removed: []
+	};
+
+	var tagControls = parent.find(".tagControl").children();
+
+	var size = tagControls.length;
+	for (var cnt = 0; cnt < size; cnt++) 
+	{
+		var tagControl = $(tagControls[cnt]);
+		var tagId = tagControl.data("id");
+
+		if (tagControl.prop("checked") && oldTagIds.indexOf(tagId) == -1)
+		{
+			tagsDiff.added.push(tagId);
+		}
+		else if (!tagControl.prop("checked") && oldTagIds.indexOf(tagId) != -1)
+		{
+			tagsDiff.removed.push(tagId);
+		}
+   	}
+
+   	return tagsDiff;
 }
