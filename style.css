@@ -156,6 +156,38 @@ body
 	background-color: #F3F2F2;
 }
 
+.result:hover .resultButtons
+{
+	opacity: 1;
+	pointer-events: auto;	
+}
+
+.resultEntry
+{
+	display: flex;
+	width: calc(100% - 45px);
+}
+
+.resultButtons
+{
+	opacity: 0;
+	pointer-events: none;
+
+	margin-right: 5px;
+    width: 16px;
+
+	color: gray;
+	font-weight: bold;
+
+	transition: opacity 0.2s;
+	transition: color 0.2s;
+}
+
+.resultButtons:hover
+{
+	color: black;
+}
+
 .resultPath
 {
 	padding-left: 10px;

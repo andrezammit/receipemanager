@@ -677,7 +677,7 @@ function addBookResults(sectionDiv, entries)
 	for (var cnt = 0; cnt < size; cnt++)
 	{
 		var book = entries[cnt];
-		var entryDiv = $("<div class='result'>" + book.name + "</div>");
+		var entryDiv = $("<div class='resultEntry'>" + book.name + "</div>");
 
 		addResultEntry(sectionDiv, RESULT_TYPE_BOOK, book, entryDiv);
 	}
@@ -700,7 +700,7 @@ function addSectionResults(sectionDiv, entries)
 		for (var j = 0; j < sections; j++)
 		{
 			var section = sectionGroup.sections[j];
-			var entryDiv = $("<div class='result'>" + section.name + "</div>");
+			var entryDiv = $("<div class='resultEntry'>" + section.name + "</div>");
 
 			addResultEntry(sectionDiv, RESULT_TYPE_SECTION, section, entryDiv);
 		}	
@@ -749,7 +749,7 @@ function addRecipeResults(sectionDiv, entries)
 
 function addRecipeResult(sectionDiv, recipe)
 {
-	var entryDiv = $("<div class='result'></div>");
+	var entryDiv = $("<div class='resultEntry'></div>");
 
 	entryDiv.append("<div class='recipeName'>" + recipe.name + "</div>");
 
@@ -801,7 +801,7 @@ function addTagResults(sectionDiv, entries)
 	for (var cnt = 0; cnt < size; cnt++)
 	{
 		var tag = entries[cnt];
-		var entryDiv = $("<div class='result'>" + tag.name + "</div>");
+		var entryDiv = $("<div class='resultEntry'>" + tag.name + "</div>");
 
 		addResultEntry(sectionDiv, RESULT_TYPE_TAG, tag, entryDiv);
 	}
@@ -809,13 +809,46 @@ function addTagResults(sectionDiv, entries)
 
 function addResultEntry(sectionDiv, type, entry, entryDiv)
 {
-	entryDiv.on("click", 
+	var resultDiv = $("<div class='result'></div>");
+
+	resultDiv.append(entryDiv);
+
+	addEditButton(resultDiv, type, entry.id);
+	addDeleteButton(resultDiv, type, entry.id);
+
+	resultDiv.on("click", 
 		function()
 		{
 			onSearchResultClick(type, entry.id);
 		});
 
-	sectionDiv.append(entryDiv);
+	sectionDiv.append(resultDiv);
+}
+
+function addEditButton(resultDiv, type, id)
+{
+	var editButton = $("<div class='resultButtons'>e</div>");
+
+	editButton.on("click", 
+		function()
+		{
+			onEditClick(type, id);
+		});
+
+	resultDiv.append(editButton);
+}
+
+function addDeleteButton(resultDiv, type, id)
+{
+	var deleteButton = $("<div class='resultButtons'>x</div>");
+
+	deleteButton.on("click", 
+		function()
+		{
+			onDeleteClick(type, id);
+		});
+
+	resultDiv.append(deleteButton);
 }
 
 function onSearchResultClick(type, id)
@@ -1405,4 +1438,19 @@ function getCheckedTagsDiff(parent, oldTagIds)
    	}
 
    	return tagsDiff;
+}
+
+function onEditClick(type, id)
+{
+	switch (type)
+	{
+		case RESULT_TYPE_RECIPE:
+			showRecipe(id);
+			return;
+	}
+}
+
+function onDeleteClick(type, id)
+{
+
 }
