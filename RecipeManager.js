@@ -844,9 +844,11 @@ function addDeleteButton(resultDiv, type, id)
 	var deleteButton = $("<div class='resultButtons'>x</div>");
 
 	deleteButton.on("click", 
-		function()
+		function(e)
 		{
 			onDeleteClick(type, id);
+			resultDiv.remove();
+
 			e.stopPropagation();
 		});
 
@@ -1459,5 +1461,39 @@ function onEditClick(type, id)
 
 function onDeleteClick(type, id)
 {
+	switch (type)
+	{
+		case RESULT_TYPE_RECIPE:
+			deleteRecipe(id);
+			return;
 
+		case RESULT_TYPE_SECTION:
+			deleteSection(id);
+			return;
+
+		case RESULT_TYPE_BOOK:
+			deleteBook(id);
+			return;
+	}
+}
+
+function deleteRecipe(id)
+{
+	var recipe = getRecipeById(id);
+
+	recipe.tagIds.splice(0, recipe.tagIds.length);
+	updateTagRecipeReferences(recipe);
+
+	var sectionId = recipe.sectionId;;
+	var section = getSectionById(sectionId);
+
+	var index = section.recipeIds.indexOf(id);
+
+	if (index != -1)
+		section.recipeIds.splice(index, 1);
+
+	var index = _db.recipes.indexOf(id);
+
+	if (index != -1)
+		_db.recipes.splice(index, 1);
 }
