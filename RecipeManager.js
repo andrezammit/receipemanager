@@ -830,9 +830,10 @@ function addEditButton(resultDiv, type, id)
 	var editButton = $("<div class='resultButtons'>e</div>");
 
 	editButton.on("click", 
-		function()
+		function(e)
 		{
 			onEditClick(type, id);
+			e.stopPropagation();
 		});
 
 	resultDiv.append(editButton);
@@ -846,6 +847,7 @@ function addDeleteButton(resultDiv, type, id)
 		function()
 		{
 			onDeleteClick(type, id);
+			e.stopPropagation();
 		});
 
 	resultDiv.append(deleteButton);
