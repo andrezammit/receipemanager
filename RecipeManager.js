@@ -934,7 +934,7 @@ function showRecipe(id)
 
 	checkTags(recipeView, recipe.tagIds);
 
-	var btnOK = recipeView.find("#btnOK");
+	var btnOK = recipeView.find(".btnOK");
 	btnOK.off("click");
 
 	btnOK.on("click", 
@@ -943,7 +943,7 @@ function showRecipe(id)
 			onRecipeOKClick(id);
 		})
 
-	var btnCancel = recipeView.find("#btnCancel");
+	var btnCancel = recipeView.find(".btnCancel");
 	btnCancel.off("click");
 
 	btnCancel.on("click", 
@@ -1213,6 +1213,7 @@ function checkTags(parent, tagIds)
 
 function getCheckedTagIds(parent)
 {
+	var checkedTagIds = [];
 	var tagControls = parent.find(".tagControl").children();
 
 	var size = tagControls.length;
@@ -1337,11 +1338,11 @@ function showSection(id)
 function onSectionOKClick(id)
 {
 	var section = getSectionById(id);
-	var sectionView = $("#recipe");
+	var sectionView = $("#section");
 
 	section.name = sectionView.find("#titleCtrl").val();
 
-	var tagIdDiff = getCheckedTagsDiff(section.tagIds);
+	var tagIdDiff = getCheckedTagsDiff(sectionView, section.tagIds);
 	section.tagIds = getCheckedTagIds(sectionView);
 
 	var size = section.recipeIds.length;
@@ -1376,7 +1377,7 @@ function onSectionOKClick(id)
 	}
 
 	sectionView.hide();
-	resetRecipeView();
+	resetSectionView();
 }
 
 function resetSectionView()
