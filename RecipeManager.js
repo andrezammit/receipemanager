@@ -40,12 +40,12 @@ function setHandlers()
 	var recipeView = $("#recipe");
 
 	recipeView.find(".btnEdit").on("click", onRecipeEditClick);
-	recipeView.find(".btnClose, .btnCloseSmall").on("click", onRecipeCloseClick);
+	recipeView.find(".btnClose, .closeButton").on("click", onRecipeCloseClick);
 
 	var sectionView = $("#section");
 
 	sectionView.find(".btnEdit").on("click", onSectionEditClick);
-	sectionView.find(".btnClose, .btnCloseSmall").on("click", onSectionCloseClick);
+	sectionView.find(".btnClose, .closeButton").on("click", onSectionCloseClick);
 }
 
 function showResultsView(show)
@@ -1446,6 +1446,10 @@ function onEditClick(type, id)
 	{
 		case RESULT_TYPE_RECIPE:
 			showRecipe(id);
+			return;
+
+		case RESULT_TYPE_SECTION:
+			showSection(id);
 			return;
 	}
 }

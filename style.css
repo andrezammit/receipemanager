@@ -498,9 +498,14 @@ button
     border: 1px solid #DCDCDC;
 }
 
-#recipe > .tagLabels
+#section .tagContainer
 {
-	width: 20%;
+	background-color: white;
+	height: 350px;
+    width: 100%;
+    display: flex;
+    padding: 7px;
+    border: 1px solid #DCDCDC;
 }
 
 .tagLabel
@@ -509,11 +514,6 @@ button
     padding-top: 1px;
     padding-bottom: 6px;
     height: 15px;
-}
-
-#recipe > .tagControls
-{
-	width: 70%;
 }
 
 .tagControl
