@@ -648,7 +648,11 @@ function clearSearchResults()
 function addResultsSection(name, type, entries)
 {
 	var sectionDiv = $("<div class='resultSection'></div>");
-	sectionDiv.append("<div class='sectionTitle'>" + name + "</div>");
+	var sectionHeader = $("<div class='sectionHeader'></div>");
+
+	sectionDiv.append(sectionHeader);
+	sectionHeader.append("<div class='sectionTitle'>" + name + "</div>");
+	sectionHeader.append("<div class='sectionAdd'>+</div>");
 
 	addResults(sectionDiv, type, entries);
 

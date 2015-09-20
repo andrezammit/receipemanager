@@ -208,10 +208,13 @@ body
 .resultSubPath:hover
 {
 	color: black;
+	cursor: pointer;
 }
 
-.sectionTitle
+.sectionHeader
 {
+	display: flex;
+
 	font-size: 24px;
 
     color: lightcyan;
@@ -219,8 +222,32 @@ body
     padding-bottom: 5px;
     padding-top: 5px;
     padding-left: 10px;
+    padding-right: 10px;
 
     border-bottom: 1px lightcyan solid;
+}
+
+.sectionTitle
+{
+	display: flex;
+
+	width: calc(100% - 30px);
+}
+
+.sectionAdd
+{
+	display: flex;
+
+	width: 30px;
+	justify-content: flex-end;
+
+	transition: color 0.2s;
+}
+
+.sectionAdd:hover
+{
+	color: black;
+	cursor: pointer;
 }
 
 .resultSection
