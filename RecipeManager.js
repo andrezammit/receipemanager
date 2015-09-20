@@ -1,5 +1,6 @@
-var _sidebarVisible = false;
 var _currDate = 0;
+var _currentResults = null;
+var _sidebarVisible = false;
 
 var _db = 
 	{ 
@@ -615,6 +616,8 @@ function showSearchResults(results)
 	clearSearchResults();
 	showResultsView(true);
 
+	_currentResults = results;
+
 	if (results.books)
 	{
 		addResultsSection("Books", RESULT_TYPE_BOOK, results.books)
@@ -1150,6 +1153,8 @@ function onRecipeOKClick(id)
 
 	recipeView.hide();
 	resetRecipeView();
+
+	refreshResultsView();
 }
 
 function resetRecipeView()
@@ -1388,6 +1393,8 @@ function onSectionOKClick(id)
 
 	sectionView.hide();
 	resetSectionView();
+
+	refreshResultsView();
 }
 
 function resetSectionView()
@@ -1487,7 +1494,7 @@ function showBook(id)
 
 function resetBookView()
 {
-	var bookView = $("#section");
+	var bookView = $("#book");
 
 	bookView.find("#titleCtrl").attr("readonly", true);
 
@@ -1520,6 +1527,8 @@ function onBookOKClick(id)
 
 	bookView.hide();
 	resetBookView();
+
+	refreshResultsView();
 }
 
 function onEditClick(type, id)
@@ -1634,4 +1643,9 @@ function deleteBook(id)
 
 	if (index != -1)
 		_db.books.splice(index, 1);
+}
+
+function refreshResultsView()
+{
+	showSearchResults(_currentResults);
 }
