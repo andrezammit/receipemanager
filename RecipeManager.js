@@ -1477,23 +1477,80 @@ function onDeleteClick(type, id)
 	}
 }
 
-function deleteRecipe(id)
+function deleteRecipe(id, removeFromSection)
 {
 	var recipe = getRecipeById(id);
+
+	if (recipe == null)
+		return;
 
 	recipe.tagIds.splice(0, recipe.tagIds.length);
 	updateTagRecipeReferences(recipe);
 
-	var sectionId = recipe.sectionId;;
-	var section = getSectionById(sectionId);
+	if (removeFromSection == true)
+	{
+		var sectionId = recipe.sectionId;
+		var section = getSectionById(sectionId);
 
-	var index = section.recipeIds.indexOf(id);
+		var index = section.recipeIds.indexOf(id);
 
-	if (index != -1)
-		section.recipeIds.splice(index, 1);
-
-	var index = _db.recipes.indexOf(id);
+		if (index != -1)
+			section.recipeIds.splice(index, 1);
+	}
+	
+	var index = _db.recipes.indexOf(recipe);
 
 	if (index != -1)
 		_db.recipes.splice(index, 1);
+}
+
+function deleteSection(id, removeFromBook)
+{
+	var section = getSectionById(id);
+
+	if (section == null)
+		return;
+
+	var size = section.recipeIds.length;
+	for (var cnt = 0; cnt < size; cnt++)
+	{
+		var recipeId = section.recipeIds[cnt];
+		deleteRecipe(recipeId, false);
+	}
+
+	if (removeFromBook == true)
+	{
+		var bookId = section.bookId;
+		var book = getBookById(bookId);
+	
+		var index = book.sectionIds.indexOf(id);
+
+		if (index != -1)
+			book.sectionIds.splice(index, 1);
+	}
+
+	var index = _db.sections.indexOf(section);
+
+	if (index != -1)
+		_db.sections.splice(index, 1);
+}
+
+function deleteBook(id)
+{
+	var book = getBookById(id);
+
+	if (book == null)
+		return;
+
+	var size = book.sectionIds.length;
+	for (var cnt = 0; cnt < size; cnt++)
+	{
+		var sectionId = book.sectionIds[cnt];
+		deleteSection(sectionId, false);
+	}
+
+	var index = _db.books.indexOf(book);
+
+	if (index != -1)
+		_db.books.splice(index, 1);
 }
