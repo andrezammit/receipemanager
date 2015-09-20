@@ -46,6 +46,12 @@ function setHandlers()
 
 	sectionView.find(".btnEdit").on("click", onSectionEditClick);
 	sectionView.find(".btnClose, .closeButton").on("click", onSectionCloseClick);
+
+	var bookView = $("#book");
+
+	bookView.find(".btnEdit").on("click", onBookEditClick);
+	bookView.find(".btnClose, .closeButton").on("click", onBookCloseClick);
+
 }
 
 function showResultsView(show)
@@ -1445,6 +1451,77 @@ function getCheckedTagsDiff(parent, oldTagIds)
    	return tagsDiff;
 }
 
+function showBook(id)
+{
+	resetBookView();
+
+	var book = getBookById(id);
+
+	if (book == null)
+		return;
+
+	var bookView = $("#book");
+
+	bookView.find("#titleCtrl").val(book.name);
+
+	var btnOK = bookView.find(".btnOK");
+	btnOK.off("click");
+
+	btnOK.on("click", 
+		function()
+		{
+			onBookOKClick(id);
+		})
+
+	var btnCancel = bookView.find(".btnCancel");
+	btnCancel.off("click");
+
+	btnCancel.on("click", 
+		function()
+		{
+			showBook(id);
+		})
+
+	bookView.css("display", "flex");
+}
+
+function resetBookView()
+{
+	var bookView = $("#section");
+
+	bookView.find("#titleCtrl").attr("readonly", true);
+
+	bookView.find(".btnEdit, .btnClose").show();
+	bookView.find(".btnOK, .btnCancel").hide();
+}
+
+function onBookEditClick()
+{
+	var bookView = $("#book");
+
+	bookView.find("#titleCtrl").removeAttr("readonly");
+
+	bookView.find(".btnOK, .btnCancel").show();
+	bookView.find(".btnEdit, .btnClose").hide();
+}
+
+function onBookCloseClick()
+{
+	$("#book").hide();
+	resetBookView();
+}
+
+function onBookOKClick(id)
+{
+	var book = getBookById(id);
+	var bookView = $("#book");
+
+	book.name = bookView.find("#titleCtrl").val();
+
+	bookView.hide();
+	resetBookView();
+}
+
 function onEditClick(type, id)
 {
 	switch (type)
@@ -1455,6 +1532,10 @@ function onEditClick(type, id)
 
 		case RESULT_TYPE_SECTION:
 			showSection(id);
+			return;
+
+		case RESULT_TYPE_BOOK:
+			showBook(id);
 			return;
 	}
 }
