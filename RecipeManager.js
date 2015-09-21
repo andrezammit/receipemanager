@@ -88,6 +88,10 @@ function setHandlers()
 	bookView.find(".btnEdit").on("click", onBookEditClick);
 	bookView.find(".btnClose, .closeButton").on("click", onBookCloseClick);
 
+	var tagView = $("#tag");
+
+	tagView.find(".btnEdit").on("click", onTagEditClick);
+	tagView.find(".btnClose, .closeButton").on("click", onTagCloseClick);
 }
 
 function showResultsView(show)
@@ -1382,6 +1386,8 @@ function fillTagContainers()
 	var tagLabels = tagContainer.find(".tagLabels");
 	var tagControls = tagContainer.find(".tagControls");
 
+	tagContainer.empty();
+
 	sortTags(_db.tags);
 
 	var size = _db.tags.length;
@@ -1761,6 +1767,10 @@ function onEditClick(type, id)
 		case RESULT_TYPE_BOOK:
 			showBook(id);
 			return;
+
+		case RESULT_TYPE_TAG:
+			showTag(id);
+			return;
 	}
 }
 
@@ -1915,4 +1925,88 @@ function getNextAvailableId(type)
 	while (!isIdAvailable);
 
 	return id;
+}
+
+function showTag(id)
+{
+	resetTagView();
+
+	var tag = getTagById(id);
+
+	if (tag == null)
+	{
+		tag = new Tag();
+		tag.id = id;
+
+		onTagEditClick();
+	}
+
+	var tagView = $("#tag");
+	tagView.find("#titleCtrl").val(tag.name);
+
+	var btnOK = tagView.find(".btnOK");
+	btnOK.off("click");
+
+	btnOK.on("click", 
+		function()
+		{
+			onTagOKClick(id, book);
+		})
+
+	var btnCancel = tagView.find(".btnCancel");
+	btnCancel.off("click");
+
+	btnCancel.on("click", 
+		function()
+		{
+			showTag(id);
+		})
+
+	tagView.css("display", "flex");
+}
+
+function resetTagView()
+{
+	var tagView = $("#tag");
+
+	tagView.find("#titleCtrl").attr("readonly", true);
+
+	tagView.find(".btnEdit, .btnClose").show();
+	tagView.find(".btnOK, .btnCancel").hide();
+}
+
+function onTagEditClick()
+{
+	var tagView = $("#tag");
+
+	tagView.find("#titleCtrl").removeAttr("readonly");
+
+	tagView.find(".btnOK, .btnCancel").show();
+	tagView.find(".btnEdit, .btnClose").hide();
+}
+
+function onTagCloseClick()
+{
+	$("#tag").hide();
+	resetTagView();
+}
+
+function onTagOKClick(id, newTag)
+{
+	var tag = getTagById(id);
+
+	if (tag == null)
+	{
+		tag = newTag;
+		_db.books.push(tag);
+	}
+
+	var tagView = $("#tag");
+	tag.name = tagView.find("#titleCtrl").val();
+
+	tagView.hide();
+	resetTagView();
+
+	fillTagContainers();
+	refreshResultsView();
 }
