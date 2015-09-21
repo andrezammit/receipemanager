@@ -10,6 +10,18 @@ var _db =
 		tags: []
 	};
 
+function Recipe()
+{
+	this.id = 0;
+	this.sectionId = null;
+	this.name = "";
+	this.page = "";
+	this.isCooked = false;
+	this.isInteresting = false;
+	this.comment = "";
+	this.tagIds = [];
+}
+
 var RESULT_TYPE_BOOK 	= 1;
 var RESULT_TYPE_SECTION = 2;
 var RESULT_TYPE_RECIPE	= 3;
@@ -86,10 +98,41 @@ function onSearchBoxChanged()
 	showResultsView(true);
 }
 
+function getObjectById(id, type)
+{
+	var array = null;
+
+	switch (type)
+	{
+		case RESULT_TYPE_RECIPE:
+			array = _db.recipes;
+			break;
+
+		case RESULT_TYPE_SECTION:
+			array = _db.sections;
+			break;
+
+		case RESULT_TYPE_BOOK:
+			array = _db.books;
+			break;
+	}
+
+	var size = array.length;
+	for (var cnt = 0; cnt < size; cnt++) 
+	{
+		var object = array[cnt];
+
+		if (object.id == id)
+			return object;
+   	}
+
+   	return null;
+}
+
 function getBookById(id)
 {
 	var size = _db.books.length;
-	for(var cnt = 0; cnt < size; cnt++) 
+	for (var cnt = 0; cnt < size; cnt++) 
 	{
 		var book = _db.books[cnt];
 
@@ -103,7 +146,7 @@ function getBookById(id)
 function getSectionById(id)
 {
 	var size = _db.sections.length;
-	for(var cnt = 0; cnt < size; cnt++) 
+	for (var cnt = 0; cnt < size; cnt++) 
 	{
 		var section = _db.sections[cnt];
 
@@ -117,7 +160,7 @@ function getSectionById(id)
 function getRecipeById(id)
 {
 	var size = _db.recipes.length;
-	for(var cnt = 0; cnt < size; cnt++) 
+	for (var cnt = 0; cnt < size; cnt++) 
 	{
 		var recipe = _db.recipes[cnt];
 
@@ -131,7 +174,7 @@ function getRecipeById(id)
 function getTagById(id)
 {
 	var size = _db.tags.length;
-	for(var cnt = 0; cnt < size; cnt++) 
+	for (var cnt = 0; cnt < size; cnt++) 
 	{
 		var tag = _db.tags[cnt];
 
@@ -162,7 +205,7 @@ function loadBooks(dataObj)
 {
 	var bookTable = dataObj.objects[1];
 
-	for(var cnt = 0; cnt < bookTable.rows.length; cnt++) 
+	for (var cnt = 0; cnt < bookTable.rows.length; cnt++) 
 	{
 		var book = bookTable.rows[cnt];
 
@@ -179,7 +222,7 @@ function loadSections(dataObj)
 {
 	var sectionTable = dataObj.objects[2];
 
-	for(var cnt = 0; cnt < sectionTable.rows.length; cnt++) 
+	for (var cnt = 0; cnt < sectionTable.rows.length; cnt++) 
 	{
 		var section = sectionTable.rows[cnt];
 
@@ -198,21 +241,21 @@ function loadRecipes(dataObj)
 {
 	var recipeTable = dataObj.objects[3];
 
-	for(var cnt = 0; cnt < recipeTable.rows.length; cnt++) 
+	for (var cnt = 0; cnt < recipeTable.rows.length; cnt++) 
 	{
 		var recipe = recipeTable.rows[cnt];
 
-		_db.recipes.push(
-		{
-			id: recipe[0],
-			sectionId: null,
-			name: recipe[1],
-			page: recipe[2],
-			isCooked: recipe[3],
-			isInteresting: recipe[4],
-			comment: recipe[5],
-			tagIds: []
-		})
+		var newRecipe = new Recipe();
+		newRecipe.id = recipe[0];
+		newRecipe.sectionId = null;
+		newRecipe.name = recipe[1];
+		newRecipe.page = recipe[2];
+		newRecipe.isCooked = recipe[3];
+		newRecipe.isInteresting = recipe[4];
+		newRecipe.comment = recipe[5];
+		newRecipe.tagIds = [];
+
+		_db.recipes.push(newRecipe);
    	}
 }
 
@@ -220,7 +263,7 @@ function loadTags(dataObj)
 {
 	var tagTable = dataObj.objects[0];
 
-	for(var cnt = 0; cnt < tagTable.rows.length; cnt++) 
+	for (var cnt = 0; cnt < tagTable.rows.length; cnt++) 
 	{
 		var tag = tagTable.rows[cnt];
 
@@ -239,7 +282,7 @@ function loadRecipesTags(dataObj)
 	var recipeTagTable = dataObj.objects[5];
 
 	var size = recipeTagTable.rows.length;
-	for(var cnt = 0; cnt < size; cnt++) 
+	for (var cnt = 0; cnt < size; cnt++) 
 	{
 		var recipeTag = recipeTagTable.rows[cnt];
 		var recipe = getRecipeById(recipeTag[0]);
@@ -259,7 +302,7 @@ function loadSectionTags(dataObj)
 	var sectionTagTable = dataObj.objects[4];
 
 	var size = sectionTagTable.rows.length;
-	for(var cnt = 0; cnt < size; cnt++) 
+	for (var cnt = 0; cnt < size; cnt++) 
 	{
 		var sectionTag = sectionTagTable.rows[cnt];
 		var section = getSectionById(sectionTag[0]);
@@ -282,7 +325,7 @@ function loadSectionRecipes(dataObj)
 	var sectionRecipeTable = dataObj.objects[6];
 
 	var size = sectionRecipeTable.rows.length;
-	for(var cnt = 0; cnt < size; cnt++) 
+	for (var cnt = 0; cnt < size; cnt++) 
 	{
 		var sectionRecipe = sectionRecipeTable.rows[cnt];
 		var section = getSectionById(sectionRecipe[0]);
@@ -302,7 +345,7 @@ function loadBookSections(dataObj)
 	var bookSectionTable = dataObj.objects[7];
 
 	var size = bookSectionTable.rows.length;
-	for(var cnt = 0; cnt < size; cnt++) 
+	for (var cnt = 0; cnt < size; cnt++) 
 	{
 		var bookSection = bookSectionTable.rows[cnt];
 		var book = getBookById(bookSection[0]);
@@ -367,7 +410,7 @@ function setTagInSectionRecipes(tagId, sectionId)
 	}
 
 	var size = section.recipeIds.length;
-	for(var cnt = 0; cnt < size; cnt++) 
+	for (var cnt = 0; cnt < size; cnt++) 
 	{
 		var recipe = getRecipeById(section.recipeIds[cnt]);
 		recipe.tagIds.push(tagId);
@@ -743,6 +786,27 @@ function addRecipeResults(sectionDiv, entries)
 	var recipeGroups = [];
 	groupRecipesBySection(entries, recipeGroups);
 
+	var sectionAdd = sectionDiv.find(".sectionAdd");
+
+	if (recipeGroups.length == 1)
+	{
+		sectionAdd.css("display", "flex");
+
+		var recipeGroup = recipeGroups[0];
+
+		sectionAdd.off("click");
+		sectionAdd.on("click",
+			function(e)
+			{
+				onAddClick(RESULT_TYPE_RECIPE, recipeGroup.sectionId);
+				e.stopPropagation();
+			});
+	}
+	else
+	{
+		sectionAdd.hide();
+	}
+
 	var groups = recipeGroups.length;
 	for (var i = 0; i < groups; i++)
 	{
@@ -932,16 +996,24 @@ function showSectionRecipes(id)
 	showSearchResults(results);
 }
 
-function showRecipe(id)
+function showRecipe(id, parentId)
 {
 	resetRecipeView();
 
 	var recipe = getRecipeById(id);
+	var recipeView = $("#recipe");
 
 	if (recipe == null)
-		return;
+	{
+		recipe = new Recipe();
+		recipe.id = id;
+		recipe.sectionId = parentId;
 
-	var recipeView = $("#recipe");
+		var section = getSectionById(parentId);
+		recipe.tagIds = section.tagIds;
+
+		onRecipeEditClick();
+	}
 
 	recipeView.find("#titleCtrl").val(recipe.name);
 	recipeView.find("#pageCtrl").val(recipe.page);
@@ -957,7 +1029,7 @@ function showRecipe(id)
 	btnOK.on("click", 
 		function()
 		{
-			onRecipeOKClick(id);
+			onRecipeOKClick(id, recipe);
 		})
 
 	var btnCancel = recipeView.find(".btnCancel");
@@ -966,7 +1038,7 @@ function showRecipe(id)
 	btnCancel.on("click", 
 		function()
 		{
-			showRecipe(id);
+			showRecipe(id, parentId);
 		})
 
 	recipeView.css("display", "flex");
@@ -1140,9 +1212,20 @@ function onRecipeCloseClick()
 	resetRecipeView();
 }
 
-function onRecipeOKClick(id)
+function onRecipeOKClick(id, newRecipe)
 {
 	var recipe = getRecipeById(id);
+
+	if (recipe == null)
+	{
+		recipe = newRecipe;
+
+		var section = getSectionById(recipe.sectionId);
+
+		section.recipeIds.push(id);
+		_db.recipes.push(recipe);
+	}
+
 	var recipeView = $("#recipe");
 
 	recipe.name = recipeView.find("#titleCtrl").val();
@@ -1652,4 +1735,56 @@ function deleteBook(id)
 function refreshResultsView()
 {
 	showSearchResults(_currentResults);
+}
+
+function onAddClick(type, parentId)
+{
+	var id = getNextAvailableId(type);
+
+	switch (type)
+	{
+		case RESULT_TYPE_RECIPE:
+			showRecipe(id, parentId);
+			return;
+
+		case RESULT_TYPE_SECTION:
+			addSection(id);
+			return;
+
+		case RESULT_TYPE_BOOK:
+			addBook(id);
+			return;
+	}
+}
+
+function getNextAvailableId(type)
+{
+	var array = null;
+
+	switch (type)
+	{
+		case RESULT_TYPE_RECIPE:
+			array = _db.recipes;
+			break;
+
+		case RESULT_TYPE_SECTION:
+			array = _db.sections;
+			break;
+
+		case RESULT_TYPE_BOOK:
+			array = _db.books;
+			break;
+	}
+
+	var id = array[array.length - 1].id + 1;
+	var isIdAvailable = false;
+
+	do
+	{
+		isIdAvailable = getObjectById(id, type) == null;
+		id++;
+	}
+	while (!isIdAvailable);
+
+	return id;
 }
