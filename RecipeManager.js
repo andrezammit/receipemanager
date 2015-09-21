@@ -22,6 +22,29 @@ function Recipe()
 	this.tagIds = [];
 }
 
+function Book()
+{
+	this.id = 0,
+	this.name = "";
+	this.sectionIds = [];
+}
+
+function Section()
+{
+	this.id = 0;
+	this.name = "";
+	this.recipeIds = [];
+	this.tagIds = [];
+}
+
+function Tag()
+{
+	this.id = 0;
+	this.name = "";
+	this.recipeIds = [];
+	this.sectionIds = [];
+}
+
 var RESULT_TYPE_BOOK 	= 1;
 var RESULT_TYPE_SECTION = 2;
 var RESULT_TYPE_RECIPE	= 3;
@@ -209,12 +232,11 @@ function loadBooks(dataObj)
 	{
 		var book = bookTable.rows[cnt];
 
-		_db.books.push(
-		{
-			id: book[0],
-			name: book[1],
-			sectionIds: []
-		})
+		var newBook = new Book();
+		newBook.id = book[0];
+		newBook.name = book[1];
+
+		_db.books.push(newBook);
    	}
 }
 
@@ -226,14 +248,12 @@ function loadSections(dataObj)
 	{
 		var section = sectionTable.rows[cnt];
 
-		_db.sections.push(
-		{
-			id: section[0],
-			bookId: null,
-			name: section[1],
-			recipeIds: [],
-			tagIds: []
-		})
+		var newSection = new Section();
+		newSection.id = section[0];
+		newSection.bookId = null;
+		newSection.name = section[1];
+
+		_db.sections.push(newSection);
    	}
 }
 
@@ -253,7 +273,6 @@ function loadRecipes(dataObj)
 		newRecipe.isCooked = recipe[3];
 		newRecipe.isInteresting = recipe[4];
 		newRecipe.comment = recipe[5];
-		newRecipe.tagIds = [];
 
 		_db.recipes.push(newRecipe);
    	}
@@ -267,13 +286,11 @@ function loadTags(dataObj)
 	{
 		var tag = tagTable.rows[cnt];
 
-		_db.tags.push(
-		{
-			id: tag[0],
-			name: tag[1],
-			recipeIds: [],
-			sectionIds: []
-		})
+		var newTag = new Tag();
+		newTag.id = tag[0];
+		newTag.name = tag[1];
+
+		_db.tags.push(newTag);
    	}
 }
 
@@ -729,11 +746,26 @@ function addBookResults(sectionDiv, entries)
 {
 	sortBooks(entries);
 
+	var sectionAdd = sectionDiv.find(".sectionAdd");
+
+	sectionAdd.css("display", "flex");
+
+	sectionAdd.off("click");
+	sectionAdd.on("click",
+		function(e)
+		{
+			onAddClick(RESULT_TYPE_BOOK);
+			e.stopPropagation();
+		});
+
 	var size = entries.length;
 	for (var cnt = 0; cnt < size; cnt++)
 	{
 		var book = entries[cnt];
 		var entryDiv = $("<div class='resultEntry'>" + book.name + "</div>");
+
+		if (book.id == 0)
+			entryDiv.addClass("addNewEntry");
 
 		addResultEntry(sectionDiv, RESULT_TYPE_BOOK, book, entryDiv);
 	}
@@ -744,6 +776,27 @@ function addSectionResults(sectionDiv, entries)
 	var sectionGroups = [];
 	groupSectionsByBook(entries, sectionGroups);
 
+	var sectionAdd = sectionDiv.find(".sectionAdd");
+
+	if (sectionGroups.length > 1)
+	{
+		sectionAdd.hide();
+	}
+	else
+	{
+		sectionAdd.css("display", "flex");
+
+		var sectionGroup = sectionGroups[0];
+
+		sectionAdd.off("click");
+		sectionAdd.on("click",
+			function(e)
+			{
+				onAddClick(RESULT_TYPE_SECTION, sectionGroup.bookId);
+				e.stopPropagation();
+			});
+	}
+		
 	var groups = sectionGroups.length;
 	for (var i = 0; i < groups; i++)
 	{
@@ -757,6 +810,9 @@ function addSectionResults(sectionDiv, entries)
 		{
 			var section = sectionGroup.sections[j];
 			var entryDiv = $("<div class='resultEntry'>" + section.name + "</div>");
+
+			if (section.id == 0)
+				entryDiv.addClass("addNewEntry");
 
 			addResultEntry(sectionDiv, RESULT_TYPE_SECTION, section, entryDiv);
 		}	
@@ -788,7 +844,11 @@ function addRecipeResults(sectionDiv, entries)
 
 	var sectionAdd = sectionDiv.find(".sectionAdd");
 
-	if (recipeGroups.length == 1)
+	if (recipeGroups.length > 1)
+	{
+		sectionAdd.hide();
+	}
+	else
 	{
 		sectionAdd.css("display", "flex");
 
@@ -802,11 +862,7 @@ function addRecipeResults(sectionDiv, entries)
 				e.stopPropagation();
 			});
 	}
-	else
-	{
-		sectionAdd.hide();
-	}
-
+	
 	var groups = recipeGroups.length;
 	for (var i = 0; i < groups; i++)
 	{
@@ -827,18 +883,24 @@ function addRecipeResults(sectionDiv, entries)
 function addRecipeResult(sectionDiv, recipe)
 {
 	var entryDiv = $("<div class='resultEntry'></div>");
-
 	entryDiv.append("<div class='recipeName'>" + recipe.name + "</div>");
 
-	var recipeInfo = "pg. " + recipe.page;
+	if (recipe.id == 0)
+	{
+		entryDiv.addClass("addNewEntry");
+	}
+	else
+	{
+		var recipeInfo = "pg. " + recipe.page;
 
-	if (recipe.isCooked == true)
-		recipeInfo += "; Cooked";
+		if (recipe.isCooked == true)
+			recipeInfo += "; Cooked";
 
-	if (recipe.isInteresting == true)
-		recipeInfo += "; Interesting";
+		if (recipe.isInteresting == true)
+			recipeInfo += "; Interesting";
 
-	entryDiv.append("<div class='recipeInfo'>" + recipeInfo + "</div>");
+		entryDiv.append("<div class='recipeInfo'>" + recipeInfo + "</div>");
+	}
 
 	addResultEntry(sectionDiv, RESULT_TYPE_RECIPE, recipe, entryDiv);
 }
@@ -887,17 +949,28 @@ function addTagResults(sectionDiv, entries)
 function addResultEntry(sectionDiv, type, entry, entryDiv)
 {
 	var resultDiv = $("<div class='result'></div>");
-
 	resultDiv.append(entryDiv);
 
-	addEditButton(resultDiv, type, entry.id);
-	addDeleteButton(resultDiv, type, entry.id);
-
-	resultDiv.on("click", 
-		function()
-		{
-			onSearchResultClick(type, entry.id);
-		});
+	if (entryDiv.hasClass("addNewEntry"))
+	{
+		resultDiv.on("click", 
+			function()
+			{
+				var sectionAdd = sectionDiv.find(".sectionAdd");
+				sectionAdd.click();
+			});
+	}
+	else
+	{
+		addEditButton(resultDiv, type, entry.id);
+		addDeleteButton(resultDiv, type, entry.id);
+	
+		resultDiv.on("click", 
+			function()
+			{
+				onSearchResultClick(type, entry.id);
+			});
+	}
 
 	sectionDiv.append(resultDiv);
 }
@@ -957,6 +1030,15 @@ function onSearchResultClick(type, id)
 function showBooks()
 {
 	var results = { books: _db.books };
+
+	if (results.books.length == 0)
+	{
+		var book = new Book();
+		book.name = "Add book...";
+
+		results.books.push(book);
+	}
+
    	showSearchResults(results);
 }
 
@@ -975,6 +1057,16 @@ function showBookSections(id)
 			results.sections.push(section);
 	}
 
+	if (results.sections.length == 0)
+	{
+		var section = new Section();
+
+		section.bookId = id;
+		section.name = "Add section...";
+
+		results.sections.push(section);
+	}
+
 	showSearchResults(results);
 }
 
@@ -991,6 +1083,16 @@ function showSectionRecipes(id)
 
 		if (recipe != null)
 			results.recipes.push(recipe);
+	}
+
+	if (results.recipes.length == 0)
+	{
+		var recipe = new Recipe();
+
+		recipe.sectionId = id;
+		recipe.name = "Add recipe...";
+
+		results.recipes.push(recipe);
 	}
 
 	showSearchResults(results);
@@ -1402,14 +1504,20 @@ function updateTagRecipeReferences(recipe)
 	}
 }
 
-function showSection(id)
+function showSection(id, parentId)
 {
-	resetRecipeView();
+	resetSectionView();
 
 	var section = getSectionById(id);
 
 	if (section == null)
-		return;
+	{
+		section = new Section();
+		section.id = id;
+		section.bookId = parentId;
+
+		onSectionEditClick();
+	}
 
 	var sectionView = $("#section");
 
@@ -1422,7 +1530,7 @@ function showSection(id)
 	btnOK.on("click", 
 		function()
 		{
-			onSectionOKClick(id);
+			onSectionOKClick(id, section);
 		})
 
 	var btnCancel = sectionView.find(".btnCancel");
@@ -1431,17 +1539,27 @@ function showSection(id)
 	btnCancel.on("click", 
 		function()
 		{
-			showSection(id);
+			showSection(id, parentId);
 		})
 
 	sectionView.css("display", "flex");
 }
 
-function onSectionOKClick(id)
+function onSectionOKClick(id, newSection)
 {
 	var section = getSectionById(id);
-	var sectionView = $("#section");
 
+	if (section == null)
+	{
+		section = newSection;
+
+		var book = getBookById(section.bookId);
+
+		book.sectionIds.push(id);
+		_db.sections.push(section);
+	}
+
+	var sectionView = $("#section");
 	section.name = sectionView.find("#titleCtrl").val();
 
 	var tagIdDiff = getCheckedTagsDiff(sectionView, section.tagIds);
@@ -1552,10 +1670,14 @@ function showBook(id)
 	var book = getBookById(id);
 
 	if (book == null)
-		return;
+	{
+		book = new Book();
+		book.id = id;
+
+		onBookEditClick();
+	}
 
 	var bookView = $("#book");
-
 	bookView.find("#titleCtrl").val(book.name);
 
 	var btnOK = bookView.find(".btnOK");
@@ -1564,7 +1686,7 @@ function showBook(id)
 	btnOK.on("click", 
 		function()
 		{
-			onBookOKClick(id);
+			onBookOKClick(id, book);
 		})
 
 	var btnCancel = bookView.find(".btnCancel");
@@ -1605,11 +1727,17 @@ function onBookCloseClick()
 	resetBookView();
 }
 
-function onBookOKClick(id)
+function onBookOKClick(id, newBook)
 {
 	var book = getBookById(id);
-	var bookView = $("#book");
 
+	if (book == null)
+	{
+		book = newBook;
+		_db.books.push(book);
+	}
+
+	var bookView = $("#book");
 	book.name = bookView.find("#titleCtrl").val();
 
 	bookView.hide();
@@ -1748,11 +1876,11 @@ function onAddClick(type, parentId)
 			return;
 
 		case RESULT_TYPE_SECTION:
-			addSection(id);
+			showSection(id, parentId);
 			return;
 
 		case RESULT_TYPE_BOOK:
-			addBook(id);
+			showBook(id);
 			return;
 	}
 }
