@@ -142,6 +142,10 @@ function getObjectById(id, type)
 		case RESULT_TYPE_BOOK:
 			array = _db.books;
 			break;
+
+		case RESULT_TYPE_TAG:
+			array = _db.tags;
+			break;
 	}
 
 	var size = array.length;
@@ -940,6 +944,18 @@ function addTagResults(sectionDiv, entries)
 {
 	sortTags(entries);
 
+	var sectionAdd = sectionDiv.find(".sectionAdd");
+
+	sectionAdd.css("display", "flex");
+
+	sectionAdd.off("click");
+	sectionAdd.on("click",
+		function(e)
+		{
+			onAddClick(RESULT_TYPE_TAG);
+			e.stopPropagation();
+		});
+
 	var size = entries.length;
 	for (var cnt = 0; cnt < size; cnt++)
 	{
@@ -1386,7 +1402,8 @@ function fillTagContainers()
 	var tagLabels = tagContainer.find(".tagLabels");
 	var tagControls = tagContainer.find(".tagControls");
 
-	tagContainer.empty();
+	tagLabels.empty();
+	tagControls.empty();
 
 	sortTags(_db.tags);
 
@@ -1892,6 +1909,10 @@ function onAddClick(type, parentId)
 		case RESULT_TYPE_BOOK:
 			showBook(id);
 			return;
+
+		case RESULT_TYPE_TAG:
+			showTag(id);
+			return;
 	}
 }
 
@@ -1911,6 +1932,10 @@ function getNextAvailableId(type)
 
 		case RESULT_TYPE_BOOK:
 			array = _db.books;
+			break;
+
+		case RESULT_TYPE_TAG:
+			array = _db.tags;
 			break;
 	}
 
