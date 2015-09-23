@@ -1393,6 +1393,8 @@ function onRecipeEditClick()
 
 	recipeView.find(".btnOK, .btnCancel").show();
 	recipeView.find(".btnEdit, .btnClose").hide();
+
+	recipeView.find("#titleCtrl").focus();
 }
 
 function fillTagContainers()
@@ -1649,6 +1651,8 @@ function onSectionEditClick()
 
 	sectionView.find(".btnOK, .btnCancel").show();
 	sectionView.find(".btnEdit, .btnClose").hide();
+
+	sectionView.find("#titleCtrl").focus();
 }
 
 function onSectionCloseClick()
@@ -1742,6 +1746,8 @@ function onBookEditClick()
 
 	bookView.find(".btnOK, .btnCancel").show();
 	bookView.find(".btnEdit, .btnClose").hide();
+
+	bookView.find("#titleCtrl").focus();
 }
 
 function onBookCloseClick()
@@ -2008,6 +2014,8 @@ function onTagEditClick()
 
 	tagView.find(".btnOK, .btnCancel").show();
 	tagView.find(".btnEdit, .btnClose").hide();
+
+	tagView.find("#titleCtrl").focus();
 }
 
 function onTagCloseClick()
