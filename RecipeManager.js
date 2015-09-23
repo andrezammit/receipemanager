@@ -111,6 +111,90 @@ function showResultsView(show)
 	calendarDiv.show();
 }
 
+function getBookResults(searchText)
+{
+	var bookResults = [];
+
+	var size = _db.books.length;
+	for (var cnt = 0; cnt < size; cnt++)
+	{
+		var book = _db.books[cnt];
+		var bookName = book.name.toLowerCase();
+
+		if (bookName.indexOf(searchText) == -1)
+			continue;
+
+		bookResults.push(book);
+	}
+
+	if (bookResults.length == 0)
+		return null;
+
+	return bookResults;
+}
+
+function getSectionResults(searchText)
+{
+	var sectionResults = [];
+
+	var size = _db.books.length;
+	for (var cnt = 0; cnt < size; cnt++)
+	{
+		var section = _db.sections[cnt];
+		var sectionName = section.name.toLowerCase();
+		
+		if (sectionName.indexOf(searchText) == -1)
+			continue;
+
+		sectionResults.push(section);
+	}
+
+	if (sectionResults.length == 0)
+		return null;
+
+	return sectionResults;
+}
+
+function getRecipeResults(searchText)
+{
+	var recipeResults = [];
+
+	var size = _db.recipes.length;
+	for (var cnt = 0; cnt < size; cnt++)
+	{
+		var recipe = _db.recipes[cnt];
+		var recipeName = recipe.name.toLowerCase();
+		
+		if (recipeName.indexOf(searchText) == -1)
+			continue;
+
+		recipeResults.push(recipe);
+	}
+
+	if (recipeResults.length == 0)
+		return null;
+
+	return recipeResults;
+}
+
+function getSearchResults(searchText)
+{
+	searchText = searchText.toLowerCase();
+
+	var bookResults = getBookResults(searchText);
+	var sectionResults = getSectionResults(searchText);
+	var recipeResults = getRecipeResults(searchText);
+	
+	var results = 
+	{ 
+		books: bookResults,
+		sections: sectionResults,
+		recipes: recipeResults
+	};
+
+	return results;
+}
+
 function onSearchBoxChanged()
 {
 	var searchBox = $("#searchBox");
@@ -122,7 +206,8 @@ function onSearchBoxChanged()
 		return;
 	}
 
-	showResultsView(true);
+	var results = getSearchResults(searchText);
+	showSearchResults(results);
 }
 
 function getObjectById(id, type)
