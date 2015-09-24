@@ -625,3 +625,39 @@ button
 
     box-shadow: 0px 0px 14px 1px rgba(50, 50, 50, 0.75);
 }
+
+#loading
+{
+	display: none;
+	
+	justify-content: center;
+    align-items: center;
+
+	margin: 0px auto;
+	
+	padding-top: 15px;
+	padding-left: 15px;
+	padding-right: 15px;
+    padding-bottom: 15px;
+
+	background-color: lightcyan;
+
+	border-left: 1px #A7A7E4 solid;
+	border-right: 1px #A7A7E4 solid;
+	border-bottom: 1px #A7A7E4 solid;
+
+	font-size: large;
+
+	width: 708px;
+}
+
+#spinner
+{
+    display: flex;
+}
+
+#spinner > img
+{
+	width: 60px;
+	height: 60px;
+}

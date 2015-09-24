@@ -1,6 +1,7 @@
 var _currDate = 0;
 var _currentResults = null;
 var _sidebarVisible = false;
+var _currentSearchText = "";
 
 var _db = 
 	{ 
@@ -64,7 +65,13 @@ $(document).ready(
 
 function setHandlers()
 {
-	$("#searchBox").on("input propertychange paste", onSearchBoxChanged);
+	$("#searchBox").keydown(
+		function(event)
+		{
+    		if(event.keyCode == 13)
+        		onSearchBoxChanged();
+		});
+
 	$("#title").on("click", onTitleClick);
 	$("#prevMonth").on("click", onPrevMonthClick);
 	$("#nextMonth").on("click", onNextMonthClick);
@@ -94,8 +101,28 @@ function setHandlers()
 	tagView.find(".btnClose, .closeButton").on("click", onTagCloseClick);
 }
 
-function showResultsView(show)
+function showLoadingView(show)
 {
+	var resultsDiv = $("#results");
+	var loadingDiv = $("#loading");
+	var calendarDiv = $("#calendar");
+
+	if (show == true)
+	{
+		resultsDiv.hide();
+		calendarDiv.hide();
+
+		loadingDiv.css("display", "flex");
+		return;
+	}
+
+	resultsDiv.show();
+	loadingDiv.hide();
+	calendarDiv.hide();
+}
+
+function showResultsView(show)
+{	
 	var resultsDiv = $("#results");
 	var calendarDiv = $("#calendar");
 
@@ -206,7 +233,14 @@ function onSearchBoxChanged()
 		return;
 	}
 
+	if (_currentSearchText == searchText)
+		return;
+
+	showLoadingView(true);
+
+	_currentSearchText = searchText;
 	var results = getSearchResults(searchText);
+
 	showSearchResults(results);
 }
 
@@ -767,7 +801,7 @@ function getDayOfWeek(day, month, year)
 function showSearchResults(results)
 {
 	clearSearchResults();
-	showResultsView(true);
+	showLoadingView(false);
 
 	_currentResults = results;
 
