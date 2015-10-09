@@ -237,8 +237,20 @@ function onSearchBoxChanged()
 		return;
 
 	showLoadingView(true);
-
 	_currentSearchText = searchText;
+
+	chrome.runtime.sendMessage(
+    	{
+    		command: "search",
+    		searchText: searchText,
+    		db: _db
+    	}, 
+    	function(response) 
+	    {
+	    	console.log("Search reply.");
+	    	showSearchResults(response);
+		});
+
 	var results = getSearchResults(searchText);
 
 	showSearchResults(results);
@@ -801,8 +813,6 @@ function getDayOfWeek(day, month, year)
 function showSearchResults(results)
 {
 	clearSearchResults();
-	showLoadingView(false);
-
 	_currentResults = results;
 
 	if (results.books)
@@ -824,6 +834,8 @@ function showSearchResults(results)
 	{
 		addResultsSection("Tags", RESULT_TYPE_TAG, results.tags)
 	}
+
+	showLoadingView(false);
 }
 
 function clearSearchResults()
@@ -1003,7 +1015,13 @@ function addRecipeResults(sectionDiv, entries)
 		{
 			var recipe = recipeGroup.recipes[j];
 			addRecipeResult(sectionDiv, recipe);
+
+			if (j == 50)
+				break;
 		}	
+
+		if (i == 10)
+			break;
 	}
 }
 
