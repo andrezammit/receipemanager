@@ -3,6 +3,10 @@ var _currentResults = null;
 var _sidebarVisible = false;
 var _currentSearchText = "";
 
+var _lastSectionId = -1;
+var _currentResultsType = -1;
+var _currentResultsDiv = null;
+
 var _db = 
 	{ 
 		books: [], 
@@ -99,6 +103,26 @@ function setHandlers()
 
 	tagView.find(".btnEdit").on("click", onTagEditClick);
 	tagView.find(".btnClose, .closeButton").on("click", onTagCloseClick);
+
+	$(window).on('scroll', 
+		function() 
+		{
+		    var y_scroll_pos = window.pageYOffset;
+		    var scroll_pos_test = 500;
+
+		    if(y_scroll_pos > scroll_pos_test) 
+		    {
+		        chrome.runtime.sendMessage(
+		    	{
+		    		command: "getBunchOfResults",
+		    	}, 
+		    	function(response) 
+			    {
+			    	console.log("Search reply.");
+			    	showSearchResults(response, false);
+				});
+    		}
+	});
 }
 
 function showLoadingView(show)
@@ -204,23 +228,23 @@ function getRecipeResults(searchText)
 	return recipeResults;
 }
 
-function getSearchResults(searchText)
-{
-	searchText = searchText.toLowerCase();
+// function getSearchResults(searchText)
+// {
+// 	searchText = searchText.toLowerCase();
 
-	var bookResults = getBookResults(searchText);
-	var sectionResults = getSectionResults(searchText);
-	var recipeResults = getRecipeResults(searchText);
+// 	var bookResults = getBookResults(searchText);
+// 	var sectionResults = getSectionResults(searchText);
+// 	var recipeResults = getRecipeResults(searchText);
 	
-	var results = 
-	{ 
-		books: bookResults,
-		sections: sectionResults,
-		recipes: recipeResults
-	};
+// 	var results = 
+// 	{ 
+// 		books: bookResults,
+// 		sections: sectionResults,
+// 		recipes: recipeResults
+// 	};
 
-	return results;
-}
+// 	return results;
+// }
 
 function onSearchBoxChanged()
 {
@@ -250,10 +274,6 @@ function onSearchBoxChanged()
 	    	console.log("Search reply.");
 	    	showSearchResults(response);
 		});
-
-	var results = getSearchResults(searchText);
-
-	showSearchResults(results);
 }
 
 function getObjectById(id, type)
@@ -810,9 +830,11 @@ function getDayOfWeek(day, month, year)
 	return date.getDay();
 }
 
-function showSearchResults(results)
+function showSearchResults(results, clearResults)
 {
-	clearSearchResults();
+	if (clearResults == null || clearResults == true)
+		clearSearchResults();
+
 	_currentResults = results;
 
 	if (results.books)
@@ -844,39 +866,49 @@ function clearSearchResults()
 	resultsDiv.empty();
 }
 
-function addResultsSection(name, type, entries)
+function addResultsSection(name, type, results)
 {
-	var sectionDiv = $("<div class='resultSection'></div>");
-	var sectionHeader = $("<div class='sectionHeader'></div>");
+	if (_currentResultsType != type)
+	{
+		var sectionDiv = $("<div class='resultSection'></div>");
+		var sectionHeader = $("<div class='sectionHeader'></div>");
 
-	sectionDiv.append(sectionHeader);
-	sectionHeader.append("<div class='sectionTitle'>" + name + "</div>");
-	sectionHeader.append("<div class='sectionAdd'>+</div>");
+		sectionDiv.append(sectionHeader);
+		sectionHeader.append("<div class='sectionTitle'>" + name + "</div>");
+		sectionHeader.append("<div class='sectionAdd'>+</div>");
 
-	addResults(sectionDiv, type, entries);
+		_currentResultsType = type;
+		_currentResultsDiv = sectionDiv;
 
-	var resultsDiv = $("#results");
-	resultsDiv.append(sectionDiv);
+		addResults(_currentResultsDiv, type, results);
+
+		var resultsDiv = $("#results");
+		resultsDiv.append(sectionDiv);
+
+		return;
+	}
+
+	addResults(_currentResultsDiv, type, results);
 }
 
-function addResults(sectionDiv, type, entries)
+function addResults(sectionDiv, type, results)
 {
 	switch (type)
 	{
 		case RESULT_TYPE_BOOK:
-			addBookResults(sectionDiv, entries);
+			addBookResults(sectionDiv, results);
 			return;
 
 		case RESULT_TYPE_SECTION:
-			addSectionResults(sectionDiv, entries);
+			addSectionResults(sectionDiv, results);
 			return;
 
 		case RESULT_TYPE_RECIPE:
-			addRecipeResults(sectionDiv, entries);
+			addRecipeResults(sectionDiv, results);
 			return;
 
 		case RESULT_TYPE_TAG:
-			addTagResults(sectionDiv, entries);
+			addTagResults(sectionDiv, results);
 			return;
 	}
 }
@@ -976,11 +1008,8 @@ function addSectionResultPath(sectionDiv, bookId)
 	sectionDiv.append(resultPathDiv);
 }
 
-function addRecipeResults(sectionDiv, entries)
-{
-	var recipeGroups = [];
-	groupRecipesBySection(entries, recipeGroups);
-
+function addRecipeResults(sectionDiv, recipeGroups)
+{	
 	var sectionAdd = sectionDiv.find(".sectionAdd");
 
 	if (recipeGroups.length > 1)
@@ -1006,22 +1035,20 @@ function addRecipeResults(sectionDiv, entries)
 	for (var i = 0; i < groups; i++)
 	{
 		var recipeGroup = recipeGroups[i];
-		addRecipeResultPath(sectionDiv, recipeGroup.sectionId);
+
+		if (_lastSectionId != recipeGroup.sectionId)
+			addRecipeResultPath(sectionDiv, recipeGroup.sectionId);
+
+		_lastSectionId = recipeGroup.sectionId;
 		
-		sortRecipes(recipeGroup.recipes);
+		//sortRecipes(recipeGroup.recipes);
 
 		var recipes = recipeGroup.recipes.length;
 		for (var j = 0; j < recipes; j++)
 		{
 			var recipe = recipeGroup.recipes[j];
 			addRecipeResult(sectionDiv, recipe);
-
-			if (j == 50)
-				break;
 		}	
-
-		if (i == 10)
-			break;
 	}
 }
 
@@ -1351,51 +1378,12 @@ function addSectionToSectionGroup(section, groups)
 	groupToAddTo.sections.push(section);
 }
 
-function addRecipeToRecipeGroup(recipe, groups)
-{
-	var groupToAddTo = null;
-
-	var size = groups.length;
-	for (var cnt = 0; cnt < size; cnt++)
-	{
-		var recipeGroup = groups[cnt];
-
-		if (recipeGroup.sectionId == recipe.sectionId)
-		{
-			groupToAddTo = recipeGroup;
-			break;
-		}
-	}
-
-	if (groupToAddTo == null)
-	{
-		groupToAddTo = 
-			{ 
-				sectionId: recipe.sectionId,
-				recipes: [] 
-			};
-
-		groups.push(groupToAddTo);
-	}
-
-	groupToAddTo.recipes.push(recipe);
-}
-
 function groupSectionsByBook(sections, groups)
 {
 	var size = sections.length;
 	for (var cnt = 0; cnt < size; cnt++)
 	{
 		addSectionToSectionGroup(sections[cnt], groups);
-	}
-}
-
-function groupRecipesBySection(recipes, groups)
-{
-	var size = recipes.length;
-	for (var cnt = 0; cnt < size; cnt++)
-	{
-		addRecipeToRecipeGroup(recipes[cnt], groups);
 	}
 }
 
@@ -1423,21 +1411,6 @@ function sortSections(sections)
 				return -1;
 
 			if (a.name == b.name)
-				return 0;
-
-			return 1;
-		});
-}
-
-function sortRecipes(recipes)
-{
-	recipes.sort(
-		function(a, b)
-		{
-			if (a.page < b.page)
-				return -1;
-
-			if (a.page == b.page)
 				return 0;
 
 			return 1;

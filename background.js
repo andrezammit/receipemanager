@@ -20,21 +20,63 @@ chrome.runtime.onMessage.addListener(
                 "from a content script:" + sender.tab.url :
                 "from the extension");
 
-    if (request.greeting == "hello")
-      sendResponse({farewell: "goodbye"});
-
     if (request.command == "search")
     {
       console.log("Search query: " + request.searchText);
       
       _db = request.db;
 
-      var results = getSearchResults(request.searchText);
-      sendResponse(results);
+      _currResults = getSearchResults(request.searchText);
+      sendResponse(getBunchOfResults());
+    }
+    else if (request.command == "getBunchOfResults")
+    {
+      sendResponse(getBunchOfResults());
     }
   });
 
 var _db = null;
+var _currResults = null;
+
+function getBunchOfResults()
+{
+  var bunchOfResults = 
+  {
+    recipes: []
+  };
+
+  var entriesLeft = 100;
+
+  for (var cnt = 0; cnt < _currResults.recipes.length; cnt++)
+  {
+    var recipeGroup = _currResults.recipes[cnt];
+
+    if (recipeGroup.recipes.length < entriesLeft)
+    {
+      bunchOfResults.recipes.push(recipeGroup);
+      entriesLeft -= recipeGroup.recipes.length;
+
+      _currResults.recipes.splice(0, 1);
+      cnt--;
+
+      continue;
+    }
+
+    var tempGroup = 
+    {
+      sectionId: recipeGroup.sectionId,
+      recipes: []
+    };
+
+    tempGroup.recipes = recipeGroup.recipes.splice(0, entriesLeft);
+    entriesLeft = 0;
+
+    bunchOfResults.recipes.push(tempGroup);
+    break;
+  }
+
+  return bunchOfResults;
+}
 
 function getBookResults(searchText)
 {
@@ -82,7 +124,7 @@ function getSectionResults(searchText)
 
 function getRecipeResults(searchText)
 {
-  var recipeResults = [];
+  var recipes = [];
 
   var size = _db.recipes.length;
   for (var cnt = 0; cnt < size; cnt++)
@@ -93,13 +135,16 @@ function getRecipeResults(searchText)
     if (recipeName.indexOf(searchText) == -1)
       continue;
 
-    recipeResults.push(recipe);
+    recipes.push(recipe);
   }
 
-  if (recipeResults.length == 0)
+  if (recipes.length == 0)
     return null;
 
-  return recipeResults;
+  var recipeGroups = [];
+  groupRecipesBySection(recipes, recipeGroups);
+
+  return recipeGroups;
 }
 
 function getSearchResults(searchText)
@@ -118,4 +163,58 @@ function getSearchResults(searchText)
   };
 
   return results;
+}
+
+function groupRecipesBySection(recipes, groups)
+{
+  var size = recipes.length;
+  for (var cnt = 0; cnt < size; cnt++)
+  {
+    addRecipeToRecipeGroup(recipes[cnt], groups);
+  }
+}
+
+function addRecipeToRecipeGroup(recipe, groups)
+{
+  var groupToAddTo = null;
+
+  var size = groups.length;
+  for (var cnt = 0; cnt < size; cnt++)
+  {
+    var recipeGroup = groups[cnt];
+
+    if (recipeGroup.sectionId == recipe.sectionId)
+    {
+      groupToAddTo = recipeGroup;
+      break;
+    }
+  }
+
+  if (groupToAddTo == null)
+  {
+    groupToAddTo = 
+      { 
+        sectionId: recipe.sectionId,
+        recipes: [] 
+      };
+
+    groups.push(groupToAddTo);
+  }
+
+  groupToAddTo.recipes.push(recipe);
+}
+
+function sortRecipes(recipes)
+{
+  recipes.sort(
+    function(a, b)
+    {
+      if (a.page < b.page)
+        return -1;
+
+      if (a.page == b.page)
+        return 0;
+
+      return 1;
+    });
 }
