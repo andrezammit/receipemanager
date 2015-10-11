@@ -42,10 +42,83 @@ function getBunchOfResults()
 {
   var bunchOfResults = 
   {
+    books: [],
+    sections: [],
     recipes: []
   };
 
   var entriesLeft = 100;
+
+  bunchOfResults.books = getBunchOfBooks(entriesLeft);
+  bunchOfResults.sections = getBunchOfSections(entriesLeft);
+  bunchOfResults.recipes = getBunchOfRecipes(entriesLeft);
+
+  return bunchOfResults;
+}
+
+function getBunchOfBooks(entriesLeft)
+{
+  if (entriesLeft == 0 || _currResults.books == null)
+    return null;
+
+  var booksToReturn = Math.max(_currResults.books.length, entriesLeft);
+
+  var bunchOfBooks = _currResults.books.splice(0, booksToReturn);
+  entriesLeft -= booksToReturn;
+
+  if (bunchOfBooks.length == 0)
+    return null;
+
+  return bunchOfBooks; 
+}
+
+function getBunchOfSections(entriesLeft)
+{
+  if (entriesLeft == 0 || _currResults.sections == null)
+    return null;
+
+  var bunchOfSections = [];
+
+  for (var cnt = 0; cnt < _currResults.sections.length; cnt++)
+  {
+    var sectionGroup = _currResults.sections[cnt];
+
+    if (sectionGroup.sections.length < entriesLeft)
+    {
+      bunchOfSections.push(sectionGroup);
+      entriesLeft -= sectionGroup.sections.length;
+
+      _currResults.sections.splice(0, 1);
+      cnt--;
+
+      continue;
+    }
+
+    var tempGroup = 
+    {
+      bookId: sectionGroup.bookId,
+      sections: []
+    };
+
+    tempGroup.sections = sectionGroup.sections.splice(0, entriesLeft);
+    entriesLeft = 0;
+
+    bunchOfSections.push(tempGroup);
+    break;
+  }
+
+  if (bunchOfSections.length == 0)
+    return null;
+
+  return bunchOfSections; 
+}
+
+function getBunchOfRecipes(entriesLeft)
+{
+    if (entriesLeft == 0 || _currResults.recipes == null)
+    return null;
+
+  var bunchOfRecipes = [];
 
   for (var cnt = 0; cnt < _currResults.recipes.length; cnt++)
   {
@@ -53,7 +126,7 @@ function getBunchOfResults()
 
     if (recipeGroup.recipes.length < entriesLeft)
     {
-      bunchOfResults.recipes.push(recipeGroup);
+      bunchOfRecipes.push(recipeGroup);
       entriesLeft -= recipeGroup.recipes.length;
 
       _currResults.recipes.splice(0, 1);
@@ -71,11 +144,14 @@ function getBunchOfResults()
     tempGroup.recipes = recipeGroup.recipes.splice(0, entriesLeft);
     entriesLeft = 0;
 
-    bunchOfResults.recipes.push(tempGroup);
+    bunchOfRecipes.push(tempGroup);
     break;
   }
 
-  return bunchOfResults;
+  if (bunchOfRecipes.length == 0)
+    return null;
+
+  return bunchOfRecipes; 
 }
 
 function getBookResults(searchText)
@@ -102,7 +178,7 @@ function getBookResults(searchText)
 
 function getSectionResults(searchText)
 {
-  var sectionResults = [];
+  var sections = [];
 
   var size = _db.books.length;
   for (var cnt = 0; cnt < size; cnt++)
@@ -113,13 +189,16 @@ function getSectionResults(searchText)
     if (sectionName.indexOf(searchText) == -1)
       continue;
 
-    sectionResults.push(section);
+    sections.push(section);
   }
 
-  if (sectionResults.length == 0)
+  if (sections.length == 0)
     return null;
 
-  return sectionResults;
+  var sectionGroups = [];
+  groupSectionsByBook(sections, sectionGroups);
+
+  return sectionGroups;
 }
 
 function getRecipeResults(searchText)
@@ -217,4 +296,43 @@ function sortRecipes(recipes)
 
       return 1;
     });
+}
+
+function addSectionToSectionGroup(section, groups)
+{
+  var groupToAddTo = null;
+
+  var size = groups.length;
+  for (var cnt = 0; cnt < size; cnt++)
+  {
+    var sectionGroup = groups[cnt];
+
+    if (sectionGroup.bookId == section.bookId)
+    {
+      groupToAddTo = sectionGroup;
+      break;
+    }
+  }
+
+  if (groupToAddTo == null)
+  {
+    groupToAddTo = 
+      { 
+        bookId: section.bookId,
+        sections: [] 
+      };
+
+    groups.push(groupToAddTo);
+  }
+
+  groupToAddTo.sections.push(section);
+}
+
+function groupSectionsByBook(sections, groups)
+{
+  var size = sections.length;
+  for (var cnt = 0; cnt < size; cnt++)
+  {
+    addSectionToSectionGroup(sections[cnt], groups);
+  }
 }

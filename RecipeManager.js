@@ -948,11 +948,8 @@ function addBookResults(sectionDiv, entries)
 	}
 }
 
-function addSectionResults(sectionDiv, entries)
+function addSectionResults(sectionDiv, sectionGroups)
 {
-	var sectionGroups = [];
-	groupSectionsByBook(entries, sectionGroups);
-
 	var sectionAdd = sectionDiv.find(".sectionAdd");
 
 	if (sectionGroups.length > 1)
@@ -980,7 +977,7 @@ function addSectionResults(sectionDiv, entries)
 		var sectionGroup = sectionGroups[i];
 		addSectionResultPath(sectionDiv, sectionGroup.bookId);
 
-		sortSections(sectionGroup.sections);
+		//sortSections(sectionGroup.sections);
 
 		var sections = sectionGroup.sections.length;
 		for (var j = 0; j < sections; j++)
@@ -1352,45 +1349,6 @@ function showTagRecipes(id)
 	}
 
 	showSearchResults(results);
-}
-
-function addSectionToSectionGroup(section, groups)
-{
-	var groupToAddTo = null;
-
-	var size = groups.length;
-	for (var cnt = 0; cnt < size; cnt++)
-	{
-		var sectionGroup = groups[cnt];
-
-		if (sectionGroup.bookId == section.bookId)
-		{
-			groupToAddTo = sectionGroup;
-			break;
-		}
-	}
-
-	if (groupToAddTo == null)
-	{
-		groupToAddTo = 
-			{ 
-				bookId: section.bookId,
-				sections: [] 
-			};
-
-		groups.push(groupToAddTo);
-	}
-
-	groupToAddTo.sections.push(section);
-}
-
-function groupSectionsByBook(sections, groups)
-{
-	var size = sections.length;
-	for (var cnt = 0; cnt < size; cnt++)
-	{
-		addSectionToSectionGroup(sections[cnt], groups);
-	}
 }
 
 function sortBooks(books)
