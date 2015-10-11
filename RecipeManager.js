@@ -107,10 +107,12 @@ function setHandlers()
 	$(window).on('scroll', 
 		function() 
 		{
-		    var y_scroll_pos = window.pageYOffset;
-		    var scroll_pos_test = 500;
+		    var yPos = window.pageYOffset;
+		    var pageHeight = $("body").height();
 
-		    if(y_scroll_pos > scroll_pos_test) 
+		    var limitFromBottom = pageHeight * 0.75;
+		    
+		    if (yPos > limitFromBottom) 
 		    {
 		        chrome.runtime.sendMessage(
 		    	{
@@ -864,6 +866,10 @@ function clearSearchResults()
 {
 	var resultsDiv = $("#results");
 	resultsDiv.empty();
+
+	_lastSectionId = -1;
+	_currentResultsType = -1;
+	_currentResultsDiv = null;
 }
 
 function addResultsSection(name, type, results)
