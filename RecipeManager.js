@@ -1216,73 +1216,46 @@ function onSearchResultClick(type, id)
 
 function showBooks()
 {
-	var results = { books: _db.books };
-
-	if (results.books.length == 0)
+	chrome.runtime.sendMessage(
 	{
-		var book = new Book();
-		book.name = "Add book...";
-
-		results.books.push(book);
-	}
-
-   	showSearchResults(results);
+		command: "getAllBooks",
+		db: _db,
+	}, 
+	function(response) 
+    {
+    	console.log("Search reply.");
+    	showSearchResults(response);
+	});
 }
 
 function showBookSections(id)
 {
-	var book = getBookById(id);
-	var results = { sections: [] };
-
-	var size = book.sectionIds.length;
-	for (var cnt = 0; cnt < size; cnt++)
+	chrome.runtime.sendMessage(
 	{
-		var sectionID = book.sectionIds[cnt];
-		var section = getSectionById(sectionID);
-
-		if (section != null)
-			results.sections.push(section);
-	}
-
-	if (results.sections.length == 0)
-	{
-		var section = new Section();
-
-		section.bookId = id;
-		section.name = "Add section...";
-
-		results.sections.push(section);
-	}
-
-	showSearchResults(results);
+		command: "getBookSections",
+		db: _db,
+		id: id,
+	}, 
+	function(response) 
+    {
+    	console.log("Search reply.");
+    	showSearchResults(response);
+	});
 }
 
 function showSectionRecipes(id)
 {
-	var section = getSectionById(id);
-	var results = { recipes: [] };
-
-	var size = section.recipeIds.length;
-	for (var cnt = 0; cnt < size; cnt++)
+	chrome.runtime.sendMessage(
 	{
-		var recipeID = section.recipeIds[cnt];
-		var recipe = getRecipeById(recipeID);
-
-		if (recipe != null)
-			results.recipes.push(recipe);
-	}
-
-	if (results.recipes.length == 0)
-	{
-		var recipe = new Recipe();
-
-		recipe.sectionId = id;
-		recipe.name = "Add recipe...";
-
-		results.recipes.push(recipe);
-	}
-
-	showSearchResults(results);
+		command: "getSectionRecipes",
+		db: _db,
+		id: id,
+	}, 
+	function(response) 
+    {
+    	console.log("Search reply.");
+    	showSearchResults(response);
+	});
 }
 
 function showRecipe(id, parentId)

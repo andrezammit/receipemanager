@@ -25,13 +25,28 @@ chrome.runtime.onMessage.addListener(
       console.log("Search query: " + request.searchText);
       
       _db = request.db;
-
       _currResults = getSearchResults(request.searchText);
+
       sendResponse(getBunchOfResults());
     }
     else if (request.command == "getBunchOfResults")
     {
-      sendResponse(getBunchOfResults());
+        sendResponse(getBunchOfResults());
+    }
+    else if (request.command == "getAllBooks")
+    {
+        _db = request.db;
+        sendResponse(getAllBooks());
+    }
+    else if (request.command == "getBookSections")
+    {
+        _db = request.db;
+        sendResponse(getBookSections(request.id));
+    }
+    else if (request.command == "getSectionRecipes")
+    {
+        _db = request.db;
+        sendResponse(getSectionRecipes(request.id));
     }
   });
 
@@ -335,4 +350,147 @@ function groupSectionsByBook(sections, groups)
   {
     addSectionToSectionGroup(sections[cnt], groups);
   }
+}
+
+function getAllBooks()
+{
+    var results = { books: _db.books };
+
+    if (results.books.length == 0)
+    {
+        var book = new Book();
+        book.name = "Add book...";
+
+        results.books.push(book);
+    }
+
+    return results;
+}
+
+function getBookSections(id)
+{
+    var book = getBookById(id);
+    var sections = [];
+
+    var size = book.sectionIds.length;
+    for (var cnt = 0; cnt < size; cnt++)
+    {
+        var sectionID = book.sectionIds[cnt];
+        var section = getSectionById(sectionID);
+
+        if (section != null)
+            sections.push(section);
+    }
+
+    if (sections.length == 0)
+    {
+        var section = new Section();
+
+        section.bookId = id;
+        section.name = "Add section...";
+
+        sections.push(section);
+    }
+
+    var sectionGroups = [];
+    groupSectionsByBook(sections, sectionGroups);
+
+    var results = 
+    { 
+        sections: sectionGroups,
+    };
+
+    return results;
+}
+
+function getSectionRecipes(id)
+{
+    var section = getSectionById(id);
+    var recipes = [];
+
+    var size = section.recipeIds.length;
+    for (var cnt = 0; cnt < size; cnt++)
+    {
+        var recipeID = section.recipeIds[cnt];
+        var recipe = getRecipeById(recipeID);
+
+        if (recipe != null)
+            recipes.push(recipe);
+    }
+
+    if (recipes.length == 0)
+    {
+        var recipe = new Recipe();
+
+        recipe.sectionId = id;
+        recipe.name = "Add recipe...";
+
+        recipes.push(recipe);
+    }
+
+    var recipeGroups = [];
+    groupRecipesBySection(recipes, recipeGroups);
+
+    var results = 
+    { 
+        recipes: recipeGroups,
+    };
+
+    return results;
+}
+
+function getBookById(id)
+{
+    var size = _db.books.length;
+    for (var cnt = 0; cnt < size; cnt++) 
+    {
+        var book = _db.books[cnt];
+
+        if (book.id == id)
+            return book;
+    }
+
+    return null;
+}
+
+function getSectionById(id)
+{
+    var size = _db.sections.length;
+    for (var cnt = 0; cnt < size; cnt++) 
+    {
+        var section = _db.sections[cnt];
+
+        if (section.id == id)
+            return section;
+    }
+
+    return null;
+}
+
+function getRecipeById(id)
+{
+    var size = _db.recipes.length;
+    for (var cnt = 0; cnt < size; cnt++) 
+    {
+        var recipe = _db.recipes[cnt];
+
+        if (recipe.id == id)
+            return recipe;
+    }
+
+    return null;
+}
+
+function getTagById(id)
+{
+    var size = _db.tags.length;
+    for (var cnt = 0; cnt < size; cnt++) 
+    {
+        var tag = _db.tags[cnt];
+
+        if (tag.id == id)
+            return tag;
+    }
+
+    return null;
 }
