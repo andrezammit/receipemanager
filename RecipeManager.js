@@ -936,7 +936,7 @@ function showRecipeView(recipe)
 	btnOK.on("click", 
 		function()
 		{
-			onRecipeOKClick(id, recipe);
+			onRecipeOKClick(recipe.id, recipe);
 		})
 
 	var btnCancel = recipeView.find(".btnCancel");
@@ -945,7 +945,7 @@ function showRecipeView(recipe)
 	btnCancel.on("click", 
 		function()
 		{
-			showRecipe(id, parentId);
+			showRecipe(recipe.id, parentId);
 		})
 
 	recipeView.css("display", "flex");

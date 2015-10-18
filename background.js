@@ -625,12 +625,18 @@ function getNextAvailableId(type)
     return id;
 }
 
+function copyObject(firstObj, secondObj)
+{
+    for (var k in firstObj) 
+        firstObj[k] = secondObj[k];
+}
+
 function updateRecipe(id, updatedRecipe)
 {
     var recipe = getRecipeById(id);
     var isNewRecipe = recipe == null;
 
-    recipe = updatedRecipe;
+    copyObject(recipe, updatedRecipe);
 
     if (isNewRecipe == true)
     {
@@ -648,7 +654,7 @@ function updateSection(id, updatedSection, tagIdDiff)
     var section = getSectionById(id);
     var isNewSection = section == null;
 
-    section = updatedSection;
+    copyObject(section, updatedSection);
 
     if (isNewSection == true)
     {
@@ -721,7 +727,7 @@ function updateBook(id, updatedBook)
         _db.books.push(book);
     }
 
-    book = updatedBook;
+    copyObject(book, updatedBook);
 }
 
 function updateTag(id, updatedTag)
@@ -734,7 +740,7 @@ function updateTag(id, updatedTag)
         _db.tags.push(tag);
     }
 
-    tag = updatedTag;
+    copyObject(tag, updatedTag);
 }
 
 function onFileNotFound(error)
