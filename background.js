@@ -331,20 +331,32 @@ function getRecipeResults(searchText)
 
 function getSearchResults(searchText)
 {
-  searchText = searchText.toLowerCase();
+    searchText = searchText.toLowerCase();
 
-  var bookResults = getBookResults(searchText);
-  var sectionResults = getSectionResults(searchText);
-  var recipeResults = getRecipeResults(searchText);
-  
-  var results = 
-  { 
-    books: bookResults,
-    sections: sectionResults,
-    recipes: recipeResults
-  };
+    if (searchText[0] == '#')
+    {
+        var tagResults = getTagResults(searchText);
 
-  return results;
+        var results = 
+        { 
+            recipes: tagResults,
+        };
+
+        return results;
+    }
+
+    var bookResults = getBookResults(searchText);
+    var sectionResults = getSectionResults(searchText);
+    var recipeResults = getRecipeResults(searchText);
+
+    var results = 
+    { 
+        books: bookResults,
+        sections: sectionResults,
+        recipes: recipeResults
+    };
+
+    return results;
 }
 
 function groupRecipesBySection(recipes, groups)
@@ -1239,4 +1251,34 @@ function addRecipeToTag(tag, recipeId)
         return;
 
     tag.recipeIds.push(recipeId);
+}
+
+function getTagResults(searchText)
+{
+    var recipes;
+
+    if (searchText == '#cooked')
+    {
+        recipes = getCookedRecipes();
+    }
+
+    var recipeGroups = [];
+    groupRecipesBySection(recipes, recipeGroups);
+
+    return recipeGroups;
+}
+
+function getCookedRecipes()
+{
+    var recipes = [];
+
+    for (var cnt = 0; cnt < _db.recipes.length; cnt++)
+    {
+        var recipe = _db.recipes[cnt];
+
+        if (recipe.isCooked == true)
+            recipes.push(recipe);
+    }
+
+    return recipes;
 }
