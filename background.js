@@ -518,7 +518,7 @@ function getAllTags()
 {
     var results = { tags: _db.tags };
 
-    sortBooks(results.tags);
+    sortTags(results.tags);
 
     if (results.tags.length == 0)
     {
@@ -735,13 +735,13 @@ function getNextAvailableId(type)
             break;
     }
 
-    var id = array[array.length - 1].id + 1;
     var isIdAvailable = false;
+    var id = array[array.length - 1].id;
 
     do
     {
-        isIdAvailable = getObjectById(id, type) == null;
         id++;
+        isIdAvailable = getObjectById(id, type) == null;
     }
     while (!isIdAvailable);
 
