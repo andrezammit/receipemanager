@@ -567,8 +567,6 @@ function addResults(sectionDiv, type, results)
 
 function addBookResults(sectionDiv, entries)
 {
-	sortBooks(entries);
-
 	var sectionAdd = sectionDiv.find(".sectionAdd");
 
 	sectionAdd.css("display", "flex");
@@ -624,8 +622,6 @@ function addSectionResults(sectionDiv, sectionGroups)
 		addSectionResultPath(sectionDiv, sectionGroup.bookId,
 			function()
 			{
-				//sortSections(sectionGroup.sections);
-
 				var sections = sectionGroup.sections.length;
 				for (var j = 0; j < sections; j++)
 				{
@@ -691,13 +687,11 @@ function addRecipeResults(sectionDiv, recipeGroups)
 		var recipeGroup = recipeGroups[i];
 
 		if (_lastSectionId != recipeGroup.sectionId)
-			addRecipeResultPath(sectionDiv, recipeGroup.sectionId,
-				function()
+			addRecipeResultPath(sectionDiv, recipeGroup,
+				function(sectionDiv, recipeGroup)
 				{
 					_lastSectionId = recipeGroup.sectionId;
 		
-					//sortRecipes(recipeGroup.recipes);
-
 					var recipes = recipeGroup.recipes.length;
 					for (var j = 0; j < recipes; j++)
 					{
@@ -733,9 +727,9 @@ function addRecipeResult(sectionDiv, recipe)
 	addResultEntry(sectionDiv, RESULT_TYPE_RECIPE, recipe, entryDiv);
 }
 
-function addRecipeResultPath(sectionDiv, sectionID, onAddRecipeResultPathDone)
+function addRecipeResultPath(sectionDiv, recipeGroup, onAddRecipeResultPathDone)
 {
-	getSectionById(sectionID,
+	getSectionById(recipeGroup.sectionId,
 		function (section)
 		{
 			var book = getBookById(section.bookId, 
@@ -762,15 +756,13 @@ function addRecipeResultPath(sectionDiv, sectionID, onAddRecipeResultPathDone)
 
 					sectionDiv.append(resultPathDiv);
 
-					onAddRecipeResultPathDone();
+					onAddRecipeResultPathDone(sectionDiv, recipeGroup);
 				});
 		});
 }
 
 function addTagResults(sectionDiv, entries)
 {
-	sortTags(entries);
-
 	var sectionAdd = sectionDiv.find(".sectionAdd");
 
 	sectionAdd.css("display", "flex");
@@ -983,71 +975,15 @@ function showRecipe(id, parentId)
 
 function showTagRecipes(id)
 {
-	getTagById(id,
-		function(tag)
-		{
-			var results = { recipes: [] };
-
-			var size = tag.recipeIds.length;
-			for (var cnt = 0; cnt < size; cnt++)
-			{
-				var recipeID = tag.recipeIds[cnt];
-				getRecipeById(recipeID,
-					function(recipe)
-					{
-						if (recipe != null)
-							results.recipes.push(recipe);
-
-						if (cnt == size - 1)
-							showSearchResults(results);
-					});
-			}
-		});
-}
-
-function sortBooks(books)
-{
-	books.sort(
-		function(a, b)
-		{
-			if (a.name < b.name)
-				return -1;
-
-			if (a.name == b.name)
-				return 0;
-
-			return 1;
-		});
-}
-
-function sortSections(sections)
-{
-	sections.sort(
-		function(a, b)
-		{
-			if (a.name < b.name)
-				return -1;
-
-			if (a.name == b.name)
-				return 0;
-
-			return 1;
-		});
-}
-
-function sortTags(tags)
-{
-	tags.sort(
-		function(a, b)
-		{
-			if (a.name < b.name)
-				return -1;
-
-			if (a.name == b.name)
-				return 0;
-
-			return 1;
-		});
+	chrome.runtime.sendMessage(
+	{
+		command: "getTagRecipes",
+		id: id,
+	}, 
+	function(response) 
+    {
+    	showSearchResults(response);
+	});
 }
 
 function showTags()
@@ -1147,8 +1083,6 @@ function fillTagContainers()
 
 		tagLabels.empty();
 		tagControls.empty();
-
-		sortTags(tags);
 
 		var size = tags.length;
 		for (var cnt = 0; cnt < size; cnt++)
