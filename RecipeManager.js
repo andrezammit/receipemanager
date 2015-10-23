@@ -24,11 +24,29 @@ $(document).ready(
 
 function setHandlers()
 {
-	$("#searchBox").keydown(
+	$("#searchBox").on("input",
 		function(event)
 		{
-    		if(event.keyCode == 13)
-        		onSearchBoxChanged();
+    		if (event.keyCode == 13)
+    		{
+        		onSearchBoxEnterPressed();
+    		}
+    		else
+    		{
+    			onSearchBoxChanged();
+    		}
+		});
+
+	$("#searchBox").focusin(
+		function(event)
+		{
+			$("#suggestions").show();
+		});
+
+	$("#searchBox").focusout(
+		function(event)
+		{
+			$("#suggestions").hide();
 		});
 
 	$("#title").on("click", onTitleClick);
@@ -135,6 +153,44 @@ function loadDatabase(onLoadDatabaseDone)
 }
 
 function onSearchBoxChanged()
+{
+	var searchBox = $("#searchBox");
+	var searchText = searchBox.val();
+
+	if (searchText == "")
+	{
+		$("#suggestions").empty();
+		return;
+	}
+
+	chrome.runtime.sendMessage(
+		{
+			command: "getSearchSuggestions",
+			searchText: searchText,
+		}, 
+		function(response) 
+	    {
+	    	showSearchSuggestions(response);
+		});
+}
+
+function showSearchSuggestions(results)
+{
+	var suggestionsDiv = $("#suggestions");
+	suggestionsDiv.empty();
+
+	var size = results.tags.length;
+	for (var cnt = 0; cnt < size; cnt++)
+	{
+		var tag = results.tags[cnt];
+		console.log(cnt + " - " + tag.name);
+
+		var suggestionDiv = $("<div class='suggestion'>#" + tag.name + "</div>");
+		suggestionsDiv.append(suggestionDiv);
+	}
+}
+
+function onSearchBoxEnterPressed()
 {
 	var searchBox = $("#searchBox");
 	var searchText = searchBox.val();

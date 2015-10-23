@@ -124,6 +124,12 @@ chrome.runtime.onMessage.addListener(
                 sendResponse(getBunchOfResults());
             }
             break;
+
+            case "getSearchSuggestions":
+            {
+                sendResponse(getSearchSuggestions(request.searchText));
+            }
+            break;
         }
   });
 
@@ -1323,4 +1329,40 @@ function getInterestingRecipes()
     }
 
     return recipes;
+}
+
+function searchTags(searchText)
+{
+    var tags = [];
+
+    var size = _db.tags.length;
+    for (var cnt = 0; cnt < size; cnt++)
+    {
+        var tag = _db.tags[cnt];
+        var tagName = tag.name.toLowerCase();
+
+        if (tagName.indexOf(searchText) == -1)
+            continue;
+
+        tags.push(tag);
+    }
+
+    return tags;
+}
+
+function getSearchSuggestions(searchText)
+{
+    searchText = searchText.toLowerCase();
+
+    var tags = searchTags(searchText);
+
+    var tagsToReturn = Math.min(tags.length, 5);
+    tags = tags.splice(0, tagsToReturn);
+
+    var results = 
+    { 
+        tags: tags,
+    };
+
+    return results;
 }
