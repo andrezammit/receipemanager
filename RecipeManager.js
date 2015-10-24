@@ -27,14 +27,17 @@ function setHandlers()
 	$("#searchBox").on("input",
 		function(event)
 		{
-    		if (event.keyCode == 13)
-    		{
-        		onSearchBoxEnterPressed();
-    		}
-    		else
-    		{
-    			onSearchBoxChanged();
-    		}
+    		onSearchBoxChanged();
+		});
+
+	$("#searchBox").keydown(
+		function(event)
+		{
+			if (event.keyCode != 13)
+				return;
+
+        	onSearchBoxEnterPressed();
+			$("#suggestions").hide();
 		});
 
 	$("#searchBox").focusin(
@@ -43,7 +46,7 @@ function setHandlers()
 			$("#suggestions").show();
 		});
 
-	$("#searchBox").focusout(
+	$("#suggestions").focusout(
 		function(event)
 		{
 			$("#suggestions").hide();
@@ -186,6 +189,21 @@ function showSearchSuggestions(results)
 		console.log(cnt + " - " + tag.name);
 
 		var suggestionDiv = $("<div class='suggestion'>#" + tag.name + "</div>");
+
+		(
+			function(tag)
+			{
+				suggestionDiv.on("click",
+					function(event)
+					{
+						$("#searchBox").val("#" + tag.name);
+
+						suggestionsDiv.hide();
+						onSearchBoxEnterPressed();
+					});
+			}
+		)(tag);
+
 		suggestionsDiv.append(suggestionDiv);
 	}
 }

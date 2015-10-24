@@ -1296,7 +1296,10 @@ function getTagResults(searchText)
     }
 
     if (recipeGroups == null && recipes != null)
+    {
+        recipeGroups = [];
         groupRecipesBySection(recipes, recipeGroups);
+    }
 
     return recipeGroups;
 }
