@@ -367,11 +367,11 @@ function getSearchResults(searchText)
 
 function groupRecipesBySection(recipes, groups)
 {
-  var size = recipes.length;
-  for (var cnt = 0; cnt < size; cnt++)
-  {
-    addRecipeToRecipeGroup(recipes[cnt], groups);
-  }
+    var size = recipes.length;
+    for (var cnt = 0; cnt < size; cnt++)
+    {
+        addRecipeToRecipeGroup(recipes[cnt], groups);
+    }
 }
 
 function addRecipeToRecipeGroup(recipe, groups)
