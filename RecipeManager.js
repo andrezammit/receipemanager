@@ -24,29 +24,46 @@ $(document).ready(
 
 function setHandlers()
 {
-	$("#searchBox").on("input",
+	$("#searchBox")
+		.on("input",
+			function(event)
+			{
+	    		onSearchBoxChanged();
+			})
+		.on("click",
+			function(event)
+			{
+	    		event.stopPropagation();
+			})
+		.keydown(
+			function(event)
+			{
+				if (event.keyCode != 13)
+					return;
+
+	        	onSearchBoxEnterPressed();
+				$("#suggestions").hide();
+			})
+		.focusin(
+			function(event)
+			{
+				$("#suggestions").show();
+				event.stopPropagation();
+			});
+
+	$("#suggestions").focusout(
 		function(event)
 		{
-    		onSearchBoxChanged();
-		});
-
-	$("#searchBox").keydown(
-		function(event)
-		{
-			if (event.keyCode != 13)
-				return;
-
-        	onSearchBoxEnterPressed();
 			$("#suggestions").hide();
 		});
 
-	$("#searchBox").focusin(
+	$("#header").on("click",
 		function(event)
 		{
-			$("#suggestions").show();
+			$("#suggestions").hide();
 		});
 
-	$("#suggestions").focusout(
+	$("#container").on("click",
 		function(event)
 		{
 			$("#suggestions").hide();
