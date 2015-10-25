@@ -786,6 +786,9 @@ function updateSection(id, updatedSection, tagIdDiff)
     var section = getSectionById(id);
     var isNewSection = section == null;
 
+    if (isNewSection == true)
+        section = new Section();
+
     copyObject(section, updatedSection);
 
     if (isNewSection == true)
@@ -856,6 +859,7 @@ function updateBook(id, updatedBook)
 
     if (isNewBook == true)
     {
+        book = new Book();
         _db.books.push(book);
     }
 
@@ -869,6 +873,7 @@ function updateTag(id, updatedTag)
 
     if (isNewTag == true)
     {
+        tag = new Tag();
         _db.tags.push(tag);
     }
 
