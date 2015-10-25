@@ -765,6 +765,9 @@ function updateRecipe(id, updatedRecipe)
     var recipe = getRecipeById(id);
     var isNewRecipe = recipe == null;
 
+    if (isNewRecipe == true)
+        recipe = new Recipe();
+
     copyObject(recipe, updatedRecipe);
 
     if (isNewRecipe == true)

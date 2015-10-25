@@ -1011,7 +1011,7 @@ function showRecipeView(recipe)
 	btnCancel.on("click", 
 		function()
 		{
-			showRecipe(recipe.id, parentId);
+			showRecipe(recipe.id);
 		})
 
 	recipeView.css("display", "flex");
@@ -1026,6 +1026,12 @@ function showRecipe(id, parentId)
 		{
 			if (recipe == null)
 			{
+				if (parentId == null)
+				{
+					onRecipeCloseClick();
+					return;
+				}
+
 				recipe = new Recipe();
 
 				recipe.id = id;
