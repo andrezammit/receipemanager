@@ -984,7 +984,7 @@ function showSectionRecipes(id)
 	});
 }
 
-function showRecipeView(recipe)
+function showRecipeView(recipe, isNewEntry)
 {
 	var recipeView = $("#recipe");
 
@@ -1011,6 +1011,9 @@ function showRecipeView(recipe)
 	btnCancel.on("click", 
 		function()
 		{
+			if (isNewEntry == true)
+				recipe.id = 0;
+			
 			showRecipe(recipe.id);
 		})
 
@@ -1021,16 +1024,20 @@ function showRecipe(id, parentId)
 {
 	resetRecipeView();
 
+	if (id == 0)
+	{
+		onRecipeCloseClick();
+		return;
+	}
+
 	getRecipeById(id,
 		function(recipe)
 		{
+			var isNewEntry = false;
+
 			if (recipe == null)
 			{
-				if (parentId == null)
-				{
-					onRecipeCloseClick();
-					return;
-				}
+				isNewEntry = true;
 
 				recipe = new Recipe();
 
@@ -1043,13 +1050,13 @@ function showRecipe(id, parentId)
 						recipe.tagIds = section.tagIds;		
 						onRecipeEditClick();
 
-						showRecipeView(recipe);
+						showRecipeView(recipe, isNewEntry);
 					});
 
 				return;
 			}
 
-			showRecipeView(recipe);
+			showRecipeView(recipe, isNewEntry);
 		});
 }
 
@@ -1219,11 +1226,21 @@ function showSection(id, parentId)
 {
 	resetSectionView();
 
+	if (id == 0)
+	{
+		onSectionCloseClick();
+		return;
+	}
+
 	getSectionById(id,
 		function(section)
 		{
+			var isNewEntry = false;
+
 			if (section == null)
 			{
+				isNewEntry = true;
+
 				section = new Section();
 				section.id = id;
 				section.bookId = parentId;
@@ -1251,6 +1268,9 @@ function showSection(id, parentId)
 			btnCancel.on("click", 
 				function()
 				{
+					if (isNewEntry == true)
+						id = 0;
+
 					showSection(id, parentId);
 				})
 
@@ -1349,11 +1369,21 @@ function showBook(id)
 {
 	resetBookView();
 
+	if (id == 0)
+	{
+		onBookCloseClick();
+		return;
+	}
+
 	var book = getBookById(id,
 		function (book)
 		{
+			var isNewEntry = false;
+
 			if (book == null)
 			{
+				isNewEntry = true;
+
 				book = new Book();
 				book.id = id;
 
@@ -1378,6 +1408,9 @@ function showBook(id)
 			btnCancel.on("click", 
 				function()
 				{
+					if (isNewEntry == true)
+						id = 0;
+
 					showBook(id);
 				})
 
@@ -1568,9 +1601,17 @@ function showTag(id)
 {
 	resetTagView();
 
+	if (id == 0)
+	{
+		onTagCloseClick();
+		return;
+	}
+
 	var tag = getTagById(id,
 		function(tag)
 		{
+			var isNewEntry = false;
+
 			if (tag == null)
 			{
 				tag = new Tag();
@@ -1597,6 +1638,9 @@ function showTag(id)
 			btnCancel.on("click", 
 				function()
 				{
+					if (isNewEntry == true)
+						id = 0;
+
 					showTag(id);
 				})
 
