@@ -693,8 +693,8 @@ function addSectionResults(sectionDiv, sectionGroups)
 	for (var i = 0; i < groups; i++)
 	{
 		var sectionGroup = sectionGroups[i];
-		addSectionResultPath(sectionDiv, sectionGroup.bookId,
-			function()
+		addSectionResultPath(sectionDiv, sectionGroup,
+			function(sectionDiv, sectionGroup)
 			{
 				var sections = sectionGroup.sections.length;
 				for (var j = 0; j < sections; j++)
@@ -711,9 +711,9 @@ function addSectionResults(sectionDiv, sectionGroups)
 	}
 }
 
-function addSectionResultPath(sectionDiv, bookId, onAddSectionResultPathDone)
+function addSectionResultPath(sectionDiv, sectionGroup, onAddSectionResultPathDone)
 {
-	getBookById(bookId,
+	getBookById(sectionGroup.bookId,
 		function(book)
 		{
 			var resultPathDiv = $("<div class='resultPath'></div>");
@@ -728,7 +728,7 @@ function addSectionResultPath(sectionDiv, bookId, onAddSectionResultPathDone)
 			resultPathDiv.append(bookPathDiv);
 			sectionDiv.append(resultPathDiv);
 
-			onAddSectionResultPathDone();
+			onAddSectionResultPathDone(sectionDiv, sectionGroup);
 		});
 }
 
@@ -1013,7 +1013,7 @@ function showRecipeView(recipe, isNewEntry)
 		{
 			if (isNewEntry == true)
 				recipe.id = 0;
-			
+
 			showRecipe(recipe.id);
 		})
 

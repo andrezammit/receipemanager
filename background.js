@@ -120,7 +120,9 @@ chrome.runtime.onMessage.addListener(
 
             case "getTagRecipes":
             {
-                _currResults.recipes = getTagRecipes(request.id);
+                var recipes = getTagRecipes(request.id, _db);
+                groupRecipesBySection(recipes, _currResults.recipes);
+
                 sendResponse(getBunchOfResults());
             }
             break;
@@ -257,14 +259,17 @@ function getBunchOfRecipes(entriesLeft)
     return bunchOfRecipes; 
 }
 
-function getBookResults(searchText)
+function getBookResults(searchText, results)
 {
+    if (results.books == null)
+        return null;
+
     var bookResults = [];
 
-    var size = _db.books.length;
+    var size = results.books.length;
     for (var cnt = 0; cnt < size; cnt++)
     {
-        var book = _db.books[cnt];
+        var book = results.books[cnt];
         var bookName = book.name.toLowerCase();
 
         if (bookName.indexOf(searchText) == -1)
@@ -276,19 +281,20 @@ function getBookResults(searchText)
     if (bookResults.length == 0)
         return null;
 
-    sortBooks(bookResults);
-
     return bookResults;
 }
 
-function getSectionResults(searchText)
+function getSectionResults(searchText, results)
 {
+    if (results.sections == null)
+        return null;
+
     var sections = [];
 
-    var size = _db.books.length;
+    var size = results.sections.length;
     for (var cnt = 0; cnt < size; cnt++)
     {
-        var section = _db.sections[cnt];
+        var section = results.sections[cnt];
         var sectionName = section.name.toLowerCase();
 
         if (sectionName.indexOf(searchText) == -1)
@@ -300,22 +306,20 @@ function getSectionResults(searchText)
     if (sections.length == 0)
         return null;
 
-    sortSections(sections);
-
-    var sectionGroups = [];
-    groupSectionsByBook(sections, sectionGroups);
-
-    return sectionGroups;
+    return sections;
 }
 
-function getRecipeResults(searchText)
+function getRecipeResults(searchText, results)
 {
+    if (results.recipes == null)
+        return null;
+
     var recipes = [];
 
-    var size = _db.recipes.length;
+    var size = results.recipes.length;
     for (var cnt = 0; cnt < size; cnt++)
     {
-        var recipe = _db.recipes[cnt];
+        var recipe = results.recipes[cnt];
         var recipeName = recipe.name.toLowerCase();
 
         if (recipeName.indexOf(searchText) == -1)
@@ -327,46 +331,64 @@ function getRecipeResults(searchText)
     if (recipes.length == 0)
         return null;
 
-    sortRecipes(recipes);
-
-    var recipeGroups = [];
-    groupRecipesBySection(recipes, recipeGroups);
-
-    return recipeGroups;
+    return recipes;
 }
 
 function getSearchResults(searchText)
 {
-    searchText = searchText.toLowerCase();
-
-    if (searchText[0] == '#')
-    {
-        var tagResults = getTagResults(searchText);
-
-        var results = 
-        { 
-            recipes: tagResults,
-        };
-
-        return results;
-    }
-
-    var bookResults = getBookResults(searchText);
-    var sectionResults = getSectionResults(searchText);
-    var recipeResults = getRecipeResults(searchText);
-
     var results = 
     { 
-        books: bookResults,
-        sections: sectionResults,
-        recipes: recipeResults
+        books: _db.books,
+        sections: _db.sections,
+        recipes: _db.recipes
     };
+
+    searchText = searchText.toLowerCase();
+
+    var filters = searchText.split(", ");
+
+    var size = filters.length;
+    for (var cnt = 0; cnt < size; cnt++)
+    {
+        var filter = filters[cnt];
+
+        if (filter[0] == '#')
+        {
+            results.recipes = getTagResults(filter, results);
+
+            results.books = [];
+            results.sections = [];
+
+            continue;
+        }
+
+        results.books = getBookResults(filter, results);
+        results.sections = getSectionResults(filter, results);
+        results.recipes = getRecipeResults(filter, results);
+    }
+
+    sortBooks(results.books);
+    sortRecipes(results.sections);
+    sortSections(results.sections);
+
+    var recipes = results.recipes;
+    results.recipes = [];
+
+    groupRecipesBySection(recipes, results.recipes);
+
+    var sections = results.sections;
+    results.sections = [];
+
+    groupSectionsByBook(sections, results.sections);
 
     return results;
 }
 
 function groupRecipesBySection(recipes, groups)
 {
+    if (recipes == null)
+        return;
+
     var size = recipes.length;
     for (var cnt = 0; cnt < size; cnt++)
     {
@@ -406,21 +428,27 @@ function addRecipeToRecipeGroup(recipe, groups)
 
 function sortRecipes(recipes)
 {
-  recipes.sort(
-    function(a, b)
-    {
-      if (a.page < b.page)
-        return -1;
+    if (recipes == null)
+        return;
 
-      if (a.page == b.page)
-        return 0;
+    recipes.sort(
+        function(a, b)
+        {
+          if (a.page < b.page)
+            return -1;
 
-      return 1;
-    });
+          if (a.page == b.page)
+            return 0;
+
+          return 1;
+        });
 }
 
 function sortBooks(books)
 {
+    if (books == null)
+        return;
+
     books.sort(
         function(a, b)
         {
@@ -436,6 +464,9 @@ function sortBooks(books)
 
 function sortSections(sections)
 {
+    if (sections == null)
+        return;
+
     sections.sort(
         function(a, b)
         {
@@ -451,6 +482,9 @@ function sortSections(sections)
 
 function sortTags(tags)
 {
+    if (tags == null)
+        return;
+
     tags.sort(
         function(a, b)
         {
@@ -496,6 +530,9 @@ function addSectionToSectionGroup(section, groups)
 
 function groupSectionsByBook(sections, groups)
 {
+    if (sections == null)
+        return;
+
     var size = sections.length;
     for (var cnt = 0; cnt < size; cnt++)
     {
@@ -880,7 +917,7 @@ function updateTag(id, updatedTag)
     copyObject(tag, updatedTag);
 }
 
-function getTagRecipes(id)
+function getTagRecipes(id, results)
 {
     var tag = getTagById(id);
     var recipes = [];
@@ -892,15 +929,14 @@ function getTagRecipes(id)
         var recipe = getRecipeById(recipeID);
 
         if (recipe != null)
-            recipes.push(recipe);
+        {
+            if (results.recipes.indexOf(recipe) != -1)
+                recipes.push(recipe);
+        }
     }
 
     sortRecipes(recipes);
-
-    var recipeGroups = [];
-    groupRecipesBySection(recipes, recipeGroups);
-
-    return recipeGroups;
+    return recipes;
 }
 
 function onFileNotFound(error)
@@ -1281,18 +1317,17 @@ function addRecipeToTag(tag, recipeId)
     tag.recipeIds.push(recipeId);
 }
 
-function getTagResults(searchText)
+function getTagResults(searchText, results)
 {
     var recipes = null;
-    var recipeGroups = null;
 
     if (searchText == '#cooked')
     {
-        recipes = getCookedRecipes();
+        recipes = getCookedRecipes(results);
     }
     else if (searchText == "#interesting")
     {
-        recipes = getInterestingRecipes();
+        recipes = getInterestingRecipes(results);
     }
     else 
     {
@@ -1300,25 +1335,19 @@ function getTagResults(searchText)
         var id = getTagIdByName(name);
 
         if (id != -1)
-            recipeGroups = getTagRecipes(id);
+            recipes = getTagRecipes(id, results);
     }
 
-    if (recipeGroups == null && recipes != null)
-    {
-        recipeGroups = [];
-        groupRecipesBySection(recipes, recipeGroups);
-    }
-
-    return recipeGroups;
+    return recipes;
 }
 
-function getCookedRecipes()
+function getCookedRecipes(results)
 {
     var recipes = [];
 
-    for (var cnt = 0; cnt < _db.recipes.length; cnt++)
+    for (var cnt = 0; cnt < results.recipes.length; cnt++)
     {
-        var recipe = _db.recipes[cnt];
+        var recipe = results.recipes[cnt];
 
         if (recipe.isCooked == true)
             recipes.push(recipe);
@@ -1363,6 +1392,7 @@ function searchTags(searchText)
 
 function getSearchSuggestions(searchText)
 {
+    searchText.trim("#");
     searchText = searchText.toLowerCase();
 
     var tags = searchTags(searchText);
