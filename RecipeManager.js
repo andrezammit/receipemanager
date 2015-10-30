@@ -1,3 +1,15 @@
+"use strict";
+
+/* globals RESULT_TYPE_BOOK */
+/* globals RESULT_TYPE_SECTION */
+/* globals RESULT_TYPE_RECIPE */
+/* globals RESULT_TYPE_TAG */
+
+/* globals Recipe */
+/* globals Book */
+/* globals Section */
+/* globals Tag */
+
 var _currDate = 0;
 var _currentResults = null;
 var _sidebarVisible = false;
@@ -26,7 +38,7 @@ function setHandlers()
 {
 	$("#searchBox")
 		.on("input",
-			function(event)
+			function()
 			{
 	    		onSearchBoxChanged();
 			})
@@ -52,19 +64,19 @@ function setHandlers()
 			});
 
 	$("#suggestions").focusout(
-		function(event)
+		function()
 		{
 			$("#suggestions").hide();
 		});
 
 	$("#header").on("click",
-		function(event)
+		function()
 		{
 			$("#suggestions").hide();
 		});
 
 	$("#container").on("click",
-		function(event)
+		function()
 		{
 			$("#suggestions").hide();
 		});
@@ -73,7 +85,7 @@ function setHandlers()
 	$("#prevMonth").on("click", onPrevMonthClick);
 	$("#nextMonth").on("click", onNextMonthClick);
 	$("#loadData").on("click", onLoadDataClick);
-	$("#saveData").on("click", onSaveDataClick);
+	//$("#saveData").on("click", onSaveDataClick);
 	$("#books").on("click", showBooks);
 	$("#tags").on("click", showTags);
 
@@ -97,14 +109,14 @@ function setHandlers()
 	tagView.find(".btnEdit").on("click", onTagEditClick);
 	tagView.find(".btnClose, .closeButton").on("click", onTagCloseClick);
 
-	$(window).on('scroll', 
+	$(window).on("scroll", 
 		function() 
 		{
 		    var yPos = window.pageYOffset;
 		    var pageHeight = $("body").height();
 
 		    var limitFromBottom = pageHeight * 0.75;
-		    
+			    
 		    if (yPos > limitFromBottom) 
 		    {
 		        chrome.runtime.sendMessage(
@@ -126,7 +138,7 @@ function showLoadingView(show)
 	var loadingDiv = $("#loading");
 	var calendarDiv = $("#calendar");
 
-	if (show == true)
+	if (show === true)
 	{
 		resultsDiv.hide();
 		calendarDiv.hide();
@@ -145,7 +157,7 @@ function showResultsView(show)
 	var resultsDiv = $("#results");
 	var calendarDiv = $("#calendar");
 
-	if (show == true)
+	if (show === true)
 	{
 		resultsDiv.show();
 		calendarDiv.hide();
@@ -163,11 +175,11 @@ function loadDatabase(onLoadDatabaseDone)
 	{
 		command: "loadDatabase",
 	}, 
-	function(response) 
+	function() 
     {
     	console.log("Database loaded.");
 
-    	if (onLoadDatabaseDone != null)
+    	if (onLoadDatabaseDone !== null)
     		onLoadDatabaseDone();
 	});
 }
@@ -177,7 +189,7 @@ function onSearchBoxChanged()
 	var searchBox = $("#searchBox");
 	var searchText = searchBox.val();
 
-	if (searchText == "")
+	if (searchText === "")
 	{
 		$("#suggestions").empty();
 		return;
@@ -194,6 +206,22 @@ function onSearchBoxChanged()
 		});
 }
 
+function addSearchSuggestion(suggestionsDiv, tag)
+{
+	var suggestionDiv = $("<div class='suggestion'>#" + tag.name + "</div>");
+
+	suggestionDiv.on("click",
+		function()
+		{
+			$("#searchBox").val("#" + tag.name);
+
+			suggestionsDiv.hide();
+			onSearchBoxEnterPressed();
+		});
+
+	suggestionsDiv.append(suggestionDiv);
+}
+
 function showSearchSuggestions(results)
 {
 	var suggestionsDiv = $("#suggestions");
@@ -205,23 +233,7 @@ function showSearchSuggestions(results)
 		var tag = results.tags[cnt];
 		console.log(cnt + " - " + tag.name);
 
-		var suggestionDiv = $("<div class='suggestion'>#" + tag.name + "</div>");
-
-		(
-			function(tag)
-			{
-				suggestionDiv.on("click",
-					function(event)
-					{
-						$("#searchBox").val("#" + tag.name);
-
-						suggestionsDiv.hide();
-						onSearchBoxEnterPressed();
-					});
-			}
-		)(tag);
-
-		suggestionsDiv.append(suggestionDiv);
+		addSearchSuggestion(suggestionsDiv, tag);
 	}
 }
 
@@ -230,7 +242,7 @@ function onSearchBoxEnterPressed()
 	var searchBox = $("#searchBox");
 	var searchText = searchBox.val();
 
-	if (searchText == "")
+	if (searchText === "")
 	{
 		showResultsView(false);
 		return;
@@ -251,20 +263,6 @@ function onSearchBoxEnterPressed()
 	    {
 	    	console.log("Search reply.");
 	    	showSearchResults(response);
-		});
-}
-
-function getObjectById(id, type, onGetObjectByIdDone)
-{
-	chrome.runtime.sendMessage(
-		{
-			command: "getObjectById",
-			id: id,
-			type: type
-		}, 
-		function(response) 
-	    {
-	    	onGetObjectByIdDone(response);
 		});
 }
 
@@ -353,63 +351,63 @@ function onLoadDataClick()
 		});
 }
 
-function onSaveFileFound(dataFileEntry)
-{
-	function replacer(key, value)
-	{
-		switch (key)
-		{
-			case "sectionIds":
-			case "recipeIds":
-				return undefined;
-		}
+// function onSaveFileFound(dataFileEntry)
+// {
+// 	function replacer(key, value)
+// 	{
+// 		switch (key)
+// 		{
+// 			case "sectionIds":
+// 			case "recipeIds":
+// 				return undefined;
+// 		}
 
-		return value;
-	}
+// 		return value;
+// 	}
 
-	var jsonString = JSON.stringify(_db, replacer);
-	var jsonBlob = new Blob([jsonString]);
+// 	var jsonString = JSON.stringify(_db, replacer);
+// 	var jsonBlob = new Blob([jsonString]);
 
-	dataFileEntry.createWriter(
-		function(writer) 
-		{
-			var truncated = false;
+// 	dataFileEntry.createWriter(
+// 		function(writer) 
+// 		{
+// 			var truncated = false;
 
-			writer.onerror = 
-				function(e)
-				{
-	      		  console.log("Write failed: " + e.toString());
-	      		};
+// 			writer.onerror = 
+// 				function(e)
+// 				{
+// 	      		  console.log("Write failed: " + e.toString());
+// 	      		};
 
-      		writer.onwriteend = 
-      			function(e) 
-      			{
-      				if (!truncated)
-      				{
-						this.truncate(jsonBlob.size);
-						truncated = true;
+//       		writer.onwriteend = 
+//       			function(e) 
+//       			{
+//       				if (!truncated)
+//       				{
+// 						this.truncate(jsonBlob.size);
+// 						truncated = true;
 
-						return;
-		      		}
+// 						return;
+// 		      		}
 
-		      		console.log("Write success!. New size: " + jsonBlob.size);
-        		}
+// 		      		console.log("Write success!. New size: " + jsonBlob.size);
+//         		}
 
-			writer.write(jsonBlob);
-		});
-}
+// 			writer.write(jsonBlob);
+// 		});
+// }
 
-function onSaveDataClick()
-{
-	chrome.syncFileSystem.requestFileSystem(
-		function (fs) 
-		{
-	  	 	fs.root.getFile('RecipeManager-new.json', 
-	  	 		{ create: true }, 
-	  	 		onSaveFileFound, 
-	  	 		onFileNotFound);
-		});
-}
+// function onSaveDataClick()
+// {
+// 	chrome.syncFileSystem.requestFileSystem(
+// 		function (fs) 
+// 		{
+// 	  	 	fs.root.getFile('RecipeManager-new.json', 
+// 	  	 		{ create: true }, 
+// 	  	 		onSaveFileFound, 
+// 	  	 		onFileNotFound);
+// 		});
+// }
 
 function onTitleClick()
 {
@@ -431,7 +429,7 @@ function onTitleClick()
 
 function onPrevMonthClick()
 {
-	if (_currDate.month == 0)
+	if (_currDate.month === 0)
 	{
 		_currDate.year--;
 		_currDate.month = 11;
@@ -466,7 +464,7 @@ function getCurrentMonth()
 	return {
 		month: date.getMonth(),
 		year: date.getFullYear()
-	}
+	};
 }
 
 function getDaysInMonth(month)
@@ -547,8 +545,8 @@ function fillCalendarView(date)
 		daysDiv.append("<div class='dummyDay'>&nbsp</div>");
 	}
 
-	var days = getDaysInMonth(month);
-	for (var cnt = 0; cnt < days; cnt++)
+	var days = getDaysInMonth(date.month);
+	for (cnt = 0; cnt < days; cnt++)
 	{
 		var day = cnt + 1;
 		daysDiv.append("<div class='dayCell'><div class='day'>" + day + "</div></div>");
@@ -557,7 +555,7 @@ function fillCalendarView(date)
 	var lastDay = getDayOfWeek(days, date.month, date.year);
 	var daysToAdd = 6 - lastDay;
 	
-	for (var cnt = 0; cnt < daysToAdd; cnt++)
+	for (cnt = 0; cnt < daysToAdd; cnt++)
 	{
 		daysDiv.append("<div class='dummyDay'>&nbsp</div>");
 	}
@@ -571,29 +569,29 @@ function getDayOfWeek(day, month, year)
 
 function showSearchResults(results, clearResults)
 {
-	if (clearResults == null || clearResults == true)
+	if (clearResults === null || clearResults === true)
 		clearSearchResults();
 
 	_currentResults = results;
 
 	if (results.books)
 	{
-		addResultsSection("Books", RESULT_TYPE_BOOK, results.books)
+		addResultsSection("Books", RESULT_TYPE_BOOK, results.books);
 	}
 
 	if (results.sections)
 	{
-		addResultsSection("Sections", RESULT_TYPE_SECTION, results.sections)
+		addResultsSection("Sections", RESULT_TYPE_SECTION, results.sections);
 	}
 
 	if (results.recipes)
 	{
-		addResultsSection("Recipes", RESULT_TYPE_RECIPE, results.recipes)
+		addResultsSection("Recipes", RESULT_TYPE_RECIPE, results.recipes);
 	}
 
 	if (results.tags)
 	{
-		addResultsSection("Tags", RESULT_TYPE_TAG, results.tags)
+		addResultsSection("Tags", RESULT_TYPE_TAG, results.tags);
 	}
 
 	showLoadingView(false);
@@ -676,7 +674,7 @@ function addBookResults(sectionDiv, entries)
 		var book = entries[cnt];
 		var entryDiv = $("<div class='resultEntry'>" + book.name + "</div>");
 
-		if (book.id == 0)
+		if (book.id === 0)
 			entryDiv.addClass("addNewEntry");
 
 		addResultEntry(sectionDiv, RESULT_TYPE_BOOK, book, entryDiv);
@@ -685,6 +683,7 @@ function addBookResults(sectionDiv, entries)
 
 function addSectionResults(sectionDiv, sectionGroups)
 {
+	var sectionGroup = null;
 	var sectionAdd = sectionDiv.find(".sectionAdd");
 
 	if (sectionGroups.length > 1)
@@ -695,7 +694,7 @@ function addSectionResults(sectionDiv, sectionGroups)
 	{
 		sectionAdd.css("display", "flex");
 
-		var sectionGroup = sectionGroups[0];
+		sectionGroup = sectionGroups[0];
 
 		sectionAdd.off("click");
 		sectionAdd.on("click",
@@ -709,23 +708,24 @@ function addSectionResults(sectionDiv, sectionGroups)
 	var groups = sectionGroups.length;
 	for (var i = 0; i < groups; i++)
 	{
-		var sectionGroup = sectionGroups[i];
-		addSectionResultPath(sectionDiv, sectionGroup,
-			function(sectionDiv, sectionGroup)
-			{
-				var sections = sectionGroup.sections.length;
-				for (var j = 0; j < sections; j++)
-				{
-					var section = sectionGroup.sections[j];
-					var entryDiv = $("<div class='resultEntry'>" + section.name + "</div>");
-
-					if (section.id == 0)
-						entryDiv.addClass("addNewEntry");
-
-					addResultEntry(sectionDiv, RESULT_TYPE_SECTION, section, entryDiv);
-				}	
-			});
+		sectionGroup = sectionGroups[i];
+		addSectionResultPath(sectionDiv, sectionGroup, onAddSectionResultPathDone);
 	}
+}
+
+function onAddSectionResultPathDone(sectionDiv, sectionGroup)
+{
+	var sections = sectionGroup.sections.length;
+	for (var j = 0; j < sections; j++)
+	{
+		var section = sectionGroup.sections[j];
+		var entryDiv = $("<div class='resultEntry'>" + section.name + "</div>");
+
+		if (section.id === 0)
+			entryDiv.addClass("addNewEntry");
+
+		addResultEntry(sectionDiv, RESULT_TYPE_SECTION, section, entryDiv);
+	}	
 }
 
 function addSectionResultPath(sectionDiv, sectionGroup, onAddSectionResultPathDone)
@@ -751,6 +751,7 @@ function addSectionResultPath(sectionDiv, sectionGroup, onAddSectionResultPathDo
 
 function addRecipeResults(sectionDiv, recipeGroups)
 {	
+	var recipeGroup = null;
 	var sectionAdd = sectionDiv.find(".sectionAdd");
 
 	if (recipeGroups.length > 1)
@@ -761,7 +762,7 @@ function addRecipeResults(sectionDiv, recipeGroups)
 	{
 		sectionAdd.css("display", "flex");
 
-		var recipeGroup = recipeGroups[0];
+		recipeGroup = recipeGroups[0];
 
 		sectionAdd.off("click");
 		sectionAdd.on("click",
@@ -775,21 +776,10 @@ function addRecipeResults(sectionDiv, recipeGroups)
 	var groups = recipeGroups.length;
 	for (var i = 0; i < groups; i++)
 	{
-		var recipeGroup = recipeGroups[i];
+		recipeGroup = recipeGroups[i];
 
 		if (_lastSectionId != recipeGroup.sectionId)
-			addRecipeResultPath(sectionDiv, recipeGroup,
-				function(sectionDiv, recipeGroup)
-				{
-					_lastSectionId = recipeGroup.sectionId;
-		
-					var recipes = recipeGroup.recipes.length;
-					for (var j = 0; j < recipes; j++)
-					{
-						var recipe = recipeGroup.recipes[j];
-						addRecipeResult(sectionDiv, recipe);
-					}	
-				});
+			addRecipeResultPath(sectionDiv, recipeGroup, onAddRecipeResultPathDone);
 	}
 }
 
@@ -798,7 +788,7 @@ function addRecipeResult(sectionDiv, recipe)
 	var entryDiv = $("<div class='resultEntry'></div>");
 	entryDiv.append("<div class='recipeName'>" + recipe.name + "</div>");
 
-	if (recipe.id == 0)
+	if (recipe.id === 0)
 	{
 		entryDiv.addClass("addNewEntry");
 	}
@@ -806,10 +796,10 @@ function addRecipeResult(sectionDiv, recipe)
 	{
 		var recipeInfo = "pg. " + recipe.page;
 
-		if (recipe.isCooked == true)
+		if (recipe.isCooked === true)
 			recipeInfo += "; Cooked";
 
-		if (recipe.isInteresting == true)
+		if (recipe.isInteresting === true)
 			recipeInfo += "; Interesting";
 
 		entryDiv.append("<div class='recipeInfo'>" + recipeInfo + "</div>");
@@ -818,12 +808,24 @@ function addRecipeResult(sectionDiv, recipe)
 	addResultEntry(sectionDiv, RESULT_TYPE_RECIPE, recipe, entryDiv);
 }
 
+function onAddRecipeResultPathDone(sectionDiv, recipeGroup)
+{
+	_lastSectionId = recipeGroup.sectionId;
+		
+	var recipes = recipeGroup.recipes.length;
+	for (var j = 0; j < recipes; j++)
+	{
+		var recipe = recipeGroup.recipes[j];
+		addRecipeResult(sectionDiv, recipe);
+	}	
+}
+
 function addRecipeResultPath(sectionDiv, recipeGroup, onAddRecipeResultPathDone)
 {
 	getSectionById(recipeGroup.sectionId,
 		function (section)
 		{
-			var book = getBookById(section.bookId, 
+			getBookById(section.bookId, 
 				function (book)
 				{
 					var resultPathDiv = $("<div class='resultPath'></div>");
@@ -1020,7 +1022,7 @@ function showRecipeView(recipe, isNewEntry)
 		function()
 		{
 			onRecipeOKClick(recipe.id, recipe);
-		})
+		});
 
 	var btnCancel = recipeView.find(".btnCancel");
 	btnCancel.off("click");
@@ -1028,11 +1030,11 @@ function showRecipeView(recipe, isNewEntry)
 	btnCancel.on("click", 
 		function()
 		{
-			if (isNewEntry == true)
+			if (isNewEntry === true)
 				recipe.id = 0;
 
 			showRecipe(recipe.id);
-		})
+		});
 
 	recipeView.css("display", "flex");
 }
@@ -1041,7 +1043,7 @@ function showRecipe(id, parentId)
 {
 	resetRecipeView();
 
-	if (id == 0)
+	if (id === 0)
 	{
 		onRecipeCloseClick();
 		return;
@@ -1052,7 +1054,7 @@ function showRecipe(id, parentId)
 		{
 			var isNewEntry = false;
 
-			if (recipe == null)
+			if (recipe === null)
 			{
 				isNewEntry = true;
 
@@ -1127,7 +1129,7 @@ function onRecipeOKClick(id, recipe)
 		id: id,
 		recipe: recipe
 	}, 
-	function(response) 
+	function() 
     {
     	recipeView.hide();
 		resetRecipeView();
@@ -1213,7 +1215,7 @@ function checkTags(parent, tagIds)
 	{
 		var tagControl = getTagControlById(parent, tagIds[cnt]);
 
-		if (tagControl == null)
+		if (tagControl === null)
 			continue;
 
 		tagControl.prop("checked", true);
@@ -1243,7 +1245,7 @@ function showSection(id, parentId)
 {
 	resetSectionView();
 
-	if (id == 0)
+	if (id === 0)
 	{
 		onSectionCloseClick();
 		return;
@@ -1254,7 +1256,7 @@ function showSection(id, parentId)
 		{
 			var isNewEntry = false;
 
-			if (section == null)
+			if (section === null)
 			{
 				isNewEntry = true;
 
@@ -1277,7 +1279,7 @@ function showSection(id, parentId)
 				function()
 				{
 					onSectionOKClick(id, section);
-				})
+				});
 
 			var btnCancel = sectionView.find(".btnCancel");
 			btnCancel.off("click");
@@ -1285,11 +1287,11 @@ function showSection(id, parentId)
 			btnCancel.on("click", 
 				function()
 				{
-					if (isNewEntry == true)
+					if (isNewEntry === true)
 						id = 0;
 
 					showSection(id, parentId);
-				})
+				});
 
 			sectionView.css("display", "flex");
 		});
@@ -1310,7 +1312,7 @@ function onSectionOKClick(id, section)
 		section: section,
 		tagIdDiff: tagIdDiff
 	}, 
-	function(response) 
+	function() 
     {
 		sectionView.hide();
 		resetSectionView();
@@ -1386,18 +1388,18 @@ function showBook(id)
 {
 	resetBookView();
 
-	if (id == 0)
+	if (id === 0)
 	{
 		onBookCloseClick();
 		return;
 	}
 
-	var book = getBookById(id,
+	getBookById(id,
 		function (book)
 		{
 			var isNewEntry = false;
 
-			if (book == null)
+			if (book === null)
 			{
 				isNewEntry = true;
 
@@ -1417,7 +1419,7 @@ function showBook(id)
 				function()
 				{
 					onBookOKClick(id, book);
-				})
+				});
 
 			var btnCancel = bookView.find(".btnCancel");
 			btnCancel.off("click");
@@ -1425,11 +1427,11 @@ function showBook(id)
 			btnCancel.on("click", 
 				function()
 				{
-					if (isNewEntry == true)
+					if (isNewEntry === true)
 						id = 0;
 
 					showBook(id);
-				})
+				});
 
 			bookView.css("display", "flex");
 		});
@@ -1474,7 +1476,7 @@ function onBookOKClick(id, book)
 		id: id,
 		book: book,
 	}, 
-	function(response) 
+	function() 
     {
 		bookView.hide();
 		resetBookView();
@@ -1532,9 +1534,9 @@ function deleteRecipe(id, removeFromSection, onDeleteRecipeDone)
 		id: id,
 		removeFromParent: removeFromSection
 	}, 
-	function(response) 
+	function() 
     {
-    	if (onDeleteRecipeDone != null)
+    	if (onDeleteRecipeDone !== null)
 			onDeleteRecipeDone();
 	});
 }
@@ -1548,9 +1550,9 @@ function deleteSection(id, removeFromBook, onDeleteSectionDone)
 		id: id,
 		removeFromParent: removeFromBook
 	}, 
-	function(response) 
+	function() 
     {
-    	if (onDeleteSectionDone != null)
+    	if (onDeleteSectionDone !== null)
 			onDeleteSectionDone();
 	});
 }
@@ -1563,9 +1565,9 @@ function deleteBook(id, onDeleteBookDone)
 		type: RESULT_TYPE_BOOK,
 		id: id,
 	}, 
-	function(response) 
+	function() 
     {
-		if (onDeleteBookDone != null)
+		if (onDeleteBookDone !== null)
 			onDeleteBookDone();
 	});
 }
@@ -1618,18 +1620,18 @@ function showTag(id)
 {
 	resetTagView();
 
-	if (id == 0)
+	if (id === 0)
 	{
 		onTagCloseClick();
 		return;
 	}
 
-	var tag = getTagById(id,
+	getTagById(id,
 		function(tag)
 		{
 			var isNewEntry = false;
 
-			if (tag == null)
+			if (tag === null)
 			{
 				tag = new Tag();
 				tag.id = id;
@@ -1646,8 +1648,8 @@ function showTag(id)
 			btnOK.on("click", 
 				function()
 				{
-					onTagOKClick(id, book);
-				})
+					onTagOKClick(id);
+				});
 
 			var btnCancel = tagView.find(".btnCancel");
 			btnCancel.off("click");
@@ -1655,11 +1657,11 @@ function showTag(id)
 			btnCancel.on("click", 
 				function()
 				{
-					if (isNewEntry == true)
+					if (isNewEntry === true)
 						id = 0;
 
 					showTag(id);
-				})
+				});
 
 			tagView.css("display", "flex");
 		});
@@ -1704,7 +1706,7 @@ function onTagOKClick(id, tag)
 		id: id,
 		tag: tag,
 	}, 
-	function(response) 
+	function() 
     {
 		tagView.hide();
 		resetTagView();
