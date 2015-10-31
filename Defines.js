@@ -1,3 +1,7 @@
+"use strict";
+
+/* jshint unused: false */
+
 var _db = 
 	{ 
 		books: [], 
@@ -20,7 +24,7 @@ function Recipe()
 
 function Book()
 {
-	this.id = 0,
+	this.id = 0;
 	this.name = "";
 	this.sectionIds = [];
 }
