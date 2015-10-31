@@ -569,7 +569,7 @@ function getDayOfWeek(day, month, year)
 
 function showSearchResults(results, clearResults)
 {
-	if (clearResults === null || clearResults === true)
+	if (typeof clearResults == "undefined" || clearResults === true)
 		clearSearchResults();
 
 	_currentResults = results;
@@ -796,10 +796,10 @@ function addRecipeResult(sectionDiv, recipe)
 	{
 		var recipeInfo = "pg. " + recipe.page;
 
-		if (recipe.isCooked === true)
+		if (recipe.isCooked === 1)
 			recipeInfo += "; Cooked";
 
-		if (recipe.isInteresting === true)
+		if (recipe.isInteresting === 1)
 			recipeInfo += "; Interesting";
 
 		entryDiv.append("<div class='recipeInfo'>" + recipeInfo + "</div>");
