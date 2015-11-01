@@ -5,6 +5,10 @@
 /* globals RESULT_TYPE_RECIPE */
 /* globals RESULT_TYPE_TAG */
 
+/* globals KEY_UP */
+/* globals KEY_DOWN */
+/* globals KEY_ENTER */
+
 /* globals Recipe */
 /* globals Book */
 /* globals Section */
@@ -50,11 +54,20 @@ function setHandlers()
 		.keydown(
 			function(event)
 			{
-				if (event.keyCode != 13)
-					return;
+				switch (event.keyCode)
+				{
+					case KEY_ENTER:
+						onSearchBoxEnterPressed();
+						break;
 
-	        	onSearchBoxEnterPressed();
-				$("#suggestions").hide();
+					case KEY_UP:
+						onSearchBoxUpPressed();
+						break;
+
+					case KEY_DOWN:
+						onSearchBoxDownPressed();
+						break;
+				}
 			})
 		.focusin(
 			function(event)
@@ -229,7 +242,20 @@ function addSearchSuggestion(suggestionsDiv, tag)
 			$("#searchBox").val(searchText);
 
 			suggestionsDiv.hide();
+			suggestionsDiv.children().removeClass("suggestionHover");
+
 			$("#searchBox").focus();
+		});
+
+	suggestionDiv.hover(
+		function()
+       	{ 
+       		$("#suggestions").children().removeClass("suggestionHover");
+			$(this).addClass("suggestionHover");
+		},
+		function()
+		{ 
+			$(this).removeClass("suggestionHover");
 		});
 
 	suggestionsDiv.append(suggestionDiv);
@@ -254,6 +280,14 @@ function showSearchSuggestions(results)
 
 function onSearchBoxEnterPressed()
 {
+	var suggestion = $("#suggestions").children(".suggestionHover");
+
+	if (suggestion.length !== 0)
+	{
+		suggestion.click();
+		return;
+	}
+
 	var searchBox = $("#searchBox");
 	var searchText = searchBox.val();
 
@@ -279,6 +313,55 @@ function onSearchBoxEnterPressed()
 	    	console.log("Search reply.");
 	    	showSearchResults(response);
 		});
+
+	$("#suggestions").hide();
+}
+
+function onSearchBoxDownPressed()
+{
+	var suggestionsDiv = $("#suggestions");
+	var currentSuggestion = suggestionsDiv.find(".suggestionHover");
+
+	var nextSuggestion = null;
+	if (currentSuggestion.length === 0 || currentSuggestion.next().length === 0)
+	{
+		nextSuggestion = suggestionsDiv.find(":first-child");
+	}
+	else
+	{
+		nextSuggestion = currentSuggestion.next();
+	}
+
+	if (currentSuggestion.length !== 0)
+		currentSuggestion.removeClass("suggestionHover");
+
+	nextSuggestion.focus();
+	nextSuggestion.addClass("suggestionHover");
+}
+
+function onSearchBoxUpPressed()
+{
+	var suggestionsDiv = $("#suggestions");
+	var currentSuggestion = suggestionsDiv.find(".suggestionHover");
+
+	if (currentSuggestion.length === 0)
+		return;
+
+	var prevSuggestion = null;
+	if (currentSuggestion.prev().length === 0)
+	{
+		prevSuggestion = suggestionsDiv.find(":last-child");
+	}
+	else
+	{
+		prevSuggestion = currentSuggestion.prev();
+	}
+
+	if (currentSuggestion.length !== 0)
+		currentSuggestion.removeClass("suggestionHover");
+
+	prevSuggestion.focus();
+	prevSuggestion.addClass("suggestionHover");
 }
 
 function getBookById(id, onGetBookByIdDone)

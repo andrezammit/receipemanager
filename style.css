@@ -71,7 +71,7 @@ body
    	background-color: white;
 }
 
-.suggestion:hover
+.suggestionHover
 {
 	color: black;
 	background-color: lightgray;
