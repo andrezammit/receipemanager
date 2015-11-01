@@ -1458,7 +1458,12 @@ function searchTags(searchText)
 
 function getSearchSuggestions(searchText)
 {
-    searchText = searchText.substring(1)
+    var filters = searchText.split(", ");
+    searchText = filters[filters.length - 1];
+
+    if (searchText[0] === "#")
+        searchText = searchText.substring(1);
+    
     searchText = searchText.toLowerCase();
 
     var tags = searchTags(searchText);

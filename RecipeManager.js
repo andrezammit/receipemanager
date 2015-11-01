@@ -213,10 +213,23 @@ function addSearchSuggestion(suggestionsDiv, tag)
 	suggestionDiv.on("click",
 		function()
 		{
-			$("#searchBox").val("#" + tag.name);
+			var searchText = $("#searchBox").val();
+			var index = searchText.lastIndexOf(",");
+
+			if (index === -1)
+			{
+				searchText = "#" + tag.name;
+			}
+			else
+			{
+				searchText = searchText.substring(0, index);
+				searchText += ", #" + tag.name;
+			}
+
+			$("#searchBox").val(searchText);
 
 			suggestionsDiv.hide();
-			onSearchBoxEnterPressed();
+			$("#searchBox").focus();
 		});
 
 	suggestionsDiv.append(suggestionDiv);
@@ -235,6 +248,8 @@ function showSearchSuggestions(results)
 
 		addSearchSuggestion(suggestionsDiv, tag);
 	}
+
+	suggestionsDiv.show();
 }
 
 function onSearchBoxEnterPressed()
