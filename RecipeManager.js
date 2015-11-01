@@ -94,6 +94,7 @@ function setHandlers()
 			$("#suggestions").hide();
 		});
 
+	$("#calendarLink").on("click", onCalendarLinkClick);
 	$("#title").on("click", onTitleClick);
 	$("#prevMonth").on("click", onPrevMonthClick);
 	$("#nextMonth").on("click", onNextMonthClick);
@@ -436,6 +437,12 @@ function getTagControlById(parent, id)
    	return null;
 }
 
+function onCalendarLinkClick()
+{
+	$("#calendar").show();
+	$("#results").hide();
+}
+
 function onLoadDataClick()
 {
 	loadDatabase(
@@ -569,10 +576,10 @@ function getDaysInMonth(month)
 {
 	switch (month)
 	{
-		case 4:
-		case 6:
-		case 9:
-		case 11:
+		case 3:
+		case 5:
+		case 8:
+		case 10:
 			return 30;
 
 		case 2:
@@ -637,7 +644,7 @@ function fillCalendarView(date)
 	var daysDiv = $("#days");
 	daysDiv.empty();
 
-	var firstDay = getDayOfWeek(1, date.month, date.year);
+	var firstDay = getDayOfWeek(1, date.month, date.year) - 1;
 	for (var cnt = 0; cnt < firstDay; cnt++)
 	{
 		daysDiv.append("<div class='dummyDay'>&nbsp</div>");
@@ -651,7 +658,7 @@ function fillCalendarView(date)
 	}
 
 	var lastDay = getDayOfWeek(days, date.month, date.year);
-	var daysToAdd = 6 - lastDay;
+	var daysToAdd = 7 - lastDay;
 	
 	for (cnt = 0; cnt < daysToAdd; cnt++)
 	{
@@ -662,7 +669,12 @@ function fillCalendarView(date)
 function getDayOfWeek(day, month, year)
 {
 	var date = new Date(year, month, day, 1, 1, 1, 1);
-	return date.getDay();
+	var day = date.getDay();
+
+	if (day === 0)
+		day = 7;
+
+	return day;
 }
 
 function showSearchResults(results, clearResults)
