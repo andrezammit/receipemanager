@@ -1,7 +1,19 @@
+"use strict";
+
+/* globals RESULT_TYPE_BOOK */
+/* globals RESULT_TYPE_SECTION */
+/* globals RESULT_TYPE_RECIPE */
+/* globals RESULT_TYPE_TAG */
+
+/* globals Recipe */
+/* globals Book */
+/* globals Section */
+/* globals Tag */
+
 chrome.app.runtime.onLaunched.addListener(
 	function() 
 	{
-  		chrome.app.window.create('index.html', 
+  		chrome.app.window.create("index.html", 
   		{
     		"bounds": 
     		{
@@ -163,7 +175,7 @@ function getBunchOfResults()
 
 function getBunchOfBooks(entriesLeft)
 {
-  if (entriesLeft == 0 || _currResults.books == null)
+  if (entriesLeft === 0 || _currResults.books === null)
     return null;
 
   var booksToReturn = Math.max(_currResults.books.length, entriesLeft);
@@ -171,7 +183,7 @@ function getBunchOfBooks(entriesLeft)
   var bunchOfBooks = _currResults.books.splice(0, booksToReturn);
   entriesLeft -= booksToReturn;
 
-  if (bunchOfBooks.length == 0)
+  if (bunchOfBooks.length === 0)
     return null;
 
   return bunchOfBooks; 
@@ -179,7 +191,7 @@ function getBunchOfBooks(entriesLeft)
 
 function getBunchOfSections(entriesLeft)
 {
-  if (entriesLeft == 0 || _currResults.sections == null)
+  if (entriesLeft === 0 || _currResults.sections === null)
     return null;
 
   var bunchOfSections = [];
@@ -212,7 +224,7 @@ function getBunchOfSections(entriesLeft)
     break;
   }
 
-  if (bunchOfSections.length == 0)
+  if (bunchOfSections.length === 0)
     return null;
 
   return bunchOfSections; 
@@ -220,7 +232,7 @@ function getBunchOfSections(entriesLeft)
 
 function getBunchOfRecipes(entriesLeft)
 {
-    if (entriesLeft == 0 || _currResults.recipes == null)
+    if (entriesLeft === 0 || _currResults.recipes === null)
         return null;
 
     var bunchOfRecipes = [];
@@ -253,7 +265,7 @@ function getBunchOfRecipes(entriesLeft)
         break;
     }
 
-    if (bunchOfRecipes.length == 0)
+    if (bunchOfRecipes.length === 0)
         return null;
 
     return bunchOfRecipes; 
@@ -261,7 +273,7 @@ function getBunchOfRecipes(entriesLeft)
 
 function getBookResults(searchText, results)
 {
-    if (results.books == null)
+    if (results.books === null)
         return null;
 
     var bookResults = [];
@@ -278,7 +290,7 @@ function getBookResults(searchText, results)
         bookResults.push(book);
     }
 
-    if (bookResults.length == 0)
+    if (bookResults.length === 0)
         return null;
 
     return bookResults;
@@ -286,7 +298,7 @@ function getBookResults(searchText, results)
 
 function getSectionResults(searchText, results)
 {
-    if (results.sections == null)
+    if (results.sections === null)
         return null;
 
     var sections = [];
@@ -303,7 +315,7 @@ function getSectionResults(searchText, results)
         sections.push(section);
     }
 
-    if (sections.length == 0)
+    if (sections.length === 0)
         return null;
 
     return sections;
@@ -311,7 +323,7 @@ function getSectionResults(searchText, results)
 
 function getRecipeResults(searchText, results)
 {
-    if (results.recipes == null)
+    if (results.recipes === null)
         return null;
 
     var recipes = [];
@@ -328,7 +340,7 @@ function getRecipeResults(searchText, results)
         recipes.push(recipe);
     }
 
-    if (recipes.length == 0)
+    if (recipes.length === 0)
         return null;
 
     return recipes;
@@ -352,7 +364,7 @@ function getSearchResults(searchText)
     {
         var filter = filters[cnt];
 
-        if (filter[0] == '#')
+        if (filter[0] == "#")
         {
             results.recipes = getTagResults(filter, results);
 
@@ -386,7 +398,7 @@ function getSearchResults(searchText)
 
 function groupRecipesBySection(recipes, groups)
 {
-    if (recipes == null)
+    if (recipes === null)
         return;
 
     var size = recipes.length;
@@ -412,7 +424,7 @@ function addRecipeToRecipeGroup(recipe, groups)
     }
   }
 
-  if (groupToAddTo == null)
+  if (groupToAddTo === null)
   {
     groupToAddTo = 
       { 
@@ -428,7 +440,7 @@ function addRecipeToRecipeGroup(recipe, groups)
 
 function sortRecipes(recipes)
 {
-    if (recipes == null)
+    if (recipes === null)
         return;
 
     recipes.sort(
@@ -446,7 +458,7 @@ function sortRecipes(recipes)
 
 function sortBooks(books)
 {
-    if (books == null)
+    if (books === null)
         return;
 
     books.sort(
@@ -464,7 +476,7 @@ function sortBooks(books)
 
 function sortSections(sections)
 {
-    if (sections == null)
+    if (sections === null)
         return;
 
     sections.sort(
@@ -482,7 +494,7 @@ function sortSections(sections)
 
 function sortTags(tags)
 {
-    if (tags == null)
+    if (tags === null)
         return;
 
     tags.sort(
@@ -514,7 +526,7 @@ function addSectionToSectionGroup(section, groups)
     }
   }
 
-  if (groupToAddTo == null)
+  if (groupToAddTo === null)
   {
     groupToAddTo = 
       { 
@@ -530,7 +542,7 @@ function addSectionToSectionGroup(section, groups)
 
 function groupSectionsByBook(sections, groups)
 {
-    if (sections == null)
+    if (sections === null)
         return;
 
     var size = sections.length;
@@ -546,7 +558,7 @@ function getAllBooks()
 
     sortBooks(results.books);
 
-    if (results.books.length == 0)
+    if (results.books.length === 0)
     {
         var book = new Book();
         book.name = "Add book...";
@@ -563,12 +575,12 @@ function getAllTags()
 
     sortTags(results.tags);
 
-    if (results.tags.length == 0)
+    if (results.tags.length === 0)
     {
-        var book = new Tag();
+        var tag = new Tag();
         tag.name = "Add tag...";
 
-        results.tags.push(book);
+        results.tags.push(tag);
     }
 
     return results;
@@ -579,19 +591,21 @@ function getBookSections(id)
     var book = getBookById(id);
     var sections = [];
 
+    var section = null;
+
     var size = book.sectionIds.length;
     for (var cnt = 0; cnt < size; cnt++)
     {
         var sectionID = book.sectionIds[cnt];
-        var section = getSectionById(sectionID);
+        section = getSectionById(sectionID);
 
-        if (section != null)
+        if (section !== null)
             sections.push(section);
     }
 
-    if (sections.length == 0)
+    if (sections.length === 0)
     {
-        var section = new Section();
+        section = new Section();
 
         section.bookId = id;
         section.name = "Add section...";
@@ -617,19 +631,21 @@ function getSectionRecipes(id)
     var section = getSectionById(id);
     var recipes = [];
 
+    var recipe = null;
+
     var size = section.recipeIds.length;
     for (var cnt = 0; cnt < size; cnt++)
     {
         var recipeID = section.recipeIds[cnt];
-        var recipe = getRecipeById(recipeID);
+        recipe = getRecipeById(recipeID);
 
-        if (recipe != null)
+        if (recipe !== null)
             recipes.push(recipe);
     }
 
-    if (recipes.length == 0)
+    if (recipes.length === 0)
     {
-        var recipe = new Recipe();
+        recipe = new Recipe();
 
         recipe.sectionId = id;
         recipe.name = "Add recipe...";
@@ -784,7 +800,7 @@ function getNextAvailableId(type)
     do
     {
         id++;
-        isIdAvailable = getObjectById(id, type) == null;
+        isIdAvailable = getObjectById(id, type) === null;
     }
     while (!isIdAvailable);
 
@@ -800,14 +816,14 @@ function copyObject(firstObj, secondObj)
 function updateRecipe(id, updatedRecipe)
 {
     var recipe = getRecipeById(id);
-    var isNewRecipe = recipe == null;
+    var isNewRecipe = recipe === null;
 
-    if (isNewRecipe == true)
+    if (isNewRecipe === true)
         recipe = new Recipe();
 
     copyObject(recipe, updatedRecipe);
 
-    if (isNewRecipe == true)
+    if (isNewRecipe === true)
     {
         var section = getSectionById(recipe.sectionId);
 
@@ -821,14 +837,14 @@ function updateRecipe(id, updatedRecipe)
 function updateSection(id, updatedSection, tagIdDiff)
 {
     var section = getSectionById(id);
-    var isNewSection = section == null;
+    var isNewSection = section === null;
 
-    if (isNewSection == true)
+    if (isNewSection === true)
         section = new Section();
 
     copyObject(section, updatedSection);
 
-    if (isNewSection == true)
+    if (isNewSection === true)
     {
         var book = getBookById(section.bookId);
 
@@ -842,10 +858,13 @@ function updateSection(id, updatedSection, tagIdDiff)
         var recipeId = section.recipeIds[cnt];
         var recipe = getRecipeById(recipeId);
 
+        var tagId = null;
+        var index = null;
+
         for (var j = 0; j < tagIdDiff.added.length; j++)
         {
-            var tagId = tagIdDiff.added[j];
-            var index = recipe.tagIds.indexOf(tagId);
+            tagId = tagIdDiff.added[j];
+            index = recipe.tagIds.indexOf(tagId);
 
             if (index != -1)
                 continue;
@@ -853,10 +872,10 @@ function updateSection(id, updatedSection, tagIdDiff)
             recipe.tagIds.push(tagId);
         }
 
-        for (var j = 0; j < tagIdDiff.removed.length; j++)
+        for (var k = 0; k < tagIdDiff.removed.length; k++)
         {
-            var tagId = tagIdDiff.added[j];
-            var index = recipe.tagIds.indexOf(tagId);
+            tagId = tagIdDiff.added[k];
+            index = recipe.tagIds.indexOf(tagId);
 
             if (index == -1)
                 continue;
@@ -892,9 +911,9 @@ function updateTagRecipeReferences(recipe)
 function updateBook(id, updatedBook)
 {
     var book = getBookById(id);
-    var isNewBook = book == null;
+    var isNewBook = book === null;
 
-    if (isNewBook == true)
+    if (isNewBook === true)
     {
         book = new Book();
         _db.books.push(book);
@@ -906,9 +925,9 @@ function updateBook(id, updatedBook)
 function updateTag(id, updatedTag)
 {
     var tag = getTagById(id);
-    var isNewTag = tag == null;
+    var isNewTag = tag === null;
 
-    if (isNewTag == true)
+    if (isNewTag === true)
     {
         tag = new Tag();
         _db.tags.push(tag);
@@ -928,7 +947,7 @@ function getTagRecipes(id, results)
         var recipeID = tag.recipeIds[cnt];
         var recipe = getRecipeById(recipeID);
 
-        if (recipe != null)
+        if (recipe !== null)
         {
             if (results.recipes.indexOf(recipe) != -1)
                 recipes.push(recipe);
@@ -939,7 +958,7 @@ function getTagRecipes(id, results)
     return recipes;
 }
 
-function onFileNotFound(error)
+function onFileNotFound()
 {
 }
 
@@ -948,7 +967,7 @@ function loadDatabase(onLoadDatabaseDone)
     chrome.syncFileSystem.requestFileSystem(
         function (fs) 
         {
-            fs.root.getFile('RecipeManager-OldDB.json', 
+            fs.root.getFile("RecipeManager-OldDB.json", 
                 { create: false }, 
                 function(dataFileEntry)
                 {
@@ -963,7 +982,7 @@ function onDBFileFound(dataFileEntry, onLoadDatabaseDone)
     dataFileEntry.file(
         function(dataFile) 
         {
-            fileReader = new FileReader();
+            var fileReader = new FileReader();
 
             fileReader.onload = 
                 function(event) 
@@ -1077,12 +1096,12 @@ function loadRecipesTags(dataObj)
         var recipeTag = recipeTagTable.rows[cnt];
         var recipe = getRecipeById(recipeTag[0]);
 
-        if (recipe != null)
+        if (recipe !== null)
             recipe.tagIds.push(recipeTag[1]);
 
         var tag = getTagById(recipeTag[1]);
 
-        if (tag != null)
+        if (tag !== null)
             tag.recipeIds.push(recipeTag[0]);
     }
 }
@@ -1097,7 +1116,7 @@ function loadSectionTags(dataObj)
         var sectionTag = sectionTagTable.rows[cnt];
         var section = getSectionById(sectionTag[0]);
 
-        if (section != null)
+        if (section !== null)
         {
             section.tagIds.push(sectionTag[1]);
             setTagInSectionRecipes(section, sectionTag[1]);
@@ -1105,7 +1124,7 @@ function loadSectionTags(dataObj)
 
         var tag = getTagById(sectionTag[1]);
 
-        if (tag != null)
+        if (tag !== null)
             tag.sectionIds.push(sectionTag[0]);
     }
 }
@@ -1114,7 +1133,7 @@ function setTagInSectionRecipes(tagId, sectionId)
 {
     var section = getSectionById(sectionId);
 
-    if (section == null)
+    if (section === null)
     {
         console.log("Section " + sectionId + " does not exist!");
         return;
@@ -1138,12 +1157,12 @@ function loadSectionRecipes(dataObj)
         var sectionRecipe = sectionRecipeTable.rows[cnt];
         var section = getSectionById(sectionRecipe[0]);
 
-        if (section != null)
+        if (section !== null)
             section.recipeIds.push(sectionRecipe[1]);
 
         var recipe = getRecipeById(sectionRecipe[1]);
 
-        if (recipe != null)
+        if (recipe !== null)
             recipe.sectionId = sectionRecipe[0];
     }
 }
@@ -1158,12 +1177,12 @@ function loadBookSections(dataObj)
         var bookSection = bookSectionTable.rows[cnt];
         var book = getBookById(bookSection[0]);
 
-        if (book != null)
+        if (book !== null)
             book.sectionIds.push(bookSection[1]);
 
         var section = getSectionById(bookSection[1]);
 
-        if (section != null)
+        if (section !== null)
             section.bookId = bookSection[0];
     }
 }
@@ -1181,11 +1200,11 @@ function deleteObject(id, type, removeFromParent)
             break;
 
         case RESULT_TYPE_BOOK:
-            deletebook(id);
+            deleteBook(id);
             break;
 
         case RESULT_TYPE_TAG:
-            array = _db.tags;
+            deleteTag(id);
             break;
     }
 }
@@ -1194,7 +1213,7 @@ function deleteSection(id, removeFromBook)
 {
     var section = getSectionById(id);
 
-    if (section == null)
+    if (section === null)
         return;
 
     var size = section.recipeIds.length;
@@ -1204,18 +1223,20 @@ function deleteSection(id, removeFromBook)
         deleteRecipe(recipeId, false);
     }
 
-    if (removeFromBook == true)
+    var index = null;
+
+    if (removeFromBook === true)
     {
         var bookId = section.bookId;
         var book = getBookById(bookId);
            
-        var index = book.sectionIds.indexOf(id);
+        index = book.sectionIds.indexOf(id);
 
         if (index != -1)
             book.sectionIds.splice(index, 1);
     }
 
-    var index = _db.sections.indexOf(section);
+    index = _db.sections.indexOf(section);
 
     if (index != -1)
         _db.sections.splice(index, 1);
@@ -1225,7 +1246,7 @@ function deleteBook(id)
 {
     var book = getBookById(id);
 
-    if (book == null)
+    if (book === null)
         return;
 
     var size = book.sectionIds.length;
@@ -1241,28 +1262,73 @@ function deleteBook(id)
         _db.books.splice(index, 1);
 }
 
+function deleteTag(id)
+{
+    var tag = getTagById(id);
+
+    if (tag === null)
+        return;
+
+    var index = null;
+
+    var size = tag.sectionIds.length;
+    for (var cnt = 0; cnt < size; cnt++)
+    {
+        var sectionId = tag.sectionIds[cnt];
+        
+        var section = getSectionById(sectionId);
+
+        if (section === null)
+            continue;
+
+        index = section.tagIds.indexOf(id);
+        section.tagIds.splice(index, 1);
+    }
+
+    size = tag.recipeIds.length;
+    for (cnt = 0; cnt < size; cnt++)
+    {
+        var recipeId = tag.recipeIds[cnt];
+        
+        var recipe = getRecipeById(recipeId);
+
+        if (recipe === null)
+            continue;
+
+        index = recipe.tagIds.indexOf(id);
+        recipe.tagIds.splice(index, 1);
+    }
+
+    index = _db.tags.indexOf(tag);
+
+    if (index != -1)
+        _db.tags.splice(index, 1);
+}
+
 function deleteRecipe(id, removeFromSection)
 {
     var recipe = getRecipeById(id);
 
-    if (recipe == null)
+    if (recipe === null)
         return;
 
     recipe.tagIds.splice(0, recipe.tagIds.length);
     updateTagRecipeReferences(recipe);
 
-    if (removeFromSection == true)
+    var index = null;
+
+    if (removeFromSection === true)
     {
         var sectionId = recipe.sectionId;
         var section = getSectionById(sectionId);
 
-        var index = section.recipeIds.indexOf(id);
+        index = section.recipeIds.indexOf(id);
 
         if (index != -1)
             section.recipeIds.splice(index, 1);
     }
     
-    var index = _db.recipes.indexOf(recipe);
+    index = _db.recipes.indexOf(recipe);
 
     if (index != -1)
         _db.recipes.splice(index, 1);
@@ -1299,7 +1365,7 @@ function isSectionTag(sectionId, tagId)
 
 function removeRecipeFromTag(tag, recipeId)
 {
-    var index = tag.recipeIds.indexOf(recipeId)
+    var index = tag.recipeIds.indexOf(recipeId);
 
     if (index == -1)
         return;
@@ -1309,7 +1375,7 @@ function removeRecipeFromTag(tag, recipeId)
 
 function addRecipeToTag(tag, recipeId)
 {
-    var index = tag.recipeIds.indexOf(recipeId)
+    var index = tag.recipeIds.indexOf(recipeId);
 
     if (index != -1)
         return;
@@ -1321,7 +1387,7 @@ function getTagResults(searchText, results)
 {
     var recipes = null;
 
-    if (searchText == '#cooked')
+    if (searchText == "#cooked")
     {
         recipes = getCookedRecipes(results);
     }
@@ -1349,7 +1415,7 @@ function getCookedRecipes(results)
     {
         var recipe = results.recipes[cnt];
 
-        if (recipe.isCooked == true)
+        if (recipe.isCooked === 1)
             recipes.push(recipe);
     }
 
@@ -1364,7 +1430,7 @@ function getInterestingRecipes()
     {
         var recipe = _db.recipes[cnt];
 
-        if (recipe.isInteresting == true)
+        if (recipe.isInteresting === 1)
             recipes.push(recipe);
     }
 
