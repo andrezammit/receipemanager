@@ -564,12 +564,7 @@ function onNextMonthClick()
 
 function getCurrentMonth()
 {
-	var date = new Date();
-
-	return {
-		month: date.getMonth(),
-		year: date.getFullYear()
-	};
+	return new Date();
 }
 
 function getDaysInMonth(month)
@@ -633,31 +628,40 @@ function getMonthName(month)
 
 function fillCalendarView(date)
 {
-	var monthName = getMonthName(date.month);
+	var monthName = getMonthName(date.getMonth());
 
 	var monthTitleDiv = $("#currMonth");
 	monthTitleDiv.text(monthName);
 
 	var yearDiv = $("#year");
-	yearDiv.text(date.year);
+	yearDiv.text(date.getYear());
 
 	var daysDiv = $("#days");
 	daysDiv.empty();
 
-	var firstDay = getDayOfWeek(1, date.month, date.year) - 1;
+	var firstDay = getDayOfWeek(1, date.getMonth(), date.getYear()) - 1;
 	for (var cnt = 0; cnt < firstDay; cnt++)
 	{
 		daysDiv.append("<div class='dummyDay'>&nbsp</div>");
 	}
 
-	var days = getDaysInMonth(date.month);
+	var days = getDaysInMonth(date.getMonth());
 	for (cnt = 0; cnt < days; cnt++)
 	{
 		var day = cnt + 1;
-		daysDiv.append("<div class='dayCell'><div class='day'>" + day + "</div></div>");
+
+		var dateData = new Date(date);
+		dateData.setDate(day);
+
+		var dayDiv = $("<div class='dayCell'><div class='day'>" + day + "</div></div>");
+		dayDiv.data("date", dateData);
+
+		dayDiv.on("click", onDayClicked);
+
+		daysDiv.append(dayDiv);
 	}
 
-	var lastDay = getDayOfWeek(days, date.month, date.year);
+	var lastDay = getDayOfWeek(days, date.getMonth(), date.getYear());
 	var daysToAdd = 7 - lastDay;
 	
 	for (cnt = 0; cnt < daysToAdd; cnt++)
@@ -666,15 +670,23 @@ function fillCalendarView(date)
 	}
 }
 
+function onDayClicked(event)
+{
+	var dayDiv = $(event.target);
+	var date = dayDiv.data("date");
+
+	console.log(date.toString());
+}
+
 function getDayOfWeek(day, month, year)
 {
 	var date = new Date(year, month, day, 1, 1, 1, 1);
-	var day = date.getDay();
+	var weekDay = date.getDay();
 
-	if (day === 0)
-		day = 7;
+	if (weekDay === 0)
+		weekDay = 7;
 
-	return day;
+	return weekDay;
 }
 
 function showSearchResults(results, clearResults)
