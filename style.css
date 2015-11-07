@@ -739,7 +739,7 @@ button
 
 	width: 500px;
 
-    padding: 35px 25px 12px 25px;
+    padding: 35px 12px 12px 12px;
     
     background-color: antiquewhite;
 
@@ -753,6 +753,11 @@ button
 {
     width: 100%;
     font-size: 22px;
+
+    padding-left: 10px;
+    padding-right: 10px;
+    padding-top: 5px;
+    padding-bottom: 5px;
 }
 
 .recipeEntry:hover
