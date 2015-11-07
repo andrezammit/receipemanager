@@ -749,7 +749,7 @@ button
     box-shadow: 0px 0px 14px 1px rgba(50, 50, 50, 0.75);
 }
 
-.recipeEntry 
+.recipeEntry, .addRecipeEntry
 {
     width: 100%;
     font-size: 22px;
@@ -760,7 +760,13 @@ button
     padding-bottom: 5px;
 }
 
-.recipeEntry:hover
+.recipeEntry:hover, .addRecipeEntry:hover
 {
 	background-color: lightblue;
+}
+
+.addRecipeEntry > input[type="text"]
+{
+	width: 100%;
+	height: 30px
 }

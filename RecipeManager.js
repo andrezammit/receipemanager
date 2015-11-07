@@ -682,6 +682,61 @@ function onDayClicked(event)
 	var date = dayDiv.data("date");
 
 	console.log(date.toString());
+
+	var dayMenuDiv = $("#dayMenu");
+
+	for (var cnt = 0; cnt < 3; cnt++)
+	{
+		var recipeEntry = $("<div class='recipeEntry'>Recipe " + cnt + "</div>");
+		dayMenuDiv.append(recipeEntry);
+	}
+
+	var addRecipeEntry = $("<div class='addRecipeEntry'>Add Recipe...</div>");
+	addRecipeEntry.on("click", 
+		function(event)
+		{
+			onAddRecipeEntryClick($(event.target), date);
+		});
+
+	dayMenuDiv.append(addRecipeEntry);
+}
+
+function onAddRecipeEntryClick(date)
+{
+	var addRecipeEntry = $(".addRecipeEntry");
+	var inputState = addRecipeEntry.data("inputState");
+
+	if (inputState === true)
+		return;
+
+	addRecipeEntry.html("<input type='text'>");
+	addRecipeEntry.data("inputState", true);
+
+	var addRecipeInput = addRecipeEntry.children("input");
+	addRecipeInput.focus();
+	
+	addRecipeInput
+		.blur(
+			function(event)
+			{
+				addRecipeEntry.html("Add Recipe...");
+				addRecipeEntry.data("inputState", false);
+
+				addRecipeEntry.off("blur");
+			})
+		.keydown(
+			function(event)
+			{
+				if  (event.keyCode != KEY_ENTER)
+					return;
+
+				var newRecipeName = addRecipeInput.val();
+
+				var newRecipeEntry = $("<div class='recipeEntry'>" + newRecipeName + "</div>");
+				newRecipeEntry.insertBefore(addRecipeEntry);
+
+				addRecipeInput.blur();
+			});
 }
 
 function getDayOfWeek(day, month, year)
