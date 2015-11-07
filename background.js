@@ -144,6 +144,12 @@ chrome.runtime.onMessage.addListener(
                 sendResponse(getSearchSuggestions(request.searchText));
             }
             break;
+
+            case "getRecipeSuggestions":
+            {
+                sendResponse(getRecipeSuggestions(request.searchText));
+            }
+            break;
         }
   });
 
@@ -1456,6 +1462,25 @@ function searchTags(searchText)
     return tags;
 }
 
+function searchRecipes(searchText)
+{
+    var recipes = [];
+
+    var size = _db.recipes.length;
+    for (var cnt = 0; cnt < size; cnt++)
+    {
+        var recipe = _db.recipes[cnt];
+        var recipeName = recipe.name.toLowerCase();
+
+        if (recipeName.indexOf(searchText) == -1)
+            continue;
+
+        recipes.push(recipe);
+    }
+
+    return recipes;
+}
+
 function getSearchSuggestions(searchText)
 {
     var filters = searchText.split(", ");
@@ -1474,6 +1499,23 @@ function getSearchSuggestions(searchText)
     var results = 
     { 
         tags: tags,
+    };
+
+    return results;
+}
+
+function getRecipeSuggestions(searchText)
+{
+    searchText = searchText.toLowerCase();
+
+    var recipes = searchRecipes(searchText);
+
+    var recipesToReturn = Math.min(recipes.length, 5);
+    recipes = recipes.splice(0, recipesToReturn);
+
+    var results = 
+    { 
+        recipes: recipes,
     };
 
     return results;

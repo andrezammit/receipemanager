@@ -714,8 +714,13 @@ function onAddRecipeEntryClick(date)
 
 	var addRecipeInput = addRecipeEntry.children("input");
 	addRecipeInput.focus();
-	
+
 	addRecipeInput
+		.on("input", 
+			function()
+			{
+				onAddRecipeInputChanged(addRecipeInput);
+			})
 		.blur(
 			function(event)
 			{
@@ -737,6 +742,37 @@ function onAddRecipeEntryClick(date)
 
 				addRecipeInput.blur();
 			});
+}
+
+function onAddRecipeInputChanged(addRecipeInput)
+{
+	var searchText = addRecipeInput.val();
+
+	if (searchText === "")
+	{
+		$("#suggestions").empty();
+		return;
+	}
+
+	chrome.runtime.sendMessage(
+		{
+			command: "getRecipeSuggestions",
+			searchText: searchText,
+		}, 
+		function(response) 
+	    {
+	    	showRecipeSuggestions(response);
+		});
+}
+
+function showRecipeSuggestions(results)
+{
+	var size = results.recipes.length;
+	for (var cnt = 0; cnt < size; cnt++)
+	{
+		var recipe = results.recipes[cnt];
+		console.log(cnt + " - " + recipe.name);
+	}
 }
 
 function getDayOfWeek(day, month, year)
