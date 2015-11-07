@@ -1024,6 +1024,7 @@ function addResultEntry(sectionDiv, type, entry, entryDiv)
 	{
 		addEditButton(resultDiv, type, entry.id);
 		addDeleteButton(resultDiv, type, entry.id);
+		addDateButton(resultDiv, type, entry.id);
 	
 		resultDiv.on("click", 
 			function()
@@ -1066,6 +1067,23 @@ function addDeleteButton(resultDiv, type, id)
 		});
 
 	resultDiv.append(deleteButton);
+}
+
+function addDateButton(resultDiv, type, id)
+{
+	if (type != RESULT_TYPE_RECIPE)
+		return;
+
+	var dateButton = $("<div class='resultButtons'>date</div>");
+
+	dateButton.on("click", 
+		function(e)
+		{
+			onDateClick(type, id);
+			e.stopPropagation();
+		});
+
+	resultDiv.append(dateButton);
 }
 
 function onSearchResultClick(type, id)
@@ -1611,6 +1629,19 @@ function onBookOKClick(id, book)
 
 		refreshResultsView();
 	});
+}
+
+function onDateClick(type, id)
+{
+	if (type != RESULT_TYPE_RECIPE)
+		return;
+
+	showAddRecipeToDateView(id);
+}
+
+function showAddRecipeToDateView(id)
+{
+	$("#addRecipeToDate").show();
 }
 
 function onEditClick(type, id)
