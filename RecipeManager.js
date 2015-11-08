@@ -94,6 +94,18 @@ function setHandlers()
 			$("#suggestions").hide();
 		});
 
+	$("#recipeSuggestions")
+		.on("mouseover", 
+			function()
+			{
+				$("#recipeSuggestions").data("hovered", true);
+			})
+		.on("mouseout",
+			function()
+			{
+				$("#recipeSuggestions").data("hovered", false);
+			});
+
 	$("#calendarLink").on("click", onCalendarLinkClick);
 	$("#title").on("click", onTitleClick);
 	$("#prevMonth").on("click", onPrevMonthClick);
@@ -724,7 +736,7 @@ function onAddRecipeEntryClick(date)
 		.blur(
 			function(event)
 			{
-				if ($("#recipeSuggestions").is(":focus") === true)
+				if ($("#recipeSuggestions").data("hovered") === true)
 					return;
 
 				addRecipeEntry.html("Add Recipe...");
@@ -760,6 +772,15 @@ function onRecipeSearchEnterPressed()
 	var newRecipeName = addRecipeInput.val();
 
 	var newRecipeEntry = $("<div class='recipeEntry'>" + newRecipeName + "</div>");
+	newRecipeEntry.data("recipeId", addRecipeInput.data("recipeId"));
+
+	newRecipeEntry.on("click", 
+		function()
+		{
+			var recipeId = newRecipeEntry.data("recipeId");
+			showRecipe(recipeId);
+		});
+
 	newRecipeEntry.insertBefore(addRecipeEntry);
 
 	addRecipeInput.blur();
@@ -871,6 +892,7 @@ function addRecipeSuggestion(recipeSuggestionsDiv, recipe)
 		function(event)
 		{
 			$("#recipeSearch").val(recipe.name);
+			$("#recipeSearch").data("recipeId", recipe.id);
 
 			recipeSuggestionsDiv.hide();
 			recipeSuggestionsDiv.children().removeClass("recipeSuggestionHover");
