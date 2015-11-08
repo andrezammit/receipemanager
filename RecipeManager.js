@@ -709,7 +709,7 @@ function onAddRecipeEntryClick(date)
 	if (inputState === true)
 		return;
 
-	addRecipeEntry.html("<input type='text'>");
+	addRecipeEntry.html("<input id='recipeSearch' type='text'>");
 	addRecipeEntry.data("inputState", true);
 
 	var addRecipeInput = addRecipeEntry.children("input");
@@ -724,6 +724,9 @@ function onAddRecipeEntryClick(date)
 		.blur(
 			function(event)
 			{
+				if ($("#recipeSuggestions").is(":focus") === true)
+					return;
+
 				addRecipeEntry.html("Add Recipe...");
 				addRecipeEntry.data("inputState", false);
 
@@ -732,16 +735,81 @@ function onAddRecipeEntryClick(date)
 		.keydown(
 			function(event)
 			{
-				if  (event.keyCode != KEY_ENTER)
-					return;
+				switch (event.keyCode)
+				{
+					case KEY_ENTER:
+						onRecipeSearchEnterPressed();
+						break;
 
-				var newRecipeName = addRecipeInput.val();
+					case KEY_UP:
+						onRecipeSearchUpPressed();
+						break;
 
-				var newRecipeEntry = $("<div class='recipeEntry'>" + newRecipeName + "</div>");
-				newRecipeEntry.insertBefore(addRecipeEntry);
-
-				addRecipeInput.blur();
+					case KEY_DOWN:
+						onRecipeSearchDownPressed();
+						break;
+				}
 			});
+}
+
+function onRecipeSearchEnterPressed()
+{
+	var addRecipeEntry = $(".addRecipeEntry");
+	var addRecipeInput = addRecipeEntry.children("input");
+
+	var newRecipeName = addRecipeInput.val();
+
+	var newRecipeEntry = $("<div class='recipeEntry'>" + newRecipeName + "</div>");
+	newRecipeEntry.insertBefore(addRecipeEntry);
+
+	addRecipeInput.blur();
+}
+
+function onRecipeSearchDownPressed()
+{
+	var suggestionsDiv = $("#recipeSuggestions");
+	var currentSuggestion = suggestionsDiv.find(".recipeSuggestionHover");
+
+	var nextSuggestion = null;
+	if (currentSuggestion.length === 0 || currentSuggestion.next().length === 0)
+	{
+		nextSuggestion = suggestionsDiv.find(":first-child");
+	}
+	else
+	{
+		nextSuggestion = currentSuggestion.next();
+	}
+
+	if (currentSuggestion.length !== 0)
+		currentSuggestion.removeClass("recipeSuggestionHover");
+
+	nextSuggestion.focus();
+	nextSuggestion.addClass("recipeSuggestionHover");
+}
+
+function onRecipeSearchUpPressed()
+{
+	var suggestionsDiv = $("#recipeSuggestions");
+	var currentSuggestion = suggestionsDiv.find(".recipeSuggestionHover");
+
+	if (currentSuggestion.length === 0)
+		return;
+
+	var prevSuggestion = null;
+	if (currentSuggestion.prev().length === 0)
+	{
+		prevSuggestion = suggestionsDiv.find(":last-child");
+	}
+	else
+	{
+		prevSuggestion = currentSuggestion.prev();
+	}
+
+	if (currentSuggestion.length !== 0)
+		currentSuggestion.removeClass("recipeSuggestionHover");
+
+	prevSuggestion.focus();
+	prevSuggestion.addClass("recipeSuggestionHover");
 }
 
 function onAddRecipeInputChanged(addRecipeInput)
@@ -761,18 +829,69 @@ function onAddRecipeInputChanged(addRecipeInput)
 		}, 
 		function(response) 
 	    {
-	    	showRecipeSuggestions(response);
+	    	showRecipeSuggestions(addRecipeInput, response);
 		});
 }
 
-function showRecipeSuggestions(results)
+function showRecipeSuggestions(addRecipeInput, results)
 {
+	var recipeSuggestions = $("#recipeSuggestions");
+
+	var inputPos = addRecipeInput.position();
+	recipeSuggestions.css("top", inputPos.top + addRecipeInput.outerHeight() + 1);
+	recipeSuggestions.css("left", inputPos.left);
+	recipeSuggestions.css("width", addRecipeInput.outerWidth() - 2);
+
+	recipeSuggestions.show();
+	recipeSuggestions.empty();
+
+	var searchText = addRecipeInput.val();
+
+	var customRecipe = new Recipe();
+	customRecipe.name = searchText;
+	customRecipe.id = -1;
+
+	addRecipeSuggestion(recipeSuggestions, customRecipe);
+
 	var size = results.recipes.length;
 	for (var cnt = 0; cnt < size; cnt++)
 	{
 		var recipe = results.recipes[cnt];
 		console.log(cnt + " - " + recipe.name);
+
+		addRecipeSuggestion(recipeSuggestions, recipe);
 	}
+}
+
+function addRecipeSuggestion(recipeSuggestionsDiv, recipe)
+{
+	var recipeSuggestionDiv = $("<div class='recipeSuggestion'>" + recipe.name + "</div>");
+
+	recipeSuggestionDiv.on("click",
+		function(event)
+		{
+			$("#recipeSearch").val(recipe.name);
+
+			recipeSuggestionsDiv.hide();
+			recipeSuggestionsDiv.children().removeClass("recipeSuggestionHover");
+
+			$("#recipeSearch").focus();
+
+			event.stopPropagation();
+		});
+
+	recipeSuggestionDiv.hover(
+		function()
+       	{ 
+       		$("#recipeSuggestions").children().removeClass("recipeSuggestionHover");
+			$(this).addClass("recipeSuggestionHover");
+		},
+		function()
+		{ 
+			$(this).removeClass("recipeSuggestionHover");
+		});
+
+	recipeSuggestionsDiv.append(recipeSuggestionDiv);
 }
 
 function getDayOfWeek(day, month, year)
