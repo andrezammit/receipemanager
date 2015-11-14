@@ -696,12 +696,13 @@ function onDayClicked(event)
 	console.log(date.toString());
 
 	var dayMenuDiv = $("#dayMenu");
+	$("#recipeSuggestions").empty();
 
-	for (var cnt = 0; cnt < 3; cnt++)
-	{
-		var recipeEntry = $("<div class='recipeEntry'>Recipe " + cnt + "</div>");
-		dayMenuDiv.append(recipeEntry);
-	}
+	// for (var cnt = 0; cnt < 3; cnt++)
+	// {
+	// 	var recipeEntry = $("<div class='recipeEntry'>Recipe " + cnt + "</div>");
+	// 	dayMenuDiv.append(recipeEntry);
+	// }
 
 	var addRecipeEntry = $("<div class='addRecipeEntry'>Add Recipe...</div>");
 	addRecipeEntry.on("click", 
@@ -766,6 +767,15 @@ function onAddRecipeEntryClick(date)
 
 function onRecipeSearchEnterPressed()
 {
+	var suggestionsDiv = $("#recipeSuggestions");
+	var currentSuggestion = suggestionsDiv.find(".recipeSuggestionHover");
+
+	if (currentSuggestion.length !== 0)
+	{
+		currentSuggestion.click();
+		return;
+	}
+
 	var addRecipeEntry = $(".addRecipeEntry");
 	var addRecipeInput = addRecipeEntry.children("input");
 
@@ -839,7 +849,7 @@ function onAddRecipeInputChanged(addRecipeInput)
 
 	if (searchText === "")
 	{
-		$("#suggestions").empty();
+		$("#recipeSuggestions").empty();
 		return;
 	}
 
