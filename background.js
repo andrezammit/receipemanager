@@ -763,6 +763,10 @@ function getObjectById(id, type)
         case RESULT_TYPE_TAG:
             array = _db.tags;
             break;
+
+        case RESULT_TYPE_DATEENTRY:
+            array = _db.calendar;
+            break;
     }
 
     var size = array.length;

@@ -7,7 +7,8 @@ var _db =
 		books: [], 
 		sections: [],
 		recipes: [],
-		tags: []
+		tags: [],
+		calendar: []
 	};
 
 function Recipe()
@@ -43,6 +44,12 @@ function Tag()
 	this.name = "";
 	this.recipeIds = [];
 	this.sectionIds = [];
+}
+
+function DateEntry()
+{
+	this.date = "";
+	this.recipeIds = [];
 }
 
 var RESULT_TYPE_BOOK 	= 1;
