@@ -715,7 +715,7 @@ function onDayClicked(event)
 			if (dateEntry === null)
 			{
 				dateEntry = new DateEntry();
-				dateEntry.id = dateId;
+				dateEntry.date = dateId;
 			}
 
 			console.log(date.toString());
@@ -725,11 +725,15 @@ function onDayClicked(event)
 			
 			$("#recipeSuggestions").empty();
 
-			// for (var cnt = 0; cnt < 3; cnt++)
-			// {
-			// 	var recipeEntry = $("<div class='recipeEntry'>Recipe " + cnt + "</div>");
-			// 	dayMenuDiv.append(recipeEntry);
-			// }
+			for (var cnt = 0; cnt < dateEntry.recipes.length; cnt++)
+			{
+				var recipe = dateEntry.recipes[cnt];
+
+				var recipeEntry = $("<div class='recipeEntry'>" + recipe.name + "</div>");
+				recipeEntry.data("recipe", recipe);
+
+				dayMenuDiv.append(recipeEntry);
+			}
 
 			var addRecipeEntry = $("<div class='addRecipeEntry'>Add Recipe...</div>");
 			addRecipeEntry.on("click", 
@@ -804,19 +808,26 @@ function onRecipeSearchEnterPressed()
 		return;
 	}
 
+	var dayMenuDiv = $("#dayMenu");
+	var dateEntry = dayMenuDiv.data("dateEntry");
+
 	var addRecipeEntry = $(".addRecipeEntry");
 	var addRecipeInput = addRecipeEntry.children("input");
 
-	var newRecipeName = addRecipeInput.val();
+	var newRecipeEntry = new DateRecipe();
+	newRecipeEntry.name = addRecipeInput.val();
+	newRecipeEntry.id = addRecipeInput.data("recipeId");
 
-	var newRecipeEntry = $("<div class='recipeEntry'>" + newRecipeName + "</div>");
-	newRecipeEntry.data("recipeId", addRecipeInput.data("recipeId"));
+	dateEntry.recipes.push(newRecipeEntry);
+
+	var newRecipeEntry = $("<div class='recipeEntry'>" + newRecipeEntry.name + "</div>");
+	newRecipeEntry.data("recipe", newRecipeEntry);
 
 	newRecipeEntry.on("click", 
 		function()
 		{
-			var recipeId = newRecipeEntry.data("recipeId");
-			showRecipe(recipeId);
+			var recipe = newRecipeEntry.data("recipe");
+			showRecipe(recipe.id);
 		});
 
 	newRecipeEntry.insertBefore(addRecipeEntry);

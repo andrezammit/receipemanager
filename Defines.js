@@ -46,10 +46,16 @@ function Tag()
 	this.sectionIds = [];
 }
 
+function DateRecipe()
+{
+	this.id = 0;
+	this.name = "";
+}
+
 function DateEntry()
 {
 	this.date = "";
-	this.recipeIds = [];
+	this.recipies = [];
 }
 
 var RESULT_TYPE_BOOK 	= 1;
