@@ -4,11 +4,15 @@
 /* globals RESULT_TYPE_SECTION */
 /* globals RESULT_TYPE_RECIPE */
 /* globals RESULT_TYPE_TAG */
+/* globals RESULT_TYPE_DATEENTRY */
 
 /* globals Recipe */
 /* globals Book */
 /* globals Section */
 /* globals Tag */
+/* globals DateEntry */
+
+/* globals _db */
 
 chrome.app.runtime.onLaunched.addListener(
 	function() 
@@ -109,6 +113,13 @@ chrome.runtime.onMessage.addListener(
             }
             break;
 
+            case "updateDateEntry":
+            {
+                updateDateEntry(request.dateEntry);
+                sendResponse();
+            }
+            break;
+
             case "getObjectById":
             {
                 var object = getObjectById(request.id, request.type);
@@ -153,7 +164,6 @@ chrome.runtime.onMessage.addListener(
         }
   });
 
-var _db = null;
 var _currResults = 
     {
         books: [],
@@ -1000,14 +1010,6 @@ function onDBFileFound(dataFileEntry, onLoadDatabaseDone)
                     var data = event.target.result;
                     var dataObj = JSON.parse(data);
 
-                    _db = 
-                        { 
-                            books: [], 
-                            sections: [],
-                            recipes: [],
-                            tags: []
-                        };
-
                     loadTags(dataObj);
                     loadBooks(dataObj);
                     loadRecipes(dataObj);
@@ -1523,4 +1525,18 @@ function getRecipeSuggestions(searchText)
     };
 
     return results;
+}
+
+function updateDateEntry(updatedDateEntry)
+{
+    var dateEntry = getObjectById(updatedDateEntry.id, RESULT_TYPE_DATEENTRY);
+    var isNewDateEntry = dateEntry === null;
+
+    if (isNewDateEntry === true)
+    {
+        dateEntry = new DateEntry();
+        _db.calendar.push(dateEntry);
+    }
+
+    copyObject(dateEntry, updatedDateEntry);
 }

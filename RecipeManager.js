@@ -4,6 +4,7 @@
 /* globals RESULT_TYPE_SECTION */
 /* globals RESULT_TYPE_RECIPE */
 /* globals RESULT_TYPE_TAG */
+/* globals RESULT_TYPE_DATEENTRY */
 
 /* globals KEY_UP */
 /* globals KEY_DOWN */
@@ -13,6 +14,8 @@
 /* globals Book */
 /* globals Section */
 /* globals Tag */
+/* globals DateEntry */
+/* globals DateRecipe */
 
 var _currDate = 0;
 var _currentResults = null;
@@ -707,7 +710,7 @@ function onDayClicked(event)
 	var dayDiv = $(event.target);
 	var date = dayDiv.data("date");
 
-	var dateId = date.getDay() + "-" + date.getMonth() + "-" date.getYear();
+	var dateId = date.getDay() + "-" + date.getMonth() + "-" + date.getYear();
 
 	getDateEntryById(dateId,
 		function(dateEntry)
@@ -715,7 +718,7 @@ function onDayClicked(event)
 			if (dateEntry === null)
 			{
 				dateEntry = new DateEntry();
-				dateEntry.date = dateId;
+				dateEntry.id = dateId;
 			}
 
 			console.log(date.toString());
@@ -724,6 +727,9 @@ function onDayClicked(event)
 			dayMenuDiv.data("dateEntry", dateEntry);
 			
 			$("#recipeSuggestions").empty();
+			
+			$(".recipeEntry").remove();
+			$(".addRecipeEntry").remove();
 
 			for (var cnt = 0; cnt < dateEntry.recipes.length; cnt++)
 			{
@@ -737,16 +743,16 @@ function onDayClicked(event)
 
 			var addRecipeEntry = $("<div class='addRecipeEntry'>Add Recipe...</div>");
 			addRecipeEntry.on("click", 
-				function(event)
+				function()
 				{
-					onAddRecipeEntryClick($(event.target), date);
+					onAddRecipeEntryClick();
 				});
 
 			dayMenuDiv.append(addRecipeEntry);
 		});
 }
 
-function onAddRecipeEntryClick(date)
+function onAddRecipeEntryClick()
 {
 	var addRecipeEntry = $(".addRecipeEntry");
 	var inputState = addRecipeEntry.data("inputState");
@@ -767,7 +773,7 @@ function onAddRecipeEntryClick(date)
 				onAddRecipeInputChanged(addRecipeInput);
 			})
 		.blur(
-			function(event)
+			function()
 			{
 				if ($("#recipeSuggestions").data("hovered") === true)
 					return;
@@ -814,25 +820,33 @@ function onRecipeSearchEnterPressed()
 	var addRecipeEntry = $(".addRecipeEntry");
 	var addRecipeInput = addRecipeEntry.children("input");
 
-	var newRecipeEntry = new DateRecipe();
-	newRecipeEntry.name = addRecipeInput.val();
-	newRecipeEntry.id = addRecipeInput.data("recipeId");
+	var newDateRecipe = new DateRecipe();
+	newDateRecipe.name = addRecipeInput.val();
+	newDateRecipe.id = addRecipeInput.data("recipeId");
 
-	dateEntry.recipes.push(newRecipeEntry);
+	dateEntry.recipes.push(newDateRecipe);
 
-	var newRecipeEntry = $("<div class='recipeEntry'>" + newRecipeEntry.name + "</div>");
-	newRecipeEntry.data("recipe", newRecipeEntry);
-
-	newRecipeEntry.on("click", 
-		function()
+	chrome.runtime.sendMessage(
 		{
-			var recipe = newRecipeEntry.data("recipe");
-			showRecipe(recipe.id);
+			command: "updateDateEntry",
+			dateEntry: dateEntry
+		}, 
+		function() 
+	    {
+	    	var newRecipeEntry = $("<div class='recipeEntry'>" + newDateRecipe.name + "</div>");
+			newRecipeEntry.data("recipe", newDateRecipe);
+
+			newRecipeEntry.on("click", 
+				function()
+				{
+					var recipe = newRecipeEntry.data("recipe");
+					showRecipe(recipe.id);
+				});
+
+			newRecipeEntry.insertBefore(addRecipeEntry);
+
+			addRecipeInput.blur();
 		});
-
-	newRecipeEntry.insertBefore(addRecipeEntry);
-
-	addRecipeInput.blur();
 }
 
 function onRecipeSearchDownPressed()
@@ -1920,7 +1934,7 @@ function onDateClick(type, id)
 	showAddRecipeToDateView(id);
 }
 
-function showAddRecipeToDateView(id)
+function showAddRecipeToDateView()
 {
 	$("#addRecipeToDate").show();
 }
