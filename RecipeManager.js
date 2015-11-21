@@ -738,6 +738,13 @@ function onDayClicked(event)
 				var recipeEntry = $("<div class='recipeEntry'>" + recipe.name + "</div>");
 				recipeEntry.data("recipe", recipe);
 
+				recipeEntry.on("click", 
+					function()
+					{
+						var recipe = recipeEntry.data("recipe");
+						showRecipe(recipe.id);
+					});
+
 				dayMenuDiv.append(recipeEntry);
 			}
 
