@@ -731,6 +731,8 @@ function onDayClicked(event)
 			$(".recipeEntry").remove();
 			$(".addRecipeEntry").remove();
 
+			$("#dateHeader").text(date.toDateString());
+
 			for (var cnt = 0; cnt < dateEntry.recipes.length; cnt++)
 			{
 				var recipe = dateEntry.recipes[cnt];
@@ -738,13 +740,7 @@ function onDayClicked(event)
 				var recipeEntry = $("<div class='recipeEntry'>" + recipe.name + "</div>");
 				recipeEntry.data("recipe", recipe);
 
-				recipeEntry.on("click", 
-					function()
-					{
-						var recipe = recipeEntry.data("recipe");
-						showRecipe(recipe.id);
-					});
-
+				recipeEntry.on("click", onRecipeEntryClick);
 				dayMenuDiv.append(recipeEntry);
 			}
 
@@ -757,6 +753,14 @@ function onDayClicked(event)
 
 			dayMenuDiv.append(addRecipeEntry);
 		});
+}
+
+function onRecipeEntryClick(event)
+{
+	var recipeEntry = $(event.target);
+
+	var recipe = recipeEntry.data("recipe");
+	showRecipe(recipe.id);
 }
 
 function onAddRecipeEntryClick()
