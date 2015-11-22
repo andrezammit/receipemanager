@@ -29,7 +29,7 @@ $(document).ready(
 		loadDatabase(
 			function()
 			{
-				_currDate = getCurrentMonth();
+				_currDate = getCurrentDate();
 
 				fillCalendarView(_currDate);
 				fillTagContainers();
@@ -448,7 +448,7 @@ function onLoadDataClick()
 	loadDatabase(
 		function()
 		{
-			_currDate = getCurrentMonth();
+			_currDate = getCurrentDate();
 
 			fillCalendarView(_currDate);
 
@@ -534,14 +534,17 @@ function onTitleClick()
 
 function onPrevMonthClick()
 {
-	if (_currDate.month === 0)
+	if (_currDate.getMonth() === 0)
 	{
-		_currDate.year--;
-		_currDate.month = 11;
+		var year = _currDate.getFullYear();
+
+		_currDate.setYear(--year);
+		_currDate.setMonth(11);
 	}
 	else
 	{
-		_currDate.month--;
+		var month = _currDate.getMonth();
+		_currDate.setMonth(--month);
 	}
 
 	fillCalendarView(_currDate);
@@ -551,18 +554,21 @@ function onNextMonthClick()
 {
 	if (_currDate.month == 11)
 	{
-		_currDate.year++;
-		_currDate.month = 0;
+		var year = _currDate.getFullYear();
+
+		_currDate.setYear(++year);
+		_currDate.setMonth(0);
 	}
 	else
 	{
-		_currDate.month++;
+		var month = _currDate.getMonth();
+		_currDate.setMonth(++month);
 	}
 
 	fillCalendarView(_currDate);
 }
 
-function getCurrentMonth()
+function getCurrentDate()
 {
 	return new Date();
 }
@@ -577,7 +583,7 @@ function getDaysInMonth(month)
 		case 10:
 			return 30;
 
-		case 2:
+		case 1:
 			return 28;
 	}
 
@@ -634,12 +640,12 @@ function fillCalendarView(date)
 	monthTitleDiv.text(monthName);
 
 	var yearDiv = $("#year");
-	yearDiv.text(date.getYear());
+	yearDiv.text(date.getFullYear());
 
 	var daysDiv = $("#days");
 	daysDiv.empty();
 
-	var firstDay = getDayOfWeek(1, date.getMonth(), date.getYear()) - 1;
+	var firstDay = getDayOfWeek(1, date.getMonth(), date.getFullYear()) - 1;
 	for (var cnt = 0; cnt < firstDay; cnt++)
 	{
 		daysDiv.append("<div class='dummyDay'>&nbsp</div>");
@@ -661,7 +667,7 @@ function fillCalendarView(date)
 		daysDiv.append(dayDiv);
 	}
 
-	var lastDay = getDayOfWeek(days, date.getMonth(), date.getYear());
+	var lastDay = getDayOfWeek(days, date.getMonth(), date.getFullYear());
 	var daysToAdd = 7 - lastDay;
 	
 	for (cnt = 0; cnt < daysToAdd; cnt++)
