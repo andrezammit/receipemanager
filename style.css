@@ -749,8 +749,15 @@ button
     box-shadow: 0px 0px 14px 1px rgba(50, 50, 50, 0.75);
 }
 
+.recipeEntryName
+{
+	width: 100%;
+}
+
 .recipeEntry, .addRecipeEntry
 {
+	display: flex;
+
     width: 100%;
     font-size: 22px;
 
@@ -762,7 +769,35 @@ button
 
 .recipeEntry:hover, .addRecipeEntry:hover
 {
+	cursor: pointer;
 	background-color: lightblue;
+}
+
+.recipeEntry:hover .recipeEntryButton
+{
+	opacity: 1;
+	pointer-events: auto;	
+}
+
+.recipeEntryButton
+{
+	opacity: 0;
+	pointer-events: none;
+
+    width: 16px;
+
+	color: gray;
+
+	font-size: 20px;
+	font-weight: bold;
+
+	transition: opacity 0.2s;
+	transition: color 0.2s;
+}
+
+.recipeEntryButton:hover
+{
+	color: black;
 }
 
 .addRecipeEntry > input[type="text"]

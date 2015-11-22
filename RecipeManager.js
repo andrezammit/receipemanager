@@ -850,23 +850,56 @@ function onRecipeSearchEnterPressed()
 		}, 
 		function() 
 	    {
-	    	var newRecipeEntry = $("<div class='recipeEntry'>" + newDateRecipe.name + "</div>");
-			newRecipeEntry.data("recipe", newDateRecipe);
-
-			newRecipeEntry.on("click", 
-				function()
-				{
-					var recipe = newRecipeEntry.data("recipe");
-					showRecipe(recipe.id);
-				});
-
-			newRecipeEntry.insertBefore(addRecipeEntry);
+	    	addDateRecipeEntry(dateEntry, newDateRecipe);
 
 			addRecipeInput.blur();
 
 			suggestionsDiv.hide();
 			suggestionsDiv.children().removeClass("recipeSuggestionHover");
 		});
+}
+
+function addDateRecipeEntry(dateEntry, newDateRecipe)
+{
+	var newRecipeEntry = $("<div class='recipeEntry'></div>");
+	    	
+	var recipeEntryName = $("<div class='recipeEntryName'>" + newDateRecipe.name + "</div>");
+	newRecipeEntry.append(recipeEntryName);
+	
+	var recipeEntryDelete = $("<div class='recipeEntryButton'>x</div>");
+	newRecipeEntry.append(recipeEntryDelete);
+
+	recipeEntryDelete.on("click",
+		function()
+		{
+			removeRecipeFromDateEntry(dateEntry, newDateRecipe);
+			newRecipeEntry.remove();
+		});
+
+	newRecipeEntry.data("recipe", newDateRecipe);
+
+	recipeEntryName.on("click", 
+		function()
+		{
+			var recipe = newRecipeEntry.data("recipe");
+			showRecipe(recipe.id);
+		});
+
+	var addRecipeEntry = $(".addRecipeEntry");
+	newRecipeEntry.insertBefore(addRecipeEntry);
+}
+
+function removeRecipeFromDateEntry(dateEntry, recipeToRemove)
+{
+	for (var cnt = 0; cnt < dateEntry.recipes.length; cnt++)
+	{
+		var recipe = dateEntry.recipes[cnt];
+
+		if (recipe === recipeToRemove)
+		{
+			
+		}
+	}
 }
 
 function onRecipeSearchDownPressed()
