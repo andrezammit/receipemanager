@@ -138,6 +138,10 @@ function setHandlers()
 	tagView.find(".btnEdit").on("click", onTagEditClick);
 	tagView.find(".btnClose, .closeButton").on("click", onTagCloseClick);
 
+	var dayMenuView = $("#dayMenu");
+	
+	tagView.find(".closeButton").on("click", onDayMenuCloseClick);
+
 	$(window).on("scroll", 
 		function() 
 		{
@@ -2179,4 +2183,18 @@ function onTagOKClick(id, tag)
 		fillTagContainers();
 		refreshResultsView();
 	});
+}
+
+function resetDayMenu()
+{
+	$("#recipeSuggestions").empty();
+			
+	$(".recipeEntry").remove();
+	$(".addRecipeEntry").remove();
+}
+
+function onDayMenuCloseClick()
+{
+	$("dayMenu").hide();
+	resetDayMenu();
 }
