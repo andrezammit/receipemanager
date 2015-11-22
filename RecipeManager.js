@@ -863,6 +863,9 @@ function onRecipeSearchEnterPressed()
 			newRecipeEntry.insertBefore(addRecipeEntry);
 
 			addRecipeInput.blur();
+
+			suggestionsDiv.hide();
+			suggestionsDiv.children().removeClass("recipeSuggestionHover");
 		});
 }
 
