@@ -771,6 +771,12 @@ button
 	height: 30px
 }
 
+.addRecipeEntry 
+{
+    font-style: italic;
+    font-size: 18px;
+}
+
 #recipeSuggestions
 {
 	position: absolute;
@@ -803,3 +809,15 @@ button
 
 	cursor: pointer;
 }
+
+#dateHeader
+{
+	font-size: 25px;
+	font-weight: bold;
+	
+    padding-left: 10px;
+    padding-right: 10px;
+    padding-top: 5px;
+    padding-bottom: 5px;
+}
+
