@@ -140,7 +140,7 @@ function setHandlers()
 
 	var dayMenuView = $("#dayMenu");
 	
-	tagView.find(".closeButton").on("click", onDayMenuCloseClick);
+	dayMenuView.find(".closeButton").on("click", onDayMenuCloseClick);
 
 	$(window).on("scroll", 
 		function() 
@@ -728,8 +728,10 @@ function onDayClicked(event)
 			console.log(date.toString());
 
 			var dayMenuDiv = $("#dayMenu");
-			dayMenuDiv.data("dateEntry", dateEntry);
 			
+			dayMenuDiv.css("display", "flex");
+			dayMenuDiv.data("dateEntry", dateEntry);
+
 			$("#recipeSuggestions").empty();
 			
 			$(".recipeEntry").remove();
@@ -2195,6 +2197,6 @@ function resetDayMenu()
 
 function onDayMenuCloseClick()
 {
-	$("dayMenu").hide();
+	$("#dayMenu").hide();
 	resetDayMenu();
 }
