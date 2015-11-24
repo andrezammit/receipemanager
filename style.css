@@ -858,3 +858,7 @@ button
     padding-bottom: 5px;
 }
 
+#recipeContainer
+{
+	width: calc(100% - 25px);
+}

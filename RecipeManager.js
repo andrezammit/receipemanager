@@ -142,6 +142,16 @@ function setHandlers()
 	
 	dayMenuView.find(".closeButton").on("click", onDayMenuCloseClick);
 
+	$("#recipeContainer").sortable({
+  
+	  axis: "y",
+	  revert: true,
+	  scroll: false,
+	  //placeholder: "sortable-placeholder",
+	  cursor: "move",
+	  stop: onRecipeDragStopped
+	});
+
 	$(window).on("scroll", 
 		function() 
 		{
@@ -162,6 +172,56 @@ function setHandlers()
 			    	showSearchResults(response, false);
 				});
     		}
+	});
+}
+
+function onRecipeDragStopped(e, ui)
+{
+	console.log("drag stopped");
+
+	var nextRecipe = null;
+
+	var nextRecipeDiv = ui.item.next();
+
+	if (nextRecipeDiv !== null)
+		nextRecipe = nextRecipeDiv.data("recipe");
+
+	var recipe = ui.item.data("recipe");
+
+	moveRecipeInDateEntry(recipe, nextRecipe);
+}
+
+function moveRecipeInDateEntry(recipeToMove, nextRecipe)
+{
+	var dayMenuView = $("#dayMenu");
+	var dateEntry = dayMenuView.data("dateEntry");
+
+	for (var cnt = 0; cnt < dateEntry.recipes.length; cnt++)
+	{
+		var recipe = dateEntry.recipes[cnt];
+
+		if (recipe === recipeToMove)
+		{
+			dateEntry.recipes.splice(cnt, 1);
+			break;
+		}
+	}
+
+	for (var cnt = 0; cnt < dateEntry.recipes.length; cnt++)
+	{
+		var recipe = dateEntry.recipes[cnt];
+
+		if (recipe === nextRecipe)
+		{
+			dateEntry.recipes.splice(cnt, 0, recipeToMove);
+			break;
+		}
+	}
+
+	chrome.runtime.sendMessage(
+	{
+		command: "updateDateEntry",
+		dateEntry: dateEntry
 	});
 }
 
@@ -714,7 +774,7 @@ function onDayClicked(event)
 	var dayDiv = $(event.target);
 	var date = dayDiv.data("date");
 
-	var dateId = date.getDay() + "-" + date.getMonth() + "-" + date.getYear();
+	var dateId = date.getDay() + "-" + date.getMonth() + "-" + date.getFullYear();
 
 	getDateEntryById(dateId,
 		function(dateEntry)
@@ -739,6 +799,8 @@ function onDayClicked(event)
 
 			$("#dateHeader").text(date.toDateString());
 
+			var recipeContainer = $("#recipeContainer");
+
 			for (var cnt = 0; cnt < dateEntry.recipes.length; cnt++)
 			{
 				var recipe = dateEntry.recipes[cnt];
@@ -747,7 +809,7 @@ function onDayClicked(event)
 				recipeEntry.data("recipe", recipe);
 
 				recipeEntry.on("click", onRecipeEntryClick);
-				dayMenuDiv.append(recipeEntry);
+				recipeContainer.append(recipeEntry);
 			}
 
 			var addRecipeEntry = $("<div class='addRecipeEntry'>Add Recipe...</div>");
@@ -885,8 +947,8 @@ function addDateRecipeEntry(dateEntry, newDateRecipe)
 			showRecipe(recipe.id);
 		});
 
-	var addRecipeEntry = $(".addRecipeEntry");
-	newRecipeEntry.insertBefore(addRecipeEntry);
+	var recipeContainer = $("#recipeContainer");
+	recipeContainer.append(newRecipeEntry);
 }
 
 function removeRecipeFromDateEntry(dateEntry, recipeToRemove)
