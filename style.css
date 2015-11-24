@@ -810,6 +810,8 @@ button
 {
     font-style: italic;
     font-size: 18px;
+
+    margin-top: 15px;
 }
 
 #recipeSuggestions
