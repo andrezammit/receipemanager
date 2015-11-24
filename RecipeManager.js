@@ -897,9 +897,19 @@ function removeRecipeFromDateEntry(dateEntry, recipeToRemove)
 
 		if (recipe === recipeToRemove)
 		{
-			
+			dateEntry.recipes.splice(cnt, 1);
+			break;
 		}
 	}
+
+	chrome.runtime.sendMessage(
+	{
+		command: "updateDateEntry",
+		dateEntry: dateEntry
+	}, 
+	function() 
+    {
+	});
 }
 
 function onRecipeSearchDownPressed()
