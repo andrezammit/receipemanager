@@ -734,7 +734,7 @@ button
 {
     position: fixed;
 
-    display: flex;
+    display: none;
     flex-wrap: wrap;
 
 	width: 500px;
