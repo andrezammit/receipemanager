@@ -142,15 +142,15 @@ function setHandlers()
 	
 	dayMenuView.find(".closeButton").on("click", onDayMenuCloseClick);
 
-	$("#recipeContainer").sortable({
-  
-	  axis: "y",
-	  revert: true,
-	  scroll: false,
-	  //placeholder: "sortable-placeholder",
-	  cursor: "move",
-	  stop: onRecipeDragStopped
-	});
+	$("#recipeContainer").sortable(
+		{
+			axis: "y",
+			revert: true,
+			scroll: false,
+			cursor: "move",
+			stop: onRecipeDragStopped,
+			helper: "clone"
+		});
 
 	$(window).on("scroll", 
 		function() 
@@ -189,6 +189,8 @@ function onRecipeDragStopped(e, ui)
 	var recipe = ui.item.data("recipe");
 
 	moveRecipeInDateEntry(recipe, nextRecipe);
+
+	e.stopPropagation();
 }
 
 function moveRecipeInDateEntry(recipeToMove, nextRecipe)
