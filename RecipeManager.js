@@ -198,9 +198,11 @@ function moveRecipeInDateEntry(recipeToMove, nextRecipe)
 	var dayMenuView = $("#dayMenu");
 	var dateEntry = dayMenuView.data("dateEntry");
 
+	var recipe = null;
+
 	for (var cnt = 0; cnt < dateEntry.recipes.length; cnt++)
 	{
-		var recipe = dateEntry.recipes[cnt];
+		recipe = dateEntry.recipes[cnt];
 
 		if (recipe === recipeToMove)
 		{
@@ -209,9 +211,9 @@ function moveRecipeInDateEntry(recipeToMove, nextRecipe)
 		}
 	}
 
-	for (var cnt = 0; cnt < dateEntry.recipes.length; cnt++)
+	for (cnt = 0; cnt < dateEntry.recipes.length; cnt++)
 	{
-		var recipe = dateEntry.recipes[cnt];
+		recipe = dateEntry.recipes[cnt];
 
 		if (recipe === nextRecipe)
 		{
@@ -801,17 +803,10 @@ function onDayClicked(event)
 
 			$("#dateHeader").text(date.toDateString());
 
-			var recipeContainer = $("#recipeContainer");
-
 			for (var cnt = 0; cnt < dateEntry.recipes.length; cnt++)
 			{
 				var recipe = dateEntry.recipes[cnt];
-
-				var recipeEntry = $("<div class='recipeEntry'>" + recipe.name + "</div>");
-				recipeEntry.data("recipe", recipe);
-
-				recipeEntry.on("click", onRecipeEntryClick);
-				recipeContainer.append(recipeEntry);
+				addDateRecipeEntry(dateEntry, recipe);
 			}
 
 			var addRecipeEntry = $("<div class='addRecipeEntry'>Add Recipe...</div>");
@@ -823,14 +818,6 @@ function onDayClicked(event)
 
 			dayMenuDiv.append(addRecipeEntry);
 		});
-}
-
-function onRecipeEntryClick(event)
-{
-	var recipeEntry = $(event.target);
-
-	var recipe = recipeEntry.data("recipe");
-	showRecipe(recipe.id);
 }
 
 function onAddRecipeEntryClick()
@@ -942,15 +929,20 @@ function addDateRecipeEntry(dateEntry, newDateRecipe)
 
 	newRecipeEntry.data("recipe", newDateRecipe);
 
-	recipeEntryName.on("click", 
-		function()
-		{
-			var recipe = newRecipeEntry.data("recipe");
-			showRecipe(recipe.id);
-		});
+	recipeEntryName.on("click", onRecipeEntryClick);
 
 	var recipeContainer = $("#recipeContainer");
 	recipeContainer.append(newRecipeEntry);
+}
+
+function onRecipeEntryClick(event)
+{
+	var recipeEntry = $(event.target).parent();
+
+	var recipe = recipeEntry.data("recipe");
+
+	if (recipe.id !== 0)
+		showRecipe(recipe.id);
 }
 
 function removeRecipeFromDateEntry(dateEntry, recipeToRemove)
@@ -1060,7 +1052,7 @@ function showRecipeSuggestions(addRecipeInput, results)
 
 	var customRecipe = new Recipe();
 	customRecipe.name = searchText;
-	customRecipe.id = -1;
+	customRecipe.id = 0;
 
 	addRecipeSuggestion(recipeSuggestions, customRecipe);
 
@@ -1077,6 +1069,9 @@ function showRecipeSuggestions(addRecipeInput, results)
 function addRecipeSuggestion(recipeSuggestionsDiv, recipe)
 {
 	var recipeSuggestionDiv = $("<div class='recipeSuggestion'>" + recipe.name + "</div>");
+
+	if (recipe.id === 0)
+		recipeSuggestionDiv.addClass("recipeSuggestionHover");
 
 	recipeSuggestionDiv.on("click",
 		function(event)
