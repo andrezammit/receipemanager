@@ -773,12 +773,37 @@ function fillCalendarView(date)
 	}
 }
 
+function getDateIdFromDate(date)
+{
+	return date.getDay() + "-" + date.getMonth() + "-" + date.getFullYear();
+}
+
+function fillDayRecipes(dayDiv)
+{
+	var date = dayDiv.data("date");
+	var dateId = getDateIdFromDate(date);
+
+	getDateEntryById(dateId, 
+		function(dateEntry)
+		{
+			dayDiv.children(".dayViewRecipe").remove();
+			
+			for (var cnt = 0; cnt < dateEntry.recipes.length; cnt++)
+			{
+				var recipe = dateEntry.recipes[cnt];
+
+				var dayViewRecipe = $("<div class='dayViewRecipe'>" + recipe.name + "</div>");
+				dayDiv.append(dayViewRecipe);
+			}
+		});
+}
+
 function onDayClicked(event)
 {
 	var dayDiv = $(event.target);
 	var date = dayDiv.data("date");
 
-	var dateId = date.getDay() + "-" + date.getMonth() + "-" + date.getFullYear();
+	var dateId = getDateIdFromDate(date);
 
 	getDateEntryById(dateId,
 		function(dateEntry)
@@ -794,6 +819,8 @@ function onDayClicked(event)
 			var dayMenuDiv = $("#dayMenu");
 			
 			dayMenuDiv.css("display", "flex");
+
+			dayMenuDiv.data("dayDiv", dayDiv);
 			dayMenuDiv.data("dateEntry", dateEntry);
 
 			$("#recipeSuggestions").empty();
@@ -907,6 +934,9 @@ function onRecipeSearchEnterPressed()
 
 			suggestionsDiv.hide();
 			suggestionsDiv.children().removeClass("recipeSuggestionHover");
+
+			var dayDiv = dayMenuDiv.data("dayDiv");
+			fillDayRecipes(dayDiv);
 		});
 }
 

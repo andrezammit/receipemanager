@@ -862,3 +862,16 @@ button
 {
 	width: calc(100% - 25px);
 }
+
+.dayViewRecipe 
+{
+    overflow: hidden;
+
+    width: 90px;
+    margin: 5px;
+
+    background-color: aquamarine;
+
+    white-space: nowrap;
+    text-overflow: ellipsis;
+}
