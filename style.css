@@ -141,7 +141,7 @@ body
 {
 	text-align: left;
 	
-	margin: 0px auto;
+	margin: 0px 180px auto;
 	
 	padding-top: 15px;
 	padding-left: 15px;
@@ -154,7 +154,10 @@ body
 	border-right: 1px #A7A7E4 solid;
 	border-bottom: 1px #A7A7E4 solid;
 
-	width: 708px;
+	width: calc(100% - 300px);
+    height: calc(100% - 114px);
+
+    min-height: 612px;
 }
 
 #results
@@ -301,13 +304,13 @@ body
     margin-bottom: 15px;
 }
 
-.dayCell
+.dayCell, .dummyDay
 {
 	position: relative;
-	display: inline-block;
+	display: inline-table;
 
-	width: 100px;
-	height: 100px;
+	width: calc((100% / 7) - 1px);
+	height: calc((100% / 5) - 1px);
 
 	text-align: left;
 
@@ -315,7 +318,10 @@ body
     border-right: 1px solid;
 
     border-color: darkgrey;
+}
 
+.dayCell
+{
 	transition: background-color 0.2s;
 }
 
@@ -327,8 +333,8 @@ body
 
 .day
 {
-	width: 10px;
-    height: 10px;
+	width: 18px;
+    height: 18px;
     top: 5px;
     left: 5px;
     position: relative;
@@ -336,27 +342,12 @@ body
 
 .dummyDay
 {
-	position: relative;
-	display: inline-block;
-
-	width: 100px;
-	height: 100px;
-
 	background-color: lightgrey;
-	text-align: left;
-
-	border-top: 1px solid;
-    border-right: 1px solid;
-
-    border-color: darkgrey;
 }
 
 #days
 {
-	border-left: 1px solid;
-    border-bottom: 1px solid;
-
-    border-color: darkgrey;
+    height: calc(100% - 80px);
 }
 
 #month
@@ -413,7 +404,7 @@ body
 {
 	display: inline-block;
     text-align: center;
-    width: 100px;
+    width: calc((100% / 7) - 1px);
     font-size: 14px;
     margin-right: 1px;
 }
@@ -867,11 +858,25 @@ button
 {
     overflow: hidden;
 
-    width: 90px;
+   	width: 86px;
     margin: 5px;
 
+    padding: 2px;
+
+    border-radius: 4px;
     background-color: aquamarine;
 
     white-space: nowrap;
     text-overflow: ellipsis;
 }
+
+.dayCell:nth-last-child(-n+7)
+{
+    border-bottom: 1px solid darkgrey;;
+}
+
+.dayCell:nth-child(7n + 1)
+{
+    border-left: 1px solid darkgrey;
+}
+

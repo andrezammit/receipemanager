@@ -745,7 +745,7 @@ function fillCalendarView(date)
 	var firstDay = getDayOfWeek(1, date.getMonth(), date.getFullYear()) - 1;
 	for (var cnt = 0; cnt < firstDay; cnt++)
 	{
-		daysDiv.append("<div class='dummyDay'>&nbsp</div>");
+		daysDiv.append("<div class='dayCell dummyDay'>&nbsp</div>");
 	}
 
 	var days = getDaysInMonth(date.getMonth());
@@ -769,7 +769,7 @@ function fillCalendarView(date)
 	
 	for (cnt = 0; cnt < daysToAdd; cnt++)
 	{
-		daysDiv.append("<div class='dummyDay'>&nbsp</div>");
+		daysDiv.append("<div class='dayCell dummyDay'>&nbsp</div>");
 	}
 }
 
