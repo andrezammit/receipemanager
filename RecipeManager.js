@@ -804,6 +804,8 @@ function fillDayRecipes(dayDiv)
 				var dayViewRecipe = $("<div class='dayViewRecipe'>" + recipe.name + "</div>");
 				dayDiv.append(dayViewRecipe);
 			}
+
+			$(".dayViewRecipe").css("width", dayDiv.width() - 16);
 		});
 }
 
