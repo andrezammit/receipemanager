@@ -802,7 +802,28 @@ function fillDayRecipes(dayDiv)
 
 			dayDiv.children(".dayViewRecipe").remove();
 			
-			for (var cnt = 0; cnt < dateEntry.recipes.length; cnt++)
+			var height = dayDiv.height();
+			
+			var padding = 5;
+			var recipeMargin = 5;
+			var dayNumberHeight = 18 + padding;
+
+			var recipeHeight = 20 + recipeMargin;
+
+			var availableSpace = height - dayNumberHeight;
+			var maxRecipesToShow = Math.floor(availableSpace / recipeHeight);
+
+			var addMoreEntry = false;
+
+			if (maxRecipesToShow < dateEntry.recipes.length)
+			{
+				addMoreEntry = true;
+				maxRecipesToShow--;
+			}
+
+			var recipesToShow = Math.min(dateEntry.recipes.length, maxRecipesToShow);
+
+			for (var cnt = 0; cnt < recipesToShow; cnt++)
 			{
 				var recipe = dateEntry.recipes[cnt];
 
@@ -810,7 +831,24 @@ function fillDayRecipes(dayDiv)
 				dayDiv.append(dayViewRecipe);
 			}
 
+			if (addMoreEntry === true)
+			{
+				var dayViewRecipe = $("<div class='dayViewRecipe'>More...</div>");
+				dayDiv.append(dayViewRecipe);
+			}
+
 			$(".dayViewRecipe").css("width", dayDiv.width() - 16);
+
+			var dayNumberDiv = dayDiv.children(".day");
+
+			if (recipesToShow > 0)
+			{
+				dayNumberDiv.css("font-weight", "bold");
+			}
+			else
+			{
+				dayNumberDiv.css("font-weight", "normal");
+			}
 		});
 }
 
@@ -821,13 +859,13 @@ function refreshDayRecipes()
 	var sampleDayDiv = $(dayDivs[0]);
 	var dayDivWidth = sampleDayDiv.width();
 
-	// for (var cnt = 0; cnt < dayDivs.length; cnt++)
-	// {
-	// 	var dayDiv = $(dayDivs[cnt]);
-	// 	fillDayRecipes(dayDiv);
-	// }
+	for (var cnt = 0; cnt < dayDivs.length; cnt++)
+	{
+		var dayDiv = $(dayDivs[cnt]);
+		fillDayRecipes(dayDiv);
+	}
 
-	$(".dayViewRecipe").css("width", dayDivWidth - 16);
+	//$(".dayViewRecipe").css("width", dayDivWidth - 16);
 }
 
 function onDayClicked(event)
@@ -990,7 +1028,7 @@ function addDateRecipeEntry(dateEntry, newDateRecipe)
 
 			var dayMenuDiv = $("#dayMenu");
 			var dayDiv = dayMenuDiv.data("dayDiv");
-			
+
 			fillDayRecipes(dayDiv);
 		});
 
