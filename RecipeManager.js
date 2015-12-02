@@ -197,6 +197,11 @@ function onRecipeDragStopped(e, ui)
 	moveRecipeInDateEntry(recipe, nextRecipe);
 
 	e.stopPropagation();
+
+	var dayMenuDiv = $("#dayMenu");
+	var dayDiv = dayMenuDiv.data("dayDiv");
+
+	fillDayRecipes(dayDiv);
 }
 
 function moveRecipeInDateEntry(recipeToMove, nextRecipe)
@@ -982,6 +987,11 @@ function addDateRecipeEntry(dateEntry, newDateRecipe)
 		{
 			removeRecipeFromDateEntry(dateEntry, newDateRecipe);
 			newRecipeEntry.remove();
+
+			var dayMenuDiv = $("#dayMenu");
+			var dayDiv = dayMenuDiv.data("dayDiv");
+			
+			fillDayRecipes(dayDiv);
 		});
 
 	newRecipeEntry.data("recipe", newDateRecipe);
