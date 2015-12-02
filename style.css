@@ -868,6 +868,8 @@ button
 
     white-space: nowrap;
     text-overflow: ellipsis;
+
+    pointer-events: none;
 }
 
 .dayCell:nth-last-child(-n+7)
