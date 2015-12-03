@@ -10,7 +10,7 @@ body
 
 #header
 {
-	position: relative;
+	display: flex;
 	z-index: 2;
 
 	height: 70px;
@@ -22,16 +22,12 @@ body
 
 #title
 {
-	display: inline-block;
-
 	margin-left: 15px;
-	
 	width: 200px;
 }
 
 #search
 {
-	display: inline-block;
 	position: absolute;
 
 	top: 20px;
@@ -49,12 +45,18 @@ body
 
 #suggestions
 {
+	position: absolute;
+
+    width: calc(100% - 102px);
+
 	margin-left: 100px;
     text-align: left;
 
     border-left: solid 1px #dcdcdc;
     border-right: solid 1px #dcdcdc;
     border-bottom: solid 1px #dcdcdc;
+
+    z-index: 2;
 }
 
 .suggestion
