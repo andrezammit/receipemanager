@@ -640,39 +640,55 @@ function onTitleClick()
 	_sidebarVisible = true;
 }
 
-function onPrevMonthClick()
+function getPrevMonthDate(date)
 {
-	if (_currDate.getMonth() === 0)
-	{
-		var year = _currDate.getFullYear();
+	var prevMonthDate = new Date(date);
 
-		_currDate.setYear(--year);
-		_currDate.setMonth(11);
+	if (date.getMonth() === 0)
+	{
+		var year = date.getFullYear();
+
+		prevMonthDate.setYear(--year);
+		prevMonthDate.setMonth(11);
 	}
 	else
 	{
-		var month = _currDate.getMonth();
-		_currDate.setMonth(--month);
+		var month = date.getMonth();
+		prevMonthDate.setMonth(--month);
 	}
 
+	return prevMonthDate;
+}
+
+function getNextMonthDate(date)
+{
+	var nextMonthDate = new Date(date);
+
+	if (date.month == 11)
+	{
+		var year = date.getFullYear();
+
+		nextMonthDate.setYear(++year);
+		nextMonthDate.setMonth(0);
+	}
+	else
+	{
+		var month = date.getMonth();
+		nextMonthDate.setMonth(++month);
+	}
+
+	return nextMonthDate;
+}
+
+function onPrevMonthClick()
+{
+	_currDate = getPrevMonthDate(_currDate);
 	fillCalendarView(_currDate);
 }
 
 function onNextMonthClick()
 {
-	if (_currDate.month == 11)
-	{
-		var year = _currDate.getFullYear();
-
-		_currDate.setYear(++year);
-		_currDate.setMonth(0);
-	}
-	else
-	{
-		var month = _currDate.getMonth();
-		_currDate.setMonth(++month);
-	}
-
+	_currDate = getNextMonthDate(_currDate);
 	fillCalendarView(_currDate);
 }
 
@@ -774,9 +790,17 @@ function fillCalendarView(date)
 		totalDays += 7;
 	}
 
+	var prevMonthDate = getPrevMonthDate(date);
+	var prevMonthDays = getDaysInMonth(prevMonthDate.getMonth());
+
 	for (var cnt = 0; cnt < firstDay; cnt++)
 	{
-		daysDiv.append("<div class='dayCell dummyDay'>&nbsp</div>");
+		var prevMonthDay = prevMonthDays - (firstDay - cnt - 1);
+
+		var dummyDay = $("<div class='dayCell dummyDay'><div class='day'>" + prevMonthDay + "</div></div>");
+		dummyDay.on("click", onPrevMonthClick);
+
+		daysDiv.append(dummyDay);
 	}
 
 	for (cnt = 0; cnt < days; cnt++)
@@ -796,7 +820,10 @@ function fillCalendarView(date)
 
 	for (cnt = 0; cnt < daysToAdd; cnt++)
 	{
-		daysDiv.append("<div class='dayCell dummyDay'>&nbsp</div>");
+		var dummyDay = $("<div class='dayCell dummyDay'><div class='day'>" + (cnt + 1) + "</div></div>");
+		dummyDay.on("click", onNextMonthClick);
+
+		daysDiv.append(dummyDay);
 	}
 }
 
