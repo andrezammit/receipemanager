@@ -361,7 +361,7 @@ body
 
 #prevMonth
 {
-	width: 50px;
+	width: 40px;
 	float: left;
 }
 
@@ -372,7 +372,7 @@ body
 
 #currMonth
 {
-	width: 608px;
+	width: calc(100% - 80px);
 	float: left;
 }
 
