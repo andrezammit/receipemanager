@@ -173,77 +173,77 @@ var _currResults =
 
 function getBunchOfResults()
 {
-  var bunchOfResults = 
-  {
-    books: [],
-    sections: [],
-    recipes: []
-  };
+    var bunchOfResults = 
+    {
+        books: [],
+        sections: [],
+        recipes: []
+    };
 
-  var entriesLeft = 100;
+    var entriesLeft = 100;
 
-  bunchOfResults.books = getBunchOfBooks(entriesLeft);
-  bunchOfResults.sections = getBunchOfSections(entriesLeft);
-  bunchOfResults.recipes = getBunchOfRecipes(entriesLeft);
+    bunchOfResults.books = getBunchOfBooks(entriesLeft);
+    bunchOfResults.sections = getBunchOfSections(entriesLeft);
+    bunchOfResults.recipes = getBunchOfRecipes(entriesLeft);
 
-  return bunchOfResults;
+    return bunchOfResults;
 }
 
 function getBunchOfBooks(entriesLeft)
 {
-  if (entriesLeft === 0 || _currResults.books === null)
-    return null;
+    if (entriesLeft === 0 || _currResults.books === null)
+        return null;
 
-  var booksToReturn = Math.max(_currResults.books.length, entriesLeft);
+    var booksToReturn = Math.max(_currResults.books.length, entriesLeft);
 
-  var bunchOfBooks = _currResults.books.splice(0, booksToReturn);
-  entriesLeft -= booksToReturn;
+    var bunchOfBooks = _currResults.books.splice(0, booksToReturn);
+    entriesLeft -= booksToReturn;
 
-  if (bunchOfBooks.length === 0)
-    return null;
+    if (bunchOfBooks.length === 0)
+        return null;
 
-  return bunchOfBooks; 
+    return bunchOfBooks; 
 }
 
 function getBunchOfSections(entriesLeft)
 {
-  if (entriesLeft === 0 || _currResults.sections === null)
-    return null;
+    if (entriesLeft === 0 || _currResults.sections === null)
+        return null;
 
-  var bunchOfSections = [];
+    var bunchOfSections = [];
 
-  for (var cnt = 0; cnt < _currResults.sections.length; cnt++)
-  {
-    var sectionGroup = _currResults.sections[cnt];
-
-    if (sectionGroup.sections.length < entriesLeft)
+    for (var cnt = 0; cnt < _currResults.sections.length; cnt++)
     {
-      bunchOfSections.push(sectionGroup);
-      entriesLeft -= sectionGroup.sections.length;
+        var sectionGroup = _currResults.sections[cnt];
 
-      _currResults.sections.splice(0, 1);
-      cnt--;
+        if (sectionGroup.sections.length < entriesLeft)
+        {
+            bunchOfSections.push(sectionGroup);
+            entriesLeft -= sectionGroup.sections.length;
 
-      continue;
+            _currResults.sections.splice(0, 1);
+            cnt--;
+
+            continue;
+        }
+
+        var tempGroup = 
+        {
+            bookId: sectionGroup.bookId,
+            sections: []
+        };
+
+        tempGroup.sections = sectionGroup.sections.splice(0, entriesLeft);
+        entriesLeft = 0;
+
+        bunchOfSections.push(tempGroup);
+        break;
     }
 
-    var tempGroup = 
-    {
-      bookId: sectionGroup.bookId,
-      sections: []
-    };
+    if (bunchOfSections.length === 0)
+        return null;
 
-    tempGroup.sections = sectionGroup.sections.splice(0, entriesLeft);
-    entriesLeft = 0;
-
-    bunchOfSections.push(tempGroup);
-    break;
-  }
-
-  if (bunchOfSections.length === 0)
-    return null;
-
-  return bunchOfSections; 
+    return bunchOfSections; 
 }
 
 function getBunchOfRecipes(entriesLeft)

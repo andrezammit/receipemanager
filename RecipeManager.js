@@ -754,12 +754,31 @@ function fillCalendarView(date)
 	daysDiv.empty();
 
 	var firstDay = getDayOfWeek(1, date.getMonth(), date.getFullYear()) - 1;
+
+	var days = getDaysInMonth(date.getMonth());
+	var lastDay = getDayOfWeek(days, date.getMonth(), date.getFullYear());
+	
+	var daysToAdd = 7 - lastDay;
+	
+	var totalDays = firstDay + days + daysToAdd;
+
+	if ((totalDays / 7) < 6)
+	{
+		daysToAdd += 7;
+		totalDays += 7;
+	}
+
+	if ((totalDays / 7) < 6)
+	{
+		firstDay += 7;
+		totalDays += 7;
+	}
+
 	for (var cnt = 0; cnt < firstDay; cnt++)
 	{
 		daysDiv.append("<div class='dayCell dummyDay'>&nbsp</div>");
 	}
 
-	var days = getDaysInMonth(date.getMonth());
 	for (cnt = 0; cnt < days; cnt++)
 	{
 		var day = cnt + 1;
@@ -775,9 +794,6 @@ function fillCalendarView(date)
 		daysDiv.append(dayDiv);
 	}
 
-	var lastDay = getDayOfWeek(days, date.getMonth(), date.getFullYear());
-	var daysToAdd = 7 - lastDay;
-	
 	for (cnt = 0; cnt < daysToAdd; cnt++)
 	{
 		daysDiv.append("<div class='dayCell dummyDay'>&nbsp</div>");
