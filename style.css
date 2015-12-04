@@ -11,6 +11,8 @@ body
 #header
 {
 	display: flex;
+	position: fixed;
+
 	z-index: 2;
 
 	height: 70px;
@@ -96,6 +98,8 @@ body
 
 	margin-left: -160px;
 
+	top: 71px;
+
 	width: 160px;
 	height: calc(100% - 71px);
 
@@ -132,18 +136,23 @@ body
 
 #content
 {
+	position: fixed;
+
+	top: 71px;
+	left: 180px;
+
+	width: calc(100% - 180px);
+
 	text-align: center;
 	overflow: auto;	
 
 	margin-bottom: 15px;
-    position: relative;
 }
 
 #calendar
 {
+	position: fixed;
 	text-align: left;
-	
-	margin: 0px 180px auto;
 	
 	padding-top: 15px;
 	padding-left: 15px;
@@ -438,7 +447,7 @@ body
     
     background-color: antiquewhite;
 
-    top: 50px;
+    top: 115px;
     left: calc(100% / 2 - 250px);
 
     box-shadow: 0px 0px 14px 1px rgba(50, 50, 50, 0.75);
