@@ -89,7 +89,7 @@ body
 
 #sidebar
 {
-	position: absolute;
+	position: fixed;
 	z-index: 1;
 
 	background-color: lightcyan;
@@ -442,6 +442,8 @@ body
     left: calc(100% / 2 - 250px);
 
     box-shadow: 0px 0px 14px 1px rgba(50, 50, 50, 0.75);
+
+    z-index: 1;
 }
 
 .dialogFooter > .btnOK, .dialogFooter > .btnCancel
