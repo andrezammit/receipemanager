@@ -825,6 +825,8 @@ function fillCalendarView(date)
 
 		daysDiv.append(dummyDay);
 	}
+
+	refreshDayRecipes()
 }
 
 function getDateIdFromDate(date)
@@ -907,8 +909,6 @@ function refreshDayRecipes()
 		var dayDiv = $(dayDivs[cnt]);
 		fillDayRecipes(dayDiv);
 	}
-
-	//$(".dayViewRecipe").css("width", dayDivWidth - 16);
 }
 
 function onDayClicked(event)
