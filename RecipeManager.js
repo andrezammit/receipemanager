@@ -1060,7 +1060,7 @@ function addDateRecipeEntry(dateEntry, newDateRecipe)
 	var recipeEntryName = $("<div class='recipeEntryName'>" + newDateRecipe.name + "</div>");
 	newRecipeEntry.append(recipeEntryName);
 	
-	var recipeEntryDelete = $("<div class='recipeEntryButton'>x</div>");
+	var recipeEntryDelete = $("<div class='recipeEntryButton'><img src='images/delete.png' class='recipeEntryIcon'></div>");
 	newRecipeEntry.append(recipeEntryDelete);
 
 	recipeEntryDelete.on("click",
@@ -1602,7 +1602,7 @@ function addResultEntry(sectionDiv, type, entry, entryDiv)
 
 function addEditButton(resultDiv, type, id)
 {
-	var editButton = $("<div class='resultButtons'>e</div>");
+	var editButton = $("<div class='resultButtons'><img src='images/pencil.png' class='resultIcon'></div>");
 
 	editButton.on("click", 
 		function(e)
@@ -1616,7 +1616,7 @@ function addEditButton(resultDiv, type, id)
 
 function addDeleteButton(resultDiv, type, id)
 {
-	var deleteButton = $("<div class='resultButtons'>x</div>");
+	var deleteButton = $("<div class='resultButtons'><img src='images/delete.png' class='resultIcon'></div>");
 
 	deleteButton.on("click", 
 		function(e)
