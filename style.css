@@ -142,6 +142,7 @@ body
 	left: 180px;
 
 	width: calc(100% - 180px);
+	height: calc(100% - 70px);
 
 	text-align: center;
 	overflow: auto;	
@@ -178,6 +179,7 @@ body
 	text-align: left;
 	
 	margin: 0px auto;
+	margin-bottom: 15px;
 	
 	padding-top: 15px;
 	padding-left: 15px;
