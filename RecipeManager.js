@@ -2339,6 +2339,8 @@ function showTag(id)
 
 			if (tag === null)
 			{
+				isNewEntry = true;
+
 				tag = new Tag();
 				tag.id = id;
 
@@ -2354,7 +2356,7 @@ function showTag(id)
 			btnOK.on("click", 
 				function()
 				{
-					onTagOKClick(id);
+					onTagOKClick(id, tag);
 				});
 
 			var btnCancel = tagView.find(".btnCancel");
