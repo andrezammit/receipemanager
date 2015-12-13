@@ -2458,7 +2458,7 @@ function onDayMenuCloseClick()
 
 function showDialog(dialogDiv)
 {
-	$("#dialogContainer").css("display", "flex");
+	$("#dialogContainer").css("display", "flex").focus();
 	dialogDiv.css("display", "flex");
 }
 
