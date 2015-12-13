@@ -152,6 +152,12 @@ function setHandlers()
 			helper: "clone"
 		});
 
+	$("#dialogContainer").children().draggable(
+		{ 
+			containment: "#dialogContainer",
+			cursor: "move"
+		});
+
 	$(window)
 	.on("scroll", 
 		function() 
