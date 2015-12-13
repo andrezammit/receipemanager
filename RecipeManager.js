@@ -187,6 +187,15 @@ function setHandlers()
 					return;
 
 				var dialog = $("#dialogContainer").find('div:visible:first');
+
+				var btnCancel = dialog.find(".btnCancel");
+
+				if (btnCancel.length !== 0 && btnCancel.is(":visible"))
+				{
+					btnCancel.click();
+					return;
+				}
+
 				dialog.find(".closeButton").click();
 			});
 }
