@@ -21,11 +21,9 @@ chrome.app.runtime.onLaunched.addListener(
   		{
     		"bounds": 
     		{
-      			"width": 1110,
-      			"height": 700,
-            "left": 100,
-            "top": 100
-    		}
+                "width": Math.round(window.screen.availWidth*0.8),
+                "height": Math.round(window.screen.availHeight*0.8)
+            }   
   		});
 });
 
