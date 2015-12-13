@@ -922,3 +922,16 @@ button
     border-left: 1px solid darkgrey;
 }
 
+#dialogContainer
+{
+	display: none;
+    position: fixed;
+
+    align-items: center;
+    justify-content: center;
+
+    width: 100%;
+    height: 100%;
+
+    z-index: 1;
+}

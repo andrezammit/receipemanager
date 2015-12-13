@@ -118,29 +118,29 @@ function setHandlers()
 	$("#books").on("click", showBooks);
 	$("#tags").on("click", showTags);
 
-	var recipeView = $("#recipe");
+	var recipeDlg = $("#recipe");
 
-	recipeView.find(".btnEdit").on("click", onRecipeEditClick);
-	recipeView.find(".btnClose, .closeButton").on("click", onRecipeCloseClick);
+	recipeDlg.find(".btnEdit").on("click", onRecipeEditClick);
+	recipeDlg.find(".btnClose, .closeButton").on("click", onRecipeCloseClick);
 
-	var sectionView = $("#section");
+	var sectionDlg = $("#section");
 
-	sectionView.find(".btnEdit").on("click", onSectionEditClick);
-	sectionView.find(".btnClose, .closeButton").on("click", onSectionCloseClick);
+	sectionDlg.find(".btnEdit").on("click", onSectionEditClick);
+	sectionDlg.find(".btnClose, .closeButton").on("click", onSectionCloseClick);
 
-	var bookView = $("#book");
+	var bookDlg = $("#book");
 
-	bookView.find(".btnEdit").on("click", onBookEditClick);
-	bookView.find(".btnClose, .closeButton").on("click", onBookCloseClick);
+	bookDlg.find(".btnEdit").on("click", onBookEditClick);
+	bookDlg.find(".btnClose, .closeButton").on("click", onBookCloseClick);
 
-	var tagView = $("#tag");
+	var tagDlg = $("#tag");
 
-	tagView.find(".btnEdit").on("click", onTagEditClick);
-	tagView.find(".btnClose, .closeButton").on("click", onTagCloseClick);
+	tagDlg.find(".btnEdit").on("click", onTagEditClick);
+	tagDlg.find(".btnClose, .closeButton").on("click", onTagCloseClick);
 
-	var dayMenuView = $("#dayMenu");
+	var dayMenuDlg = $("#dayMenu");
 	
-	dayMenuView.find(".closeButton").on("click", onDayMenuCloseClick);
+	dayMenuDlg.find(".closeButton").on("click", onDayMenuCloseClick);
 
 	$("#recipeContainer").sortable(
 		{
@@ -179,6 +179,16 @@ function setHandlers()
 		{
 			refreshDayRecipes();
 		});
+
+	$("#dialogContainer").keydown(
+		function(event)
+			{
+				if (event.keyCode !== KEY_ESC)
+					return;
+
+				var dialog = $("#dialogContainer").find('div:visible:first');
+				dialog.find(".closeButton").click();
+			});
 }
 
 function onRecipeDragStopped(e, ui)
@@ -206,8 +216,8 @@ function onRecipeDragStopped(e, ui)
 
 function moveRecipeInDateEntry(recipeToMove, nextRecipe)
 {
-	var dayMenuView = $("#dayMenu");
-	var dateEntry = dayMenuView.data("dateEntry");
+	var dayMenuDlg = $("#dayMenu");
+	var dateEntry = dayMenuDlg.data("dateEntry");
 
 	var recipe = null;
 
@@ -930,11 +940,11 @@ function onDayClicked(event)
 			console.log(date.toString());
 
 			var dayMenuDiv = $("#dayMenu");
-			
-			dayMenuDiv.css("display", "flex");
 
 			dayMenuDiv.data("dayDiv", dayDiv);
 			dayMenuDiv.data("dateEntry", dateEntry);
+
+			showDialog(dayMenuDiv);
 
 			$("#recipeSuggestions").empty();
 			
@@ -1696,19 +1706,19 @@ function showSectionRecipes(id)
 	});
 }
 
-function showRecipeView(recipe, isNewEntry)
+function showRecipeDlg(recipe, isNewEntry)
 {
-	var recipeView = $("#recipe");
+	var recipeDlg = $("#recipe");
 
-	recipeView.find("#titleCtrl").val(recipe.name);
-	recipeView.find("#pageCtrl").val(recipe.page);
-	recipeView.find("#cookedCtrl").prop("checked", recipe.isCooked);
-	recipeView.find("#interestingCtrl").prop("checked", recipe.isInteresting);
-	recipeView.find("#commentCtrl").val(recipe.comment);
+	recipeDlg.find("#titleCtrl").val(recipe.name);
+	recipeDlg.find("#pageCtrl").val(recipe.page);
+	recipeDlg.find("#cookedCtrl").prop("checked", recipe.isCooked);
+	recipeDlg.find("#interestingCtrl").prop("checked", recipe.isInteresting);
+	recipeDlg.find("#commentCtrl").val(recipe.comment);
 
-	checkTags(recipeView, recipe.tagIds);
+	checkTags(recipeDlg, recipe.tagIds);
 
-	var btnOK = recipeView.find(".btnOK");
+	var btnOK = recipeDlg.find(".btnOK");
 	btnOK.off("click");
 
 	btnOK.on("click", 
@@ -1717,7 +1727,7 @@ function showRecipeView(recipe, isNewEntry)
 			onRecipeOKClick(recipe.id, recipe);
 		});
 
-	var btnCancel = recipeView.find(".btnCancel");
+	var btnCancel = recipeDlg.find(".btnCancel");
 	btnCancel.off("click");
 
 	btnCancel.on("click", 
@@ -1729,12 +1739,12 @@ function showRecipeView(recipe, isNewEntry)
 			showRecipe(recipe.id);
 		});
 
-	recipeView.css("display", "flex");
+	showDialog(recipeDlg);
 }
 
 function showRecipe(id, parentId)
 {
-	resetRecipeView();
+	resetRecipeDlg();
 
 	if (id === 0)
 	{
@@ -1762,13 +1772,13 @@ function showRecipe(id, parentId)
 						recipe.tagIds = section.tagIds;		
 						onRecipeEditClick();
 
-						showRecipeView(recipe, isNewEntry);
+						showRecipeDlg(recipe, isNewEntry);
 					});
 
 				return;
 			}
 
-			showRecipeView(recipe, isNewEntry);
+			showRecipeDlg(recipe, isNewEntry);
 		});
 }
 
@@ -1800,21 +1810,21 @@ function showTags()
 
 function onRecipeCloseClick()
 {
-	$("#recipe").hide();
-	resetRecipeView();
+	closeDialog($("#recipe"));
+	resetRecipeDlg();
 }
 
 function onRecipeOKClick(id, recipe)
 {
-	var recipeView = $("#recipe");
+	var recipeDlg = $("#recipe");
 
-	recipe.name = recipeView.find("#titleCtrl").val();
-	recipe.page = recipeView.find("#pageCtrl").val();
-	recipe.isCooked = recipeView.find("#cookedCtrl").prop("checked");
-	recipe.isInteresting = recipeView.find("#interestingCtrl").prop("checked");
-	recipe.comment = recipeView.find("#commentCtrl").val();
+	recipe.name = recipeDlg.find("#titleCtrl").val();
+	recipe.page = recipeDlg.find("#pageCtrl").val();
+	recipe.isCooked = recipeDlg.find("#cookedCtrl").prop("checked");
+	recipe.isInteresting = recipeDlg.find("#interestingCtrl").prop("checked");
+	recipe.comment = recipeDlg.find("#commentCtrl").val();
 
-	recipe.tagIds = getCheckedTagIds(recipeView);
+	recipe.tagIds = getCheckedTagIds(recipeDlg);
 
 	chrome.runtime.sendMessage(
 	{
@@ -1824,24 +1834,22 @@ function onRecipeOKClick(id, recipe)
 	}, 
 	function() 
     {
-    	recipeView.hide();
-		resetRecipeView();
-
+		showRecipe(id);
 		refreshResultsView();
 	});
 }
 
-function resetRecipeView()
+function resetRecipeDlg()
 {
-	var recipeView = $("#recipe");
+	var recipeDlg = $("#recipe");
 
-	recipeView.find("#cookedCtrl, #interestingCtrl").attr("disabled", true);
-	recipeView.find("#titleCtrl, #pageCtrl, #commentCtrl").attr("readonly", true);
+	recipeDlg.find("#cookedCtrl, #interestingCtrl").attr("disabled", true);
+	recipeDlg.find("#titleCtrl, #pageCtrl, #commentCtrl").attr("readonly", true);
 
-	recipeView.find(".btnEdit, .btnClose").show();
-	recipeView.find(".btnOK, .btnCancel").hide();
+	recipeDlg.find(".btnEdit, .btnClose").show();
+	recipeDlg.find(".btnOK, .btnCancel").hide();
 
-	var allTagControls = recipeView.find(".tagControl").children();
+	var allTagControls = recipeDlg.find(".tagControl").children();
 
 	allTagControls.attr("disabled", true);
 	allTagControls.prop("checked", false);		
@@ -1849,17 +1857,17 @@ function resetRecipeView()
 
 function onRecipeEditClick()
 {
-	var recipeView = $("#recipe");
+	var recipeDlg = $("#recipe");
 
-	recipeView.find("#cookedCtrl, #interestingCtrl").removeAttr("disabled");
-	recipeView.find("#titleCtrl, #pageCtrl, #commentCtrl").removeAttr("readonly");
+	recipeDlg.find("#cookedCtrl, #interestingCtrl").removeAttr("disabled");
+	recipeDlg.find("#titleCtrl, #pageCtrl, #commentCtrl").removeAttr("readonly");
 
-	recipeView.find(".tagControl").children().removeAttr("disabled");
+	recipeDlg.find(".tagControl").children().removeAttr("disabled");
 
-	recipeView.find(".btnOK, .btnCancel").show();
-	recipeView.find(".btnEdit, .btnClose").hide();
+	recipeDlg.find(".btnOK, .btnCancel").show();
+	recipeDlg.find(".btnEdit, .btnClose").hide();
 
-	recipeView.find("#titleCtrl").focus();
+	recipeDlg.find("#titleCtrl").focus();
 }
 
 function fillTagContainers()
@@ -1936,7 +1944,7 @@ function getCheckedTagIds(parent)
 
 function showSection(id, parentId)
 {
-	resetSectionView();
+	resetSectionDlg();
 
 	if (id === 0)
 	{
@@ -1960,12 +1968,12 @@ function showSection(id, parentId)
 				onSectionEditClick();
 			}
 
-			var sectionView = $("#section");
+			var sectionDlg = $("#section");
 
-			sectionView.find("#titleCtrl").val(section.name);
-			checkTags(sectionView, section.tagIds);
+			sectionDlg.find("#titleCtrl").val(section.name);
+			checkTags(sectionDlg, section.tagIds);
 
-			var btnOK = sectionView.find(".btnOK");
+			var btnOK = sectionDlg.find(".btnOK");
 			btnOK.off("click");
 
 			btnOK.on("click", 
@@ -1974,7 +1982,7 @@ function showSection(id, parentId)
 					onSectionOKClick(id, section);
 				});
 
-			var btnCancel = sectionView.find(".btnCancel");
+			var btnCancel = sectionDlg.find(".btnCancel");
 			btnCancel.off("click");
 
 			btnCancel.on("click", 
@@ -1983,20 +1991,20 @@ function showSection(id, parentId)
 					if (isNewEntry === true)
 						id = 0;
 
-					showSection(id, parentId);
+					showSection(id, section.bookId);
 				});
 
-			sectionView.css("display", "flex");
+			showDialog(sectionDlg);
 		});
 }
 
 function onSectionOKClick(id, section)
 {
-	var sectionView = $("#section");
-	section.name = sectionView.find("#titleCtrl").val();
+	var sectionDlg = $("#section");
+	section.name = sectionDlg.find("#titleCtrl").val();
 
-	var tagIdDiff = getCheckedTagsDiff(sectionView, section.tagIds);
-	section.tagIds = getCheckedTagIds(sectionView);
+	var tagIdDiff = getCheckedTagsDiff(sectionDlg, section.tagIds);
+	section.tagIds = getCheckedTagIds(sectionDlg);
 
 	chrome.runtime.sendMessage(
 	{
@@ -2007,23 +2015,21 @@ function onSectionOKClick(id, section)
 	}, 
 	function() 
     {
-		sectionView.hide();
-		resetSectionView();
-
+		showSection(id, section.bookId);
 		refreshResultsView();
 	});
 }
 
-function resetSectionView()
+function resetSectionDlg()
 {
-	var sectionView = $("#section");
+	var sectionDlg = $("#section");
 
-	sectionView.find("#titleCtrl").attr("readonly", true);
+	sectionDlg.find("#titleCtrl").attr("readonly", true);
 
-	sectionView.find(".btnEdit, .btnClose").show();
-	sectionView.find(".btnOK, .btnCancel").hide();
+	sectionDlg.find(".btnEdit, .btnClose").show();
+	sectionDlg.find(".btnOK, .btnCancel").hide();
 
-	var allTagControls = sectionView.find(".tagControl").children();
+	var allTagControls = sectionDlg.find(".tagControl").children();
 
 	allTagControls.attr("disabled", true);
 	allTagControls.prop("checked", false);		
@@ -2031,21 +2037,21 @@ function resetSectionView()
 
 function onSectionEditClick()
 {
-	var sectionView = $("#section");
+	var sectionDlg = $("#section");
 
-	sectionView.find("#titleCtrl").removeAttr("readonly");
-	sectionView.find(".tagControl").children().removeAttr("disabled");
+	sectionDlg.find("#titleCtrl").removeAttr("readonly");
+	sectionDlg.find(".tagControl").children().removeAttr("disabled");
 
-	sectionView.find(".btnOK, .btnCancel").show();
-	sectionView.find(".btnEdit, .btnClose").hide();
+	sectionDlg.find(".btnOK, .btnCancel").show();
+	sectionDlg.find(".btnEdit, .btnClose").hide();
 
-	sectionView.find("#titleCtrl").focus();
+	sectionDlg.find("#titleCtrl").focus();
 }
 
 function onSectionCloseClick()
 {
-	$("#section").hide();
-	resetSectionView();
+	closeDialog($("#section"));
+	resetSectionDlg();
 }
 
 function getCheckedTagsDiff(parent, oldTagIds)
@@ -2079,7 +2085,7 @@ function getCheckedTagsDiff(parent, oldTagIds)
 
 function showBook(id)
 {
-	resetBookView();
+	resetBookDlg();
 
 	if (id === 0)
 	{
@@ -2102,10 +2108,10 @@ function showBook(id)
 				onBookEditClick();
 			}
 
-			var bookView = $("#book");
-			bookView.find("#titleCtrl").val(book.name);
+			var bookDlg = $("#book");
+			bookDlg.find("#titleCtrl").val(book.name);
 
-			var btnOK = bookView.find(".btnOK");
+			var btnOK = bookDlg.find(".btnOK");
 			btnOK.off("click");
 
 			btnOK.on("click", 
@@ -2114,7 +2120,7 @@ function showBook(id)
 					onBookOKClick(id, book);
 				});
 
-			var btnCancel = bookView.find(".btnCancel");
+			var btnCancel = bookDlg.find(".btnCancel");
 			btnCancel.off("click");
 
 			btnCancel.on("click", 
@@ -2126,42 +2132,42 @@ function showBook(id)
 					showBook(id);
 				});
 
-			bookView.css("display", "flex");
+			showDialog(bookDlg);
 		});
 }
 
-function resetBookView()
+function resetBookDlg()
 {
-	var bookView = $("#book");
+	var bookDlg = $("#book");
 
-	bookView.find("#titleCtrl").attr("readonly", true);
+	bookDlg.find("#titleCtrl").attr("readonly", true);
 
-	bookView.find(".btnEdit, .btnClose").show();
-	bookView.find(".btnOK, .btnCancel").hide();
+	bookDlg.find(".btnEdit, .btnClose").show();
+	bookDlg.find(".btnOK, .btnCancel").hide();
 }
 
 function onBookEditClick()
 {
-	var bookView = $("#book");
+	var bookDlg = $("#book");
 
-	bookView.find("#titleCtrl").removeAttr("readonly");
+	bookDlg.find("#titleCtrl").removeAttr("readonly");
 
-	bookView.find(".btnOK, .btnCancel").show();
-	bookView.find(".btnEdit, .btnClose").hide();
+	bookDlg.find(".btnOK, .btnCancel").show();
+	bookDlg.find(".btnEdit, .btnClose").hide();
 
-	bookView.find("#titleCtrl").focus();
+	bookDlg.find("#titleCtrl").focus();
 }
 
 function onBookCloseClick()
 {
-	$("#book").hide();
-	resetBookView();
+	closeDialog($("#book"));
+	resetBookDlg();
 }
 
 function onBookOKClick(id, book)
 {
-	var bookView = $("#book");
-	book.name = bookView.find("#titleCtrl").val();
+	var bookDlg = $("#book");
+	book.name = bookDlg.find("#titleCtrl").val();
 
 	chrome.runtime.sendMessage(
 	{
@@ -2171,9 +2177,7 @@ function onBookOKClick(id, book)
 	}, 
 	function() 
     {
-		bookView.hide();
-		resetBookView();
-
+		showBook(id);
 		refreshResultsView();
 	});
 }
@@ -2183,10 +2187,10 @@ function onDateClick(type, id)
 	if (type != RESULT_TYPE_RECIPE)
 		return;
 
-	showAddRecipeToDateView(id);
+	showAddRecipeToDateDlg(id);
 }
 
-function showAddRecipeToDateView()
+function showAddRecipeToDateDlg()
 {
 	$("#addRecipeToDate").show();
 }
@@ -2324,7 +2328,7 @@ function getNextAvailableId(type, onGetNextAvailableIdDone)
 
 function showTag(id)
 {
-	resetTagView();
+	resetTagDlg();
 
 	if (id === 0)
 	{
@@ -2347,10 +2351,10 @@ function showTag(id)
 				onTagEditClick();
 			}
 
-			var tagView = $("#tag");
-			tagView.find("#titleCtrl").val(tag.name);
+			var tagDlg = $("#tag");
+			tagDlg.find("#titleCtrl").val(tag.name);
 
-			var btnOK = tagView.find(".btnOK");
+			var btnOK = tagDlg.find(".btnOK");
 			btnOK.off("click");
 
 			btnOK.on("click", 
@@ -2359,7 +2363,7 @@ function showTag(id)
 					onTagOKClick(id, tag);
 				});
 
-			var btnCancel = tagView.find(".btnCancel");
+			var btnCancel = tagDlg.find(".btnCancel");
 			btnCancel.off("click");
 
 			btnCancel.on("click", 
@@ -2371,42 +2375,42 @@ function showTag(id)
 					showTag(id);
 				});
 
-			tagView.css("display", "flex");
+			showDialog(tagDlg);
 		});
 }
 
-function resetTagView()
+function resetTagDlg()
 {
-	var tagView = $("#tag");
+	var tagDlg = $("#tag");
 
-	tagView.find("#titleCtrl").attr("readonly", true);
+	tagDlg.find("#titleCtrl").attr("readonly", true);
 
-	tagView.find(".btnEdit, .btnClose").show();
-	tagView.find(".btnOK, .btnCancel").hide();
+	tagDlg.find(".btnEdit, .btnClose").show();
+	tagDlg.find(".btnOK, .btnCancel").hide();
 }
 
 function onTagEditClick()
 {
-	var tagView = $("#tag");
+	var tagDlg = $("#tag");
 
-	tagView.find("#titleCtrl").removeAttr("readonly");
+	tagDlg.find("#titleCtrl").removeAttr("readonly");
 
-	tagView.find(".btnOK, .btnCancel").show();
-	tagView.find(".btnEdit, .btnClose").hide();
+	tagDlg.find(".btnOK, .btnCancel").show();
+	tagDlg.find(".btnEdit, .btnClose").hide();
 
-	tagView.find("#titleCtrl").focus();
+	tagDlg.find("#titleCtrl").focus();
 }
 
 function onTagCloseClick()
 {
-	$("#tag").hide();
-	resetTagView();
+	closeDialog($("#tag"));
+	resetTagDlg();
 }
 
 function onTagOKClick(id, tag)
 {
-	var tagView = $("#tag");
-	tag.name = tagView.find("#titleCtrl").val();
+	var tagDlg = $("#tag");
+	tag.name = tagDlg.find("#titleCtrl").val();
 
 	chrome.runtime.sendMessage(
 	{
@@ -2416,10 +2420,9 @@ function onTagOKClick(id, tag)
 	}, 
 	function() 
     {
-		tagView.hide();
-		resetTagView();
-
+		showTag(id);
 		fillTagContainers();
+
 		refreshResultsView();
 	});
 }
@@ -2434,6 +2437,18 @@ function resetDayMenu()
 
 function onDayMenuCloseClick()
 {
-	$("#dayMenu").hide();
+	closeDialog($("#dayMenu"));
 	resetDayMenu();
+}
+
+function showDialog(dialogDiv)
+{
+	$("#dialogContainer").css("display", "flex");
+	dialogDiv.css("display", "flex");
+}
+
+function closeDialog(dialogDiv)
+{
+	$("#dialogContainer").hide();
+	dialogDiv.hide();
 }
