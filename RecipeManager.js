@@ -575,6 +575,8 @@ function getTagControlById(parent, id)
 
 function onCalendarLinkClick()
 {
+	clearSearchBox();
+
 	$("#calendar").show();
 	$("#results").hide();
 }
@@ -1685,6 +1687,8 @@ function onSearchResultClick(type, id)
 
 function showBooks()
 {
+	clearSearchBox();
+
 	chrome.runtime.sendMessage(
 	{
 		command: "getAllBooks",
@@ -1698,6 +1702,8 @@ function showBooks()
 
 function showBookSections(id)
 {
+	clearSearchBox();
+
 	chrome.runtime.sendMessage(
 	{
 		command: "getBookSections",
@@ -1712,6 +1718,8 @@ function showBookSections(id)
 
 function showSectionRecipes(id)
 {
+	clearSearchBox();
+
 	chrome.runtime.sendMessage(
 	{
 		command: "getSectionRecipes",
@@ -1815,6 +1823,8 @@ function showTagRecipes(id)
 
 function showTags()
 {
+	clearSearchBox();
+	
 	chrome.runtime.sendMessage(
 	{
 		command: "getAllTags",
@@ -2469,4 +2479,9 @@ function closeDialog(dialogDiv)
 {
 	$("#dialogContainer").hide();
 	dialogDiv.hide();
+}
+
+function clearSearchBox()
+{
+	$("#searchBox").val("");
 }
