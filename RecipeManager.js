@@ -9,6 +9,7 @@
 /* globals KEY_UP */
 /* globals KEY_DOWN */
 /* globals KEY_ENTER */
+/* globals KEY_ESC */
 
 /* globals Recipe */
 /* globals Book */
@@ -181,7 +182,7 @@ function setHandlers()
 				    	showSearchResults(response, false);
 					});
 	    		}
-			})
+			});
 	
 	$(window).on("resize",
 		function()
@@ -195,7 +196,7 @@ function setHandlers()
 				if (event.keyCode !== KEY_ESC)
 					return;
 
-				var dialog = $("#dialogContainer").find('div:visible:first');
+				var dialog = $("#dialogContainer").find("div:visible:first");
 
 				var btnCancel = dialog.find(".btnCancel");
 
@@ -823,11 +824,13 @@ function fillCalendarView(date)
 	var prevMonthDate = getPrevMonthDate(date);
 	var prevMonthDays = getDaysInMonth(prevMonthDate.getMonth());
 
+	var dummyDay = null;
+
 	for (var cnt = 0; cnt < firstDay; cnt++)
 	{
 		var prevMonthDay = prevMonthDays - (firstDay - cnt - 1);
 
-		var dummyDay = $("<div class='dayCell dummyDay'><div class='day'>" + prevMonthDay + "</div></div>");
+		dummyDay = $("<div class='dayCell dummyDay'><div class='day'>" + prevMonthDay + "</div></div>");
 		dummyDay.on("click", onPrevMonthClick);
 
 		daysDiv.append(dummyDay);
@@ -850,13 +853,13 @@ function fillCalendarView(date)
 
 	for (cnt = 0; cnt < daysToAdd; cnt++)
 	{
-		var dummyDay = $("<div class='dayCell dummyDay'><div class='day'>" + (cnt + 1) + "</div></div>");
+		dummyDay = $("<div class='dayCell dummyDay'><div class='day'>" + (cnt + 1) + "</div></div>");
 		dummyDay.on("click", onNextMonthClick);
 
 		daysDiv.append(dummyDay);
 	}
 
-	refreshDayRecipes()
+	refreshDayRecipes();
 }
 
 function getDateIdFromDate(date)
@@ -896,19 +899,20 @@ function fillDayRecipes(dayDiv)
 				maxRecipesToShow--;
 			}
 
+			var dayViewRecipe = null;
 			var recipesToShow = Math.min(dateEntry.recipes.length, maxRecipesToShow);
 
 			for (var cnt = 0; cnt < recipesToShow; cnt++)
 			{
 				var recipe = dateEntry.recipes[cnt];
 
-				var dayViewRecipe = $("<div class='dayViewRecipe'>" + recipe.name + "</div>");
+				dayViewRecipe = $("<div class='dayViewRecipe'>" + recipe.name + "</div>");
 				dayDiv.append(dayViewRecipe);
 			}
 
 			if (addMoreEntry === true)
 			{
-				var dayViewRecipe = $("<div class='dayViewRecipe'>More...</div>");
+				dayViewRecipe = $("<div class='dayViewRecipe'>More...</div>");
 				dayDiv.append(dayViewRecipe);
 			}
 
@@ -930,9 +934,6 @@ function fillDayRecipes(dayDiv)
 function refreshDayRecipes()
 {
 	var dayDivs = $(".availDay");
-
-	var sampleDayDiv = $(dayDivs[0]);
-	var dayDivWidth = sampleDayDiv.width();
 
 	for (var cnt = 0; cnt < dayDivs.length; cnt++)
 	{
@@ -1824,7 +1825,7 @@ function showTagRecipes(id)
 function showTags()
 {
 	clearSearchBox();
-	
+
 	chrome.runtime.sendMessage(
 	{
 		command: "getAllTags",
@@ -2208,19 +2209,6 @@ function onBookOKClick(id, book)
 		showBook(id);
 		refreshResultsView();
 	});
-}
-
-function onDateClick(type, id)
-{
-	if (type != RESULT_TYPE_RECIPE)
-		return;
-
-	showAddRecipeToDateDlg(id);
-}
-
-function showAddRecipeToDateDlg()
-{
-	$("#addRecipeToDate").show();
 }
 
 function onEditClick(type, id)
