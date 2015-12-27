@@ -158,29 +158,32 @@ function setHandlers()
 			cursor: "move"
 		});
 
-	$(window)
-	.on("scroll", 
-		function() 
-		{
-		    var yPos = window.pageYOffset;
-		    var pageHeight = $("body").height();
+	$("#content")
+		.on("scroll", 
+			function() 
+			{
+				var contentDiv = $("#content");
 
-		    var limitFromBottom = pageHeight * 0.75;
-			    
-		    if (yPos > limitFromBottom) 
-		    {
-		        chrome.runtime.sendMessage(
-		    	{
-		    		command: "getBunchOfResults",
-		    	}, 
-		    	function(response) 
+			    var yPos = contentDiv.scrollTop();
+			    var pageHeight = contentDiv.height();
+
+			    var limitFromBottom = pageHeight * 0.75;
+				    
+			    if (yPos > limitFromBottom) 
 			    {
-			    	console.log("Search reply.");
-			    	showSearchResults(response, false);
-				});
-    		}
-		})
-	.on("resize",
+			        chrome.runtime.sendMessage(
+			    	{
+			    		command: "getBunchOfResults",
+			    	}, 
+			    	function(response) 
+				    {
+				    	console.log("Search reply.");
+				    	showSearchResults(response, false);
+					});
+	    		}
+			})
+	
+	$(window).on("resize",
 		function()
 		{
 			refreshDayRecipes();
