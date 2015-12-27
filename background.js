@@ -394,7 +394,7 @@ function getSearchResults(searchText)
     }
 
     sortBooks(results.books);
-    sortRecipes(results.sections);
+    sortRecipes(results.recipes);
     sortSections(results.sections);
 
     var recipes = results.recipes;
@@ -1082,6 +1082,8 @@ function loadRecipes(dataObj)
 
 function loadTags(dataObj)
 {
+    console.log("loading tags...");
+
     var tagTable = dataObj.objects[0];
 
     for (var cnt = 0; cnt < tagTable.rows.length; cnt++) 
