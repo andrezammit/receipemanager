@@ -1618,9 +1618,10 @@ function addResultEntry(sectionDiv, type, entry, entryDiv)
 	}
 	else
 	{
+		addStarRating(resultDiv, type, entry.id);
 		addEditButton(resultDiv, type, entry.id);
 		addDeleteButton(resultDiv, type, entry.id);
-	
+
 		resultDiv.on("click", 
 			function()
 			{
@@ -1662,6 +1663,56 @@ function addDeleteButton(resultDiv, type, id)
 		});
 
 	resultDiv.append(deleteButton);
+}
+
+function addStarRating(resultDiv, type, id)
+{
+	if (type != RESULT_TYPE_RECIPE)
+		return;
+
+	var starButton1 = $("<div class='resultButtons'><img src='images/star.png' class='resultIcon'></div>");
+	var starButton2 = $("<div class='resultButtons'><img src='images/star.png' class='resultIcon'></div>");
+	var starButton3 = $("<div class='resultButtons'><img src='images/star.png' class='resultIcon'></div>");
+
+	starButton1.hover(
+		function()
+		{
+			starButton1.addClass("starFull");	
+			starButton2.removeClass("starFull");
+			starButton3.removeClass("starFull");
+		});
+
+	starButton2.hover(
+		function()
+		{
+			starButton1.addClass("starFull");	
+			starButton2.addClass("starFull");
+			starButton3.removeClass("starFull");
+		});
+
+	starButton3.hover(
+		function()
+		{
+			starButton1.addClass("starFull");	
+			starButton2.addClass("starFull");
+			starButton3.addClass("starFull");
+		});
+
+	starButton1.on("click", 
+		function(e)
+		{
+			onStarClick(type, id,
+				function()
+				{
+					resultDiv.remove();
+				});
+			
+			e.stopPropagation();
+		});
+
+	resultDiv.append(starButton1);
+	resultDiv.append(starButton2);
+	resultDiv.append(starButton3);
 }
 
 function onSearchResultClick(type, id)

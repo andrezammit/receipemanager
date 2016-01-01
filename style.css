@@ -937,3 +937,9 @@ button
 
     z-index: 1;
 }
+
+.starFull
+{
+	background-image: url("images/star_full.png");
+	background-size: 18px 18px;
+}
