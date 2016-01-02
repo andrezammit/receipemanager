@@ -21,6 +21,7 @@ function Recipe()
 	this.isInteresting = false;
 	this.comment = "";
 	this.tagIds = [];
+	this.rating = 2;
 }
 
 function Book()

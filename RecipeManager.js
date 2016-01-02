@@ -1527,6 +1527,7 @@ function addRecipeResult(sectionDiv, recipe)
 			recipeInfo += "; Interesting";
 
 		entryDiv.append("<div class='recipeInfo'>" + recipeInfo + "</div>");
+		entryDiv.data("rating", recipe.rating);
 	}
 
 	addResultEntry(sectionDiv, RESULT_TYPE_RECIPE, recipe, entryDiv);
@@ -1670,49 +1671,107 @@ function addStarRating(resultDiv, type, id)
 	if (type != RESULT_TYPE_RECIPE)
 		return;
 
-	var starButton1 = $("<div class='resultButtons'><img src='images/star.png' class='resultIcon'></div>");
-	var starButton2 = $("<div class='resultButtons'><img src='images/star.png' class='resultIcon'></div>");
-	var starButton3 = $("<div class='resultButtons'><img src='images/star.png' class='resultIcon'></div>");
+	var starButton1 = $("<div class='resultButtons starButton'><img src='images/star.png' class='resultIcon'></div>");
+	var starButton2 = $("<div class='resultButtons starButton'><img src='images/star.png' class='resultIcon'></div>");
+	var starButton3 = $("<div class='resultButtons starButton'><img src='images/star.png' class='resultIcon'></div>");
 
-	starButton1.hover(
-		function()
-		{
-			starButton1.addClass("starFull");	
-			starButton2.removeClass("starFull");
-			starButton3.removeClass("starFull");
-		});
+	function setInitialRating()
+	{
+		var entryDiv = resultDiv.children(".resultEntry");
+		var rating = entryDiv.data("rating");
 
-	starButton2.hover(
-		function()
-		{
-			starButton1.addClass("starFull");	
-			starButton2.addClass("starFull");
-			starButton3.removeClass("starFull");
-		});
+		var starButtons = resultDiv.children(".starButton");
+		starButtons.removeClass("starFull");
 
-	starButton3.hover(
-		function()
+		for (var cnt = 0; cnt < rating; cnt++)
 		{
-			starButton1.addClass("starFull");	
-			starButton2.addClass("starFull");
-			starButton3.addClass("starFull");
-		});
+			var starButton = $(starButtons[cnt]);
+			starButton.addClass("starFull");
+		}
+	}
 
-	starButton1.on("click", 
-		function(e)
-		{
-			onStarClick(type, id,
-				function()
-				{
-					resultDiv.remove();
-				});
-			
-			e.stopPropagation();
-		});
+	function setNewRating(rating)
+	{
+		var entryDiv = resultDiv.children(".resultEntry");
+		entryDiv.data("rating", rating);
+	}
+
+	starButton1
+		.hover(
+			function()
+			{
+				starButton1.addClass("starFull");	
+				starButton2.removeClass("starFull");
+				starButton3.removeClass("starFull");
+			})
+		.mouseout(setInitialRating)
+		.on("click", 
+			function(e)
+			{
+				onStarClick(id, 1,
+					function()
+					{
+						setNewRating(1);
+						setInitialRating();
+					});
+				
+				e.stopPropagation();
+			});
+
+	starButton2
+		.hover(
+			function()
+			{
+				starButton1.addClass("starFull");	
+				starButton2.addClass("starFull");
+				starButton3.removeClass("starFull");
+			})
+		.mouseout(setInitialRating)
+		.on("click", 
+			function(e)
+			{
+				onStarClick(id, 2,
+					function()
+					{
+						setNewRating(2);
+						setInitialRating();
+					});
+				
+				e.stopPropagation();
+			});
+
+	starButton3
+		.hover(
+			function()
+			{
+				starButton1.addClass("starFull");	
+				starButton2.addClass("starFull");
+				starButton3.addClass("starFull");
+			})
+		.mouseout(setInitialRating)
+		.on("click", 
+			function(e)
+			{
+				onStarClick(id, 3,
+					function()
+					{
+						setNewRating(3);
+						setInitialRating();
+					});
+				
+				e.stopPropagation();
+			});
 
 	resultDiv.append(starButton1);
 	resultDiv.append(starButton2);
 	resultDiv.append(starButton3);
+
+	setInitialRating();
+}
+
+function onStarClick(id, rating, onStarClickDone)
+{
+	onStarClickDone();
 }
 
 function onSearchResultClick(type, id)
