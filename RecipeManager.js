@@ -1,5 +1,3 @@
-"use strict";
-
 /* globals RESULT_TYPE_BOOK */
 /* globals RESULT_TYPE_SECTION */
 /* globals RESULT_TYPE_RECIPE */
@@ -1980,7 +1978,7 @@ function onRecipeOKClick(id, recipe)
 		{
 			showRecipe(id);
 			refreshResultsView();
-		})
+		});
 }
 
 function updateRecipe(recipe, updateRecipeDone)

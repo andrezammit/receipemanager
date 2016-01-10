@@ -1,5 +1,3 @@
-"use strict";
-
 /* globals RESULT_TYPE_BOOK */
 /* globals RESULT_TYPE_SECTION */
 /* globals RESULT_TYPE_RECIPE */

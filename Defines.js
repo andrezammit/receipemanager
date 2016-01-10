@@ -1,5 +1,3 @@
-"use strict";
-
 /* jshint unused: false */
 
 var _db = 
