@@ -13,6 +13,8 @@
 /* globals DateEntry */
 
 /* globals _db */
+/* globals window */
+/* globals FileReader */
 
 chrome.app.runtime.onLaunched.addListener(
 	function() 
