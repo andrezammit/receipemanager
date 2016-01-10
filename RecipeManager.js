@@ -1692,8 +1692,18 @@ function addStarRating(resultDiv, type, id)
 
 	function setNewRating(rating)
 	{
-		var entryDiv = resultDiv.children(".resultEntry");
-		entryDiv.data("rating", rating);
+		getRecipeById(id, 
+			function(recipe)
+			{	
+				recipe.rating = rating;
+
+				updateRecipe(recipe, 
+					function()
+					{
+						var entryDiv = resultDiv.children(".resultEntry");
+						entryDiv.data("rating", rating);
+					});
+			});
 	}
 
 	starButton1
@@ -1965,16 +1975,25 @@ function onRecipeOKClick(id, recipe)
 
 	recipe.tagIds = getCheckedTagIds(recipeDlg);
 
+	updateRecipe(recipe, 
+		function()
+		{
+			showRecipe(id);
+			refreshResultsView();
+		})
+}
+
+function updateRecipe(recipe, updateRecipeDone)
+{
 	chrome.runtime.sendMessage(
 	{
 		command: "updateRecipe",
-		id: id,
+		id: recipe.id,
 		recipe: recipe
 	}, 
 	function() 
     {
-		showRecipe(id);
-		refreshResultsView();
+		updateRecipeDone();
 	});
 }
 
