@@ -1407,6 +1407,18 @@ function getTagResults(searchText, results)
     {
         recipes = getInterestingRecipes(results);
     }
+    else if (searchText == "#3stars")
+    {
+        recipes = getStarredRecipes(results, 3);
+    }
+    else if (searchText == "#2stars")
+    {
+        recipes = getStarredRecipes(results, 2);
+    }
+    else if (searchText == "#1star")
+    {
+        recipes = getStarredRecipes(results, 1);
+    }
     else 
     {
         var name = searchText.substring(1);
@@ -1414,6 +1426,21 @@ function getTagResults(searchText, results)
 
         if (id != -1)
             recipes = getTagRecipes(id, results);
+    }
+
+    return recipes;
+}
+
+function getStarredRecipes(results, stars)
+{
+    var recipes = [];
+
+    for (var cnt = 0; cnt < results.recipes.length; cnt++)
+    {
+        var recipe = results.recipes[cnt];
+
+        if (recipe.rating === stars)
+            recipes.push(recipe);
     }
 
     return recipes;
