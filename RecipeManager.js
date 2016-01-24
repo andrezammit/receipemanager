@@ -113,7 +113,7 @@ function setHandlers()
 	$("#prevMonth").on("click", onPrevMonthClick);
 	$("#nextMonth").on("click", onNextMonthClick);
 	$("#loadData").on("click", onLoadDataClick);
-	//$("#saveData").on("click", onSaveDataClick);
+	$("#saveData").on("click", onSaveDataClick);
 	$("#books").on("click", showBooks);
 	$("#tags").on("click", showTags);
 
@@ -332,6 +332,21 @@ function importDatabase(data, onImportDatabaseDone)
 
     	if (onImportDatabaseDone !== null)
     		onImportDatabaseDone();
+	});
+}
+
+function saveDatabase(onSaveDatabaseDone)
+{
+	chrome.runtime.sendMessage(
+	{
+		command: "saveDatabase"
+	}, 
+	function() 
+    {
+    	console.log("Database saved.");
+
+    	if (onSaveDatabaseDone !== null)
+    		onSaveDatabaseDone();
 	});
 }
 
@@ -677,17 +692,14 @@ function onLoadDataClick()
 // 		});
 // }
 
-// function onSaveDataClick()
-// {
-// 	chrome.syncFileSystem.requestFileSystem(
-// 		function (fs) 
-// 		{
-// 	  	 	fs.root.getFile('RecipeManager-new.json', 
-// 	  	 		{ create: true }, 
-// 	  	 		onSaveFileFound, 
-// 	  	 		onFileNotFound);
-// 		});
-// }
+function onSaveDataClick()
+{
+	saveDatabase(
+		function()
+		{
+
+		});
+}
 
 function onTitleClick()
 {

@@ -83,6 +83,18 @@ chrome.runtime.onMessage.addListener(
             }
             break;
 
+            case "saveDatabase":
+            {
+                saveDatabase(
+                    function()
+                    {
+                        sendResponse();
+                    });
+
+                return true;
+            }
+            break;
+
             case "importDatabase":
             {
                 importDatabase(request.data,
@@ -997,7 +1009,7 @@ function loadDatabase(onLoadDatabaseDone)
     chrome.syncFileSystem.requestFileSystem(
         function (fs) 
         {
-            fs.root.getFile("RecipeManager-OldDB.json", 
+            fs.root.getFile("RecipeManager.json", 
                 { create: false }, 
                 function(fileEntry)
                 {
@@ -1005,6 +1017,24 @@ function loadDatabase(onLoadDatabaseDone)
                 },
                 onFileNotFound);
         });
+}
+
+function saveDatabase(onSaveDatabaseDone)
+{
+    function replacer(key, value)
+    {
+        switch (key)
+        {
+         case "sectionIds":
+         case "recipeIds":
+             return undefined;
+        }
+
+        return value;
+    }
+
+    var jsonString = JSON.stringify(_db);
+    importDatabase(jsonString, onSaveDatabaseDone);
 }
 
 function importDatabase(data, onImportDatabaseDone)
@@ -1027,9 +1057,24 @@ function onDBFileCreated(fileEntry, data, onImportDatabaseDone)
     fileEntry.createWriter(
         function (fileWriter)
         {
+            var truncated = false;
+            
+            var dataBlob = new Blob([data], 
+                {
+                    type: "text/plain"
+                });
+
             fileWriter.onwriteend =
                 function()
                 {
+                    if (!truncated)
+                    {
+                        truncated = true;
+                        this.truncate(dataBlob.size);
+
+                        return;
+                    }
+
                     if (onImportDatabaseDone !== null)
                         onImportDatabaseDone();
                 };
@@ -1039,11 +1084,6 @@ function onDBFileCreated(fileEntry, data, onImportDatabaseDone)
                 {
                     console.log("Import failed: " + error.toString());
                 };
-
-            var dataBlob = new Blob([data], 
-                {
-                    type: "text/plain"
-                });
 
             fileWriter.write(dataBlob);
         });
@@ -1062,16 +1102,7 @@ function onDBFileFound(fileEntry, onLoadDatabaseDone)
                     var data = event.target.result;
                     var dataObj = JSON.parse(data);
 
-                    loadTags(dataObj);
-                    loadBooks(dataObj);
-                    loadRecipes(dataObj);
-                    loadSections(dataObj);
-
-                    loadRecipesTags(dataObj);
-                    loadBookSections(dataObj);
-                    loadSectionRecipes(dataObj);
-
-                    loadSectionTags(dataObj);
+                    _db = dataObj;
 
                     onLoadDatabaseDone();
                 };  
