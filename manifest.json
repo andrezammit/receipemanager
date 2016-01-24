@@ -13,6 +13,9 @@
     "128": "icon-128.png"
   },
   "permissions": [
-    "syncFileSystem"
+    "syncFileSystem",
+    { 
+      "fileSystem": ["retainEntries"] 
+    }
   ]
 }

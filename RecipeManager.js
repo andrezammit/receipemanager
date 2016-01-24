@@ -319,6 +319,22 @@ function loadDatabase(onLoadDatabaseDone)
 	});
 }
 
+function importDatabase(data, onImportDatabaseDone)
+{
+	chrome.runtime.sendMessage(
+	{
+		command: "importDatabase",
+		data: data
+	}, 
+	function() 
+    {
+    	console.log("Database imported.");
+
+    	if (onImportDatabaseDone !== null)
+    		onImportDatabaseDone();
+	});
+}
+
 function onSearchBoxChanged()
 {
 	var searchBox = $("#searchBox");
@@ -582,14 +598,36 @@ function onCalendarLinkClick()
 
 function onLoadDataClick()
 {
-	loadDatabase(
-		function()
+	chrome.fileSystem.chooseEntry(
 		{
-			_currDate = getCurrentDate();
+			type: "openFile", 
+			accepts: [ { extensions: ["json"] } ], 
+			acceptsMultiple: false 
+		}, 
+		function(fileEntry) 
+		{
+			fileEntry = fileEntry[0];
 
-			fillCalendarView(_currDate);
+			fileEntry.file(
+				function(file)
+				{
+					var reader = new FileReader();
 
-			fillTagContainers();
+					reader.onloadend = 
+						function()
+						{
+							importDatabase(this.result,
+								function()
+								{
+									_currDate = getCurrentDate();
+									
+									fillCalendarView(_currDate);
+									fillTagContainers();
+								});
+						};
+
+					reader.readAsText(file);
+				});
 		});
 }
 

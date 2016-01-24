@@ -83,6 +83,18 @@ chrome.runtime.onMessage.addListener(
             }
             break;
 
+            case "importDatabase":
+            {
+                importDatabase(request.data,
+                    function()
+                    {
+                        sendResponse();
+                    });
+
+                return true;
+            }
+            break;
+
             case "updateRecipe":
             {
                 updateRecipe(request.id, request.recipe);
@@ -987,18 +999,60 @@ function loadDatabase(onLoadDatabaseDone)
         {
             fs.root.getFile("RecipeManager-OldDB.json", 
                 { create: false }, 
-                function(dataFileEntry)
+                function(fileEntry)
                 {
-                    onDBFileFound(dataFileEntry, onLoadDatabaseDone); 
+                    onDBFileFound(fileEntry, onLoadDatabaseDone); 
                 },
                 onFileNotFound);
         });
 }
 
-function onDBFileFound(dataFileEntry, onLoadDatabaseDone)
+function importDatabase(data, onImportDatabaseDone)
 {
-    dataFileEntry.file(
-        function(dataFile) 
+    chrome.syncFileSystem.requestFileSystem(
+        function (fs) 
+        {
+            fs.root.getFile("RecipeManager.json", 
+                { create: true }, 
+                function(fileEntry)
+                {
+                    onDBFileCreated(fileEntry, data, onImportDatabaseDone); 
+                },
+                onFileNotFound);
+        });
+}
+
+function onDBFileCreated(fileEntry, data, onImportDatabaseDone)
+{
+    fileEntry.createWriter(
+        function (fileWriter)
+        {
+            fileWriter.onwriteend =
+                function()
+                {
+                    if (onImportDatabaseDone !== null)
+                        onImportDatabaseDone();
+                };
+
+            fileWriter.onerror =
+                function(error)
+                {
+                    console.log("Import failed: " + error.toString());
+                };
+
+            var dataBlob = new Blob([data], 
+                {
+                    type: "text/plain"
+                });
+
+            fileWriter.write(dataBlob);
+        });
+}
+
+function onDBFileFound(fileEntry, onLoadDatabaseDone)
+{
+    fileEntry.file(
+        function(file) 
         {
             var fileReader = new FileReader();
 
@@ -1022,7 +1076,7 @@ function onDBFileFound(dataFileEntry, onLoadDatabaseDone)
                     onLoadDatabaseDone();
                 };  
 
-            fileReader.readAsText(dataFile, "UTF-8");
+            fileReader.readAsText(file, "UTF-8");
         });
 }
 
