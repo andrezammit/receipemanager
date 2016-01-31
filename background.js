@@ -168,7 +168,7 @@ chrome.runtime.onMessage.addListener(
 
             case "deleteObject":
             {
-                deleteObject(request.id, request.type);
+                deleteObject(request.id, request.type, request.removeFromParent);
                 
                 saveDatabase();
                 sendResponse();
@@ -1328,11 +1328,17 @@ function deleteSection(id, removeFromBook)
     {
         var bookId = section.bookId;
         var book = getBookById(bookId);
-           
-        index = book.sectionIds.indexOf(id);
+        
+        do
+        {
+            index = book.sectionIds.indexOf(id);
 
-        if (index != -1)
-            book.sectionIds.splice(index, 1);
+            if (index == -1)
+                continue;
+
+            book.sectionIds.splice(index, 1); 
+        }
+        while (index != -1);
     }
 
     index = _db.sections.indexOf(section);
@@ -1421,10 +1427,16 @@ function deleteRecipe(id, removeFromSection)
         var sectionId = recipe.sectionId;
         var section = getSectionById(sectionId);
 
-        index = section.recipeIds.indexOf(id);
+        do
+        {
+            index = section.recipeIds.indexOf(id);
 
-        if (index != -1)
-            section.recipeIds.splice(index, 1);
+            if (index == -1)
+                continue;
+
+            section.recipeIds.splice(index, 1);    
+        }
+        while (index != -1);
     }
     
     index = _db.recipes.indexOf(recipe);
