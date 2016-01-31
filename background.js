@@ -1077,7 +1077,7 @@ function onDBFileCreated(fileEntry, data, onImportDatabaseDone)
                         return;
                     }
 
-                    if (onImportDatabaseDone !== null)
+                    if (typeof onImportDatabaseDone != "undefined")
                         onImportDatabaseDone();
                 };
 

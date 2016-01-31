@@ -314,7 +314,7 @@ function loadDatabase(onLoadDatabaseDone)
     {
     	console.log("Database loaded.");
 
-    	if (onLoadDatabaseDone !== null)
+    	if (typeof onLoadDatabaseDone != "undefined")
     		onLoadDatabaseDone();
 	});
 }
@@ -330,7 +330,7 @@ function importDatabase(data, onImportDatabaseDone)
     {
     	console.log("Database imported.");
 
-    	if (onImportDatabaseDone !== null)
+    	if (typeof onImportDatabaseDone != "undefined")
     		onImportDatabaseDone();
 	});
 }
@@ -345,7 +345,7 @@ function saveDatabase(onSaveDatabaseDone)
     {
     	console.log("Database saved.");
 
-    	if (onSaveDatabaseDone !== null)
+    	if (typeof onSaveDatabaseDone != "undefined")
     		onSaveDatabaseDone();
 	});
 }
@@ -2378,34 +2378,34 @@ function onDeleteClick(type, id, onDeleteDone)
 	}
 }
 
-function deleteRecipe(id, removeFromSection, onDeleteRecipeDone)
+function deleteRecipe(id, onDeleteRecipeDone)
 {
 	chrome.runtime.sendMessage(
 	{
 		command: "deleteObject",
 		type: RESULT_TYPE_RECIPE,
 		id: id,
-		removeFromParent: removeFromSection
+		removeFromParent: true
 	}, 
 	function() 
     {
-    	if (onDeleteRecipeDone !== null)
+    	if (typeof onDeleteRecipeDone != "undefined")
 			onDeleteRecipeDone();
 	});
 }
 
-function deleteSection(id, removeFromBook, onDeleteSectionDone)
+function deleteSection(id, onDeleteSectionDone)
 {
 	chrome.runtime.sendMessage(
 	{
 		command: "deleteObject",
 		type: RESULT_TYPE_SECTION,
 		id: id,
-		removeFromParent: removeFromBook
+		removeFromParent: true
 	}, 
 	function() 
     {
-    	if (onDeleteSectionDone !== null)
+    	if (typeof onDeleteSectionDone != "undefined")
 			onDeleteSectionDone();
 	});
 }
@@ -2420,7 +2420,7 @@ function deleteBook(id, onDeleteBookDone)
 	}, 
 	function() 
     {
-		if (onDeleteBookDone !== null)
+		if (typeof onDeleteBookDone != "undefined")
 			onDeleteBookDone();
 	});
 }
