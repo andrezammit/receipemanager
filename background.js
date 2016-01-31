@@ -110,6 +110,8 @@ chrome.runtime.onMessage.addListener(
             case "updateRecipe":
             {
                 updateRecipe(request.id, request.recipe);
+
+                saveDatabase();
                 sendResponse();
             }
             break;
@@ -117,6 +119,8 @@ chrome.runtime.onMessage.addListener(
             case "updateSection":
             {
                 updateSection(request.id, request.section, request.tagIdDiff);
+                
+                saveDatabase();
                 sendResponse();
             }
             break;
@@ -124,6 +128,8 @@ chrome.runtime.onMessage.addListener(
             case "updateBook":
             {
                 updateBook(request.id, request.book);
+                
+                saveDatabase();
                 sendResponse();
             }
             break;
@@ -131,6 +137,8 @@ chrome.runtime.onMessage.addListener(
             case "updateTag":
             {
                 updateTag(request.id, request.tag);
+                
+                saveDatabase();
                 sendResponse();
             }
             break;
@@ -138,6 +146,8 @@ chrome.runtime.onMessage.addListener(
             case "updateDateEntry":
             {
                 updateDateEntry(request.dateEntry);
+                
+                saveDatabase();
                 sendResponse();
             }
             break;
@@ -159,6 +169,8 @@ chrome.runtime.onMessage.addListener(
             case "deleteObject":
             {
                 deleteObject(request.id, request.type);
+                
+                saveDatabase();
                 sendResponse();
             }
             break;
@@ -1021,20 +1033,10 @@ function loadDatabase(onLoadDatabaseDone)
 
 function saveDatabase(onSaveDatabaseDone)
 {
-    function replacer(key, value)
-    {
-        switch (key)
-        {
-         case "sectionIds":
-         case "recipeIds":
-             return undefined;
-        }
-
-        return value;
-    }
-
     var jsonString = JSON.stringify(_db);
     importDatabase(jsonString, onSaveDatabaseDone);
+
+    console.log("Database saved.");
 }
 
 function importDatabase(data, onImportDatabaseDone)

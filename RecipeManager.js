@@ -646,59 +646,9 @@ function onLoadDataClick()
 		});
 }
 
-// function onSaveFileFound(dataFileEntry)
-// {
-// 	function replacer(key, value)
-// 	{
-// 		switch (key)
-// 		{
-// 			case "sectionIds":
-// 			case "recipeIds":
-// 				return undefined;
-// 		}
-
-// 		return value;
-// 	}
-
-// 	var jsonString = JSON.stringify(_db, replacer);
-// 	var jsonBlob = new Blob([jsonString]);
-
-// 	dataFileEntry.createWriter(
-// 		function(writer) 
-// 		{
-// 			var truncated = false;
-
-// 			writer.onerror = 
-// 				function(e)
-// 				{
-// 	      		  console.log("Write failed: " + e.toString());
-// 	      		};
-
-//       		writer.onwriteend = 
-//       			function(e) 
-//       			{
-//       				if (!truncated)
-//       				{
-// 						this.truncate(jsonBlob.size);
-// 						truncated = true;
-
-// 						return;
-// 		      		}
-
-// 		      		console.log("Write success!. New size: " + jsonBlob.size);
-//         		}
-
-// 			writer.write(jsonBlob);
-// 		});
-// }
-
 function onSaveDataClick()
 {
-	saveDatabase(
-		function()
-		{
-
-		});
+	saveDatabase();
 }
 
 function onTitleClick()
