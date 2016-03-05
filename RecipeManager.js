@@ -1991,6 +1991,7 @@ function updateRecipe(recipe, updateRecipeDone)
 	}, 
 	function() 
     {
+    	updateRecipeInResults(recipe);
 		updateRecipeDone();
 	});
 }
@@ -2599,4 +2600,31 @@ function closeDialog(dialogDiv)
 function clearSearchBox()
 {
 	$("#searchBox").val("");
+}
+
+function updateRecipeInResults(updatedRecipe)
+{
+	var recipeUpdated = false;
+	var recipeGroups = _currentResults.recipes;
+
+	for (var group = 0; group < recipeGroups.length; group++)
+	{
+		var recipeGroup = recipeGroups[group];
+
+		for (var recipe = 0; recipe < recipeGroup.recipes.length; recipe++)
+		{
+			var tmpRecipe = recipeGroup.recipes[recipe];
+
+			if (updatedRecipe.id != tmpRecipe.id)
+				continue;
+
+			recipeGroup.recipes[recipe] = updatedRecipe;
+			recipeUpdated = true;
+
+			break;
+		}
+
+		if (recipeUpdated === true)
+			break;
+	}
 }
