@@ -1855,6 +1855,18 @@ function showRecipeDlg(recipe, isNewEntry)
 {
 	var recipeDlg = $("#recipe");
 
+	getSectionById(recipe.sectionId,
+		function(section)
+		{
+			recipeDlg.find("#sectionCtrl").val(section.name);
+
+			getBookById(section.bookId,
+				function(book)
+				{
+					recipeDlg.find("#bookCtrl").val(book.name);
+				});
+		});
+
 	recipeDlg.find("#titleCtrl").val(recipe.name);
 	recipeDlg.find("#pageCtrl").val(recipe.page);
 	recipeDlg.find("#cookedCtrl").prop("checked", recipe.isCooked);
