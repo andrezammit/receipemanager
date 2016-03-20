@@ -1664,45 +1664,31 @@ function addDeleteButton(resultDiv, type, id)
 	resultDiv.append(deleteButton);
 }
 
-function addStarRating(resultDiv, type, id)
+function showStarRating(recipeId, parent, setNewRating, initialRating)
 {
-	if (type != RESULT_TYPE_RECIPE)
-		return;
-
-	var starButton1 = $("<div class='resultButtons starButton'><img src='images/star.png' class='resultIcon'></div>");
+    var starButton1 = $("<div class='resultButtons starButton'><img src='images/star.png' class='resultIcon'></div>");
 	var starButton2 = $("<div class='resultButtons starButton'><img src='images/star.png' class='resultIcon'></div>");
 	var starButton3 = $("<div class='resultButtons starButton'><img src='images/star.png' class='resultIcon'></div>");
 
 	function setInitialRating()
 	{
-		var entryDiv = resultDiv.children(".resultEntry");
-		var rating = entryDiv.data("rating");
-
-		var starButtons = resultDiv.children(".starButton");
+		var starButtons = parent.children(".starButton");
 		starButtons.removeClass("starFull");
 
-		for (var cnt = 0; cnt < rating; cnt++)
+		for (var cnt = 0; cnt < initialRating; cnt++)
 		{
 			var starButton = $(starButtons[cnt]);
 			starButton.addClass("starFull");
 		}
 	}
+    
+    function updateRating(rating)
+    {
+        setNewRating(rating);
 
-	function setNewRating(rating)
-	{
-		getRecipeById(id, 
-			function(recipe)
-			{	
-				recipe.rating = rating;
-
-				updateRecipe(recipe, 
-					function()
-					{
-						var entryDiv = resultDiv.children(".resultEntry");
-						entryDiv.data("rating", rating);
-					});
-			});
-	}
+        initialRating = rating;
+        setInitialRating();
+    }
 
 	starButton1
 		.hover(
@@ -1716,12 +1702,11 @@ function addStarRating(resultDiv, type, id)
 		.on("click", 
 			function(e)
 			{
-				onStarClick(id, 1,
-					function()
-					{
-						setNewRating(1);
-						setInitialRating();
-					});
+				onStarClick(recipeId, 1,
+                    function() 
+                    {
+                        updateRating(1);
+                    });
 				
 				e.stopPropagation();
 			});
@@ -1738,11 +1723,10 @@ function addStarRating(resultDiv, type, id)
 		.on("click", 
 			function(e)
 			{
-				onStarClick(id, 2,
+				onStarClick(recipeId, 2,
 					function()
 					{
-						setNewRating(2);
-						setInitialRating();
+                        updateRating(2);                           
 					});
 				
 				e.stopPropagation();
@@ -1760,21 +1744,47 @@ function addStarRating(resultDiv, type, id)
 		.on("click", 
 			function(e)
 			{
-				onStarClick(id, 3,
+				onStarClick(recipeId, 3,
 					function()
 					{
-						setNewRating(3);
-						setInitialRating();
+                        updateRating(3);                           						
 					});
 				
 				e.stopPropagation();
 			});
 
-	resultDiv.append(starButton1);
-	resultDiv.append(starButton2);
-	resultDiv.append(starButton3);
+	parent.append(starButton1);
+	parent.append(starButton2);
+	parent.append(starButton3);
 
 	setInitialRating();
+}
+
+function addStarRating(resultDiv, type, id)
+{
+	if (type != RESULT_TYPE_RECIPE)
+		return;
+
+    var entryDiv = resultDiv.children(".resultEntry");
+	var rating = entryDiv.data("rating");
+        
+    function setNewRating(rating)
+	{
+		getRecipeById(id, 
+			function(recipe)
+			{	
+				recipe.rating = rating;
+
+				updateRecipe(recipe, 
+					function()
+					{
+						var entryDiv = resultDiv.children(".resultEntry");
+						entryDiv.data("rating", rating);
+					});
+			});
+	}
+    
+    showStarRating(id, resultDiv, setNewRating, rating);
 }
 
 function onStarClick(id, rating, onStarClickDone)
