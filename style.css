@@ -211,6 +211,11 @@ body
 	transition: background-color 0.2s;
 }
 
+.result .resultButtons
+{
+	pointer-events: none;	
+}
+
 .result:hover
 {
 	cursor: pointer;
@@ -231,8 +236,7 @@ body
 
 .resultButtons
 {
-	opacity: 0;
-	pointer-events: none;
+	opacity: 0.5;
 
 	margin-right: 5px;
     width: 16px;
@@ -936,6 +940,23 @@ button
     margin-top: 72px;
 
     z-index: 1;
+}
+
+#ratingCtrl
+{
+    padding-top: 7px;
+    padding-bottom: 5px;
+}
+
+#ratingCtrl[disabled="disabled"]
+{
+    pointer-events: none;
+}
+
+.starButton
+{
+    display: inline-block;    
+    opacity: 1;
 }
 
 .starFull

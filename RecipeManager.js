@@ -1665,7 +1665,7 @@ function addDeleteButton(resultDiv, type, id)
 }
 
 function showStarRating(recipeId, parent, setNewRating, initialRating)
-{
+{    
     var starButton1 = $("<div class='resultButtons starButton'><img src='images/star.png' class='resultIcon'></div>");
 	var starButton2 = $("<div class='resultButtons starButton'><img src='images/star.png' class='resultIcon'></div>");
 	var starButton3 = $("<div class='resultButtons starButton'><img src='images/star.png' class='resultIcon'></div>");
@@ -1752,6 +1752,8 @@ function showStarRating(recipeId, parent, setNewRating, initialRating)
 				
 				e.stopPropagation();
 			});
+
+    parent.children(".starButton").remove();
 
 	parent.append(starButton1);
 	parent.append(starButton2);
@@ -1882,7 +1884,17 @@ function showRecipeDlg(recipe, isNewEntry)
 	recipeDlg.find("#cookedCtrl").prop("checked", recipe.isCooked);
 	recipeDlg.find("#interestingCtrl").prop("checked", recipe.isInteresting);
 	recipeDlg.find("#commentCtrl").val(recipe.comment);
-
+    
+    var ratingCtrl = recipeDlg.find("#ratingCtrl");
+    
+    function setNewRating(rating)
+    {
+        ratingCtrl.data("rating", rating);    
+    }
+    
+    showStarRating(recipe.id, ratingCtrl, setNewRating, recipe.rating);
+    setNewRating(recipe.rating);
+    
 	checkTags(recipeDlg, recipe.tagIds);
 
 	var btnOK = recipeDlg.find(".btnOK");
@@ -1992,7 +2004,8 @@ function onRecipeOKClick(id, recipe)
 	recipe.isCooked = recipeDlg.find("#cookedCtrl").prop("checked");
 	recipe.isInteresting = recipeDlg.find("#interestingCtrl").prop("checked");
 	recipe.comment = recipeDlg.find("#commentCtrl").val();
-
+    recipe.rating = recipeDlg.find("#ratingCtrl").data("rating");
+    
 	recipe.tagIds = getCheckedTagIds(recipeDlg);
 
 	updateRecipe(recipe, 
@@ -2022,7 +2035,7 @@ function resetRecipeDlg()
 {
 	var recipeDlg = $("#recipe");
 
-	recipeDlg.find("#cookedCtrl, #interestingCtrl").attr("disabled", true);
+	recipeDlg.find("#cookedCtrl, #interestingCtrl, #ratingCtrl").attr("disabled", true);
 	recipeDlg.find("#titleCtrl, #pageCtrl, #commentCtrl").attr("readonly", true);
 
 	recipeDlg.find(".btnEdit, .btnClose").show();
@@ -2038,7 +2051,7 @@ function onRecipeEditClick()
 {
 	var recipeDlg = $("#recipe");
 
-	recipeDlg.find("#cookedCtrl, #interestingCtrl").removeAttr("disabled");
+	recipeDlg.find("#cookedCtrl, #interestingCtrl, #ratingCtrl").removeAttr("disabled");
 	recipeDlg.find("#titleCtrl, #pageCtrl, #commentCtrl").removeAttr("readonly");
 
 	recipeDlg.find(".tagControl").children().removeAttr("disabled");
