@@ -213,14 +213,14 @@ function onRecipeDragStopped(e, ui)
 	console.log("drag stopped");
 
 	var nextRecipe = null;
-
 	var nextRecipeDiv = ui.item.next();
 
-	if (nextRecipeDiv !== null)
-		nextRecipe = nextRecipeDiv.data("recipe");
+	if (nextRecipeDiv.length === 0)
+        return;
+        
+	nextRecipe = nextRecipeDiv.data("recipe");
 
 	var recipe = ui.item.data("recipe");
-
 	moveRecipeInDateEntry(recipe, nextRecipe);
 
 	e.stopPropagation();
