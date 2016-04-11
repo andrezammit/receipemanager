@@ -1553,7 +1553,7 @@ function getCookedRecipes(results)
     {
         var recipe = results.recipes[cnt];
 
-        if (recipe.isCooked === 1)
+        if (recipe.isCooked === 1 || recipe.isCooked === true)
             recipes.push(recipe);
     }
 
@@ -1568,7 +1568,7 @@ function getInterestingRecipes()
     {
         var recipe = _db.recipes[cnt];
 
-        if (recipe.isInteresting === 1)
+        if (recipe.isInteresting === 1 || recipe.isInteresting === true)
             recipes.push(recipe);
     }
 

@@ -1518,10 +1518,10 @@ function addRecipeResult(sectionDiv, recipe)
 	{
 		var recipeInfo = "pg. " + recipe.page;
 
-		if (recipe.isCooked === 1)
+		if (recipe.isCooked === 1 || recipe.isCooked === true)
 			recipeInfo += "; Cooked";
 
-		if (recipe.isInteresting === 1)
+		if (recipe.isInteresting === 1 || recipe.isInteresting === true)
 			recipeInfo += "; Interesting";
 
 		entryDiv.append("<div class='recipeInfo'>" + recipeInfo + "</div>");
