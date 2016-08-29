@@ -1,7 +1,7 @@
 {
   "name": "Recipe Manager",
   "description": "Recipe manager application.",
-  "version": "0.2",
+  "version": "0.4",
   "manifest_version": 2,
   "app": {
     "background": {
