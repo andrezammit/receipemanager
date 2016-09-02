@@ -30,19 +30,23 @@ var Engine = Engine();
 $(document).ready(
 	function()
 	{
-		Engine.loadDatabase(
-			function()
-			{
-				console.log("omogmog");
-
-				_currDate = getCurrentDate();
-
-				fillCalendarView(_currDate);
-				fillTagContainers();
-			});
-	    	
+		Engine.authenticate(onAuthenticateReady);
 	    setHandlers();
 	});
+
+function onAuthenticateReady()
+{
+	Engine.loadDatabase(
+		function () 
+		{
+			console.log("omogmog");
+
+			_currDate = getCurrentDate();
+
+			//fillCalendarView(_currDate);
+			//fillTagContainers();
+		});
+}
 
 function setHandlers()
 {
