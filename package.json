@@ -1,0 +1,9 @@
+{
+  "name": "recipe manager",
+  "version": "0.4",
+  "main": "main.js",
+  "dependencies": {
+    "google-auth-library": "^0.9.8",
+    "googleapis": "^12.4.0"
+  }
+}
