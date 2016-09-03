@@ -18,23 +18,23 @@ function Engine()
 
     var _googleAuth = new googleAuth();
     var _oAuth2Client = new _googleAuth.OAuth2(_clientId, _secret, "urn:ietf:wg:oauth:2.0:oob");
-    
+
     var _googleDrive = google.drive('v3');
-    
+
     function checkAuth(callback) 
     {
-        fs.readFile(_tokenPath, 
-            function(error, token) 
+        fs.readFile(_tokenPath,
+            function (error, token) 
             {
                 if (error) 
                 {
                     console.log("Google authentication token not found.");
                     getNewToken(callback);
-                } 
+                }
                 else 
                 {
                     console.log("Google authentication token found.");
-                    
+
                     _oAuth2Client.credentials = JSON.parse(token);
                     onAuthReady(callback);
                 }
@@ -50,19 +50,19 @@ function Engine()
             });
 
         console.log("Google authentication URL generated.");
-        
+
         var oAuthWin = new BrowserWindow(
-            { 
+            {
                 modal: true,
-                width: 800, 
+                width: 800,
                 height: 600
             });
 
-        oAuthWin.on('page-title-updated', 
-            function(event, title)
+        oAuthWin.on('page-title-updated',
+            function (event, title)
             {
                 var pos = title.indexOf("code=");
-                
+
                 if (pos === -1)
                     return;
 
@@ -83,8 +83,8 @@ function Engine()
 
     function generateAuthToken(authCode, callback)
     {
-        _oAuth2Client.getToken(authCode, 
-            function(error, token) 
+        _oAuth2Client.getToken(authCode,
+            function (error, token) 
             {
                 if (error) 
                 {
@@ -104,10 +104,10 @@ function Engine()
         try 
         {
             fs.mkdirSync(_tokenDir);
-        } 
+        }
         catch (error) 
         {
-            if (error.code != 'EEXIST') 
+            if (error.code != 'EEXIST')
                 console.log("Google authentication token stored to " + _tokenPath + ". Error: " + error);
         }
 
@@ -117,8 +117,8 @@ function Engine()
 
     function onAuthReady(callback)
     {
-       console.log("Google API authenticated.");
-       callback();
+        console.log("Google API authenticated.");
+        callback();
     }
 
     function loadDatabase(callback)
@@ -132,7 +132,7 @@ function Engine()
                 fileId: "1AQdWGNuFJ_3pd6GW6QanfPFvR_2R0xg73JE-y9tAxtc",
                 alt: 'media'
             },
-            function(error, file)
+            function (error, file)
             {
                 if (error)
                 {
@@ -142,10 +142,16 @@ function Engine()
 
                 _db = file;
                 console.log("Database loaded.");
-                
+
                 callback();
             }
         )
+    }
+
+    function saveDatabase(callback)
+    {
+        console.log("Saving database to Google Drive...");
+        uploadDatabase(_db, callback);
     }
 
     function getFileList()
@@ -175,26 +181,26 @@ function Engine()
             });
     }
 
-    function uploadDatabase(callback)
+    function uploadDatabase(data, callback)
     {
         console.log("Starting database upload...");
-        
+
         _googleDrive.files.create(
             {
                 auth: _oAuth2Client,
-                resource: 
+                resource:
                 {
                     name: 'RecipeManager.json',
-                    parents: [ 'appDataFolder']
+                    parents: ['appDataFolder']
                 },
-                media: 
+                media:
                 {
                     mimeType: 'application/json',
-                    body: fs.createReadStream('RecipeManager.json') // read streams are awesome!
+                    body: data
                 },
-                fields: 'id'  
-            }, 
-            function(error, file)
+                fields: 'id'
+            },
+            function (error, file)
             {
                 if (error)
                 {
@@ -246,6 +252,248 @@ function Engine()
         return null;
     }
 
+    function sortTags(tags)
+    {
+        if (tags === null)
+            return;
+
+        tags.sort(
+            function (a, b)
+            {
+                if (a.name < b.name)
+                    return -1;
+
+                if (a.name == b.name)
+                    return 0;
+
+                return 1;
+            });
+    }
+
+    function getAllTags()
+    {
+        var results = { tags: _db.tags };
+
+        sortTags(results.tags);
+
+        if (results.tags.length === 0)
+        {
+            var tag = new Tag();
+            tag.name = "Add tag...";
+
+            results.tags.push(tag);
+        }
+
+        return results;
+    }
+
+    function getAllBooks()
+    {
+        var results = { books: _db.books };
+
+        sortBooks(results.books);
+
+        if (results.books.length === 0)
+        {
+            var book = new Book();
+            book.name = "Add book...";
+
+            results.books.push(book);
+        }
+
+        return results;
+    }  
+
+    function getBookSections(id)
+    {
+        var book = getBookById(id);
+        var sections = [];
+
+        var section = null;
+
+        var size = book.sectionIds.length;
+        for (var cnt = 0; cnt < size; cnt++)
+        {
+            var sectionID = book.sectionIds[cnt];
+            section = getSectionById(sectionID);
+
+            if (section !== null)
+                sections.push(section);
+        }
+
+        if (sections.length === 0)
+        {
+            section = new Section();
+
+            section.bookId = id;
+            section.name = "Add section...";
+
+            sections.push(section);
+        }
+
+        sortSections(sections);
+
+        var sectionGroups = [];
+        groupSectionsByBook(sections, sectionGroups);
+
+        var results =
+            {
+                sections: sectionGroups,
+            };
+
+        return results;
+    }
+
+    function getSectionRecipes(id)
+    {
+        var section = getSectionById(id);
+        var recipes = [];
+
+        var recipe = null;
+
+        var size = section.recipeIds.length;
+        for (var cnt = 0; cnt < size; cnt++)
+        {
+            var recipeID = section.recipeIds[cnt];
+            recipe = getRecipeById(recipeID);
+
+            if (recipe !== null)
+                recipes.push(recipe);
+        }
+
+        if (recipes.length === 0)
+        {
+            recipe = new Recipe();
+
+            recipe.sectionId = id;
+            recipe.name = "Add recipe...";
+
+            recipes.push(recipe);
+        }
+
+        sortRecipes(recipes);
+
+        var recipeGroups = [];
+        groupRecipesBySection(recipes, recipeGroups);
+
+        var results =
+            {
+                recipes: recipeGroups,
+            };
+
+        return results;
+    }
+
+    function updateDateEntry(updatedDateEntry)
+    {
+        var dateEntry = getObjectById(updatedDateEntry.id, RESULT_TYPE_DATEENTRY);
+        var isNewDateEntry = dateEntry === null;
+
+        if (isNewDateEntry === true)
+        {
+            dateEntry = new DateEntry();
+            _db.calendar.push(dateEntry);
+        }
+
+        copyObject(dateEntry, updatedDateEntry);
+    }
+
+    function getTagRecipes(id, results)
+    {
+        var tag = getTagById(id);
+        var recipes = [];
+
+        var size = tag.recipeIds.length;
+        for (var cnt = 0; cnt < size; cnt++)
+        {
+            var recipeID = tag.recipeIds[cnt];
+            var recipe = getRecipeById(recipeID);
+
+            if (recipe !== null)
+            {
+                if (results.recipes.indexOf(recipe) != -1)
+                    recipes.push(recipe);
+            }
+        }
+
+        sortRecipes(recipes);
+        return recipes;
+    }
+
+    function getSearchSuggestions(searchText)
+    {
+        var filters = searchText.split(", ");
+        searchText = filters[filters.length - 1];
+
+        if (searchText[0] === "#")
+            searchText = searchText.substring(1);
+
+        searchText = searchText.toLowerCase();
+
+        var tags = searchTags(searchText);
+
+        var tagsToReturn = Math.min(tags.length, 5);
+        tags = tags.splice(0, tagsToReturn);
+
+        var results =
+            {
+                tags: tags,
+            };
+
+        return results;
+    }
+
+    function getSearchResults(searchText)
+    {
+        var results =
+            {
+                books: _db.books,
+                sections: _db.sections,
+                recipes: _db.recipes
+            };
+
+        searchText = searchText.toLowerCase();
+
+        var filters = searchText.split(", ");
+
+        var size = filters.length;
+        for (var cnt = 0; cnt < size; cnt++)
+        {
+            var filter = filters[cnt];
+
+            if (filter[0] == "#")
+            {
+                results.recipes = getTagResults(filter, results);
+
+                results.books = [];
+                results.sections = [];
+
+                continue;
+            }
+
+            results.books = getBookResults(filter, results);
+            results.sections = getSectionResults(filter, results);
+            results.recipes = getRecipeResults(filter, results);
+        }
+
+        sortBooks(results.books);
+        sortRecipes(results.recipes);
+        sortSections(results.sections);
+
+        var recipes = results.recipes;
+        results.recipes = [];
+
+        groupRecipesBySection(recipes, results.recipes);
+
+        var sections = results.sections;
+        results.sections = [];
+
+        groupSectionsByBook(sections, results.sections);
+
+        return results;
+    }
+
+
     return {
         authenticate(callback)
         {
@@ -259,6 +507,12 @@ function Engine()
             loadDatabase(callback);
         },
 
+        saveDatabase(callback)
+        {
+            callback = callback || null;
+            saveDatabase(callback);             
+        },
+
         uploadDatabase(callback)
         {
             uploadDatabase(callback);
@@ -267,6 +521,60 @@ function Engine()
         getDateEntryById(id)
         {
             return getObjectById(id, RESULT_TYPE_DATEENTRY);
+        },
+
+        getBookById(id)
+        {
+            return getObjectById(id, RESULT_TYPE_BOOK);
+        },
+
+        getSectionById(id)
+        {
+            return getObjectById(id, RESULT_TYPE_SECTION);
+        },
+
+        getAllBooks()
+        {
+            return getAllBooks();
+        },
+
+        getAllTags()
+        {
+            return getAllTags();
+        },
+
+        getBookSections(id)
+        {
+            return getBookSections(id);
+        },
+
+        getSectionRecipes(id)
+        {
+            return getSectionRecipes(id);
+        },
+
+        getTagRecipes(id)
+        {
+            var recipes = getTagRecipes(id, _db);
+            groupRecipesBySection(recipes, _currResults.recipes);
+
+            return getBunchOfResults();
+        },
+
+        updateDateEntry(dateEntry)
+        {
+            updateDateEntry(dateEntry);
+        },
+
+        getSearchSuggestions(searchText)
+        {
+            return getSearchSuggestions(searchText);
+        },
+        
+        search(searchText)
+        {
+            _currResults = getSearchResults(searchText);
+            return getBunchOfResults();
         }
     }
 }

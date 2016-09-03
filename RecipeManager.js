@@ -264,11 +264,7 @@ function moveRecipeInDateEntry(recipeToMove, nextRecipe)
 		}
 	}
 
-	chrome.runtime.sendMessage(
-	{
-		command: "updateDateEntry",
-		dateEntry: dateEntry
-	});
+	Engine.updateDateEntry(dateEntry);
 }
 
 function showLoadingView(show)
@@ -308,50 +304,9 @@ function showResultsView(show)
 	calendarDiv.show();
 }
 
-function loadDatabase(onLoadDatabaseDone)
-{
-	chrome.runtime.sendMessage(
-	{
-		command: "loadDatabase",
-	}, 
-	function() 
-    {
-    	console.log("Database loaded.");
-
-    	if (typeof onLoadDatabaseDone != "undefined")
-    		onLoadDatabaseDone();
-	});
-}
-
-function importDatabase(data, onImportDatabaseDone)
-{
-	chrome.runtime.sendMessage(
-	{
-		command: "importDatabase",
-		data: data
-	}, 
-	function() 
-    {
-    	console.log("Database imported.");
-
-    	if (typeof onImportDatabaseDone != "undefined")
-    		onImportDatabaseDone();
-	});
-}
-
 function saveDatabase(onSaveDatabaseDone)
 {
-	chrome.runtime.sendMessage(
-	{
-		command: "saveDatabase"
-	}, 
-	function() 
-    {
-    	console.log("Database saved.");
-
-    	if (typeof onSaveDatabaseDone != "undefined")
-    		onSaveDatabaseDone();
-	});
+	Engine.saveDatabase(onSaveDatabaseDone);
 }
 
 function onSearchBoxChanged()
@@ -365,15 +320,8 @@ function onSearchBoxChanged()
 		return;
 	}
 
-	chrome.runtime.sendMessage(
-		{
-			command: "getSearchSuggestions",
-			searchText: searchText,
-		}, 
-		function(response) 
-	    {
-	    	showSearchSuggestions(response);
-		});
+	var results = Engine.getSearchSuggestions(searchText);
+	showSearchSuggestions(results);
 }
 
 function addSearchSuggestion(suggestionsDiv, tag)
@@ -460,16 +408,8 @@ function onSearchBoxEnterPressed()
 	showLoadingView(true);
 	_currentSearchText = searchText;
 
-	chrome.runtime.sendMessage(
-		{
-			command: "search",
-			searchText: searchText,
-		}, 
-		function(response) 
-	    {
-	    	console.log("Search reply.");
-	    	showSearchResults(response);
-		});
+	var results = Engine.search(searchText);
+	showSearchResults(results);
 
 	$("#suggestions").hide();
 }
@@ -519,48 +459,6 @@ function onSearchBoxUpPressed()
 
 	prevSuggestion.focus();
 	prevSuggestion.addClass("suggestionHover");
-}
-
-function getBookById(id, onGetBookByIdDone)
-{
-	chrome.runtime.sendMessage(
-		{
-			command: "getObjectById",
-			id: id,
-			type: RESULT_TYPE_BOOK
-		}, 
-		function(response) 
-	    {
-	    	onGetBookByIdDone(response);
-		});
-}
-
-function getSectionById(id, onGetSectionByIdDone)
-{
-	chrome.runtime.sendMessage(
-		{
-			command: "getObjectById",
-			id: id,
-			type: RESULT_TYPE_SECTION
-		}, 
-		function(response) 
-	    {
-	    	onGetSectionByIdDone(response);
-		});
-}
-
-function getRecipeById(id, onGetRecipeByIdDone)
-{
-	chrome.runtime.sendMessage(
-		{
-			command: "getObjectById",
-			id: id,
-			type: RESULT_TYPE_RECIPE
-		}, 
-		function(response) 
-	    {
-	    	onGetRecipeByIdDone(response);
-		});
 }
 
 function getTagById(id, onGetTagByIdDone)
@@ -1458,23 +1356,21 @@ function onAddSectionResultPathDone(sectionDiv, sectionGroup)
 
 function addSectionResultPath(sectionDiv, sectionGroup, onAddSectionResultPathDone)
 {
-	getBookById(sectionGroup.bookId,
-		function(book)
+	var book = getBookById(sectionGroup.bookId);
+
+	var resultPathDiv = $("<div class='resultPath'></div>");
+
+	var bookPathDiv = $("<div class='resultSubPath'>Book: " + book.name + "</div>");
+	bookPathDiv.on("click",
+		function ()
 		{
-			var resultPathDiv = $("<div class='resultPath'></div>");
-
-			var bookPathDiv = $("<div class='resultSubPath'>Book: " + book.name + "</div>");
-			bookPathDiv.on("click", 
-				function()
-				{
-					onSearchResultClick(RESULT_TYPE_BOOK, book.id);
-				});
-
-			resultPathDiv.append(bookPathDiv);
-			sectionDiv.append(resultPathDiv);
-
-			onAddSectionResultPathDone(sectionDiv, sectionGroup);
+			onSearchResultClick(RESULT_TYPE_BOOK, book.id);
 		});
+
+	resultPathDiv.append(bookPathDiv);
+	sectionDiv.append(resultPathDiv);
+
+	onAddSectionResultPathDone(sectionDiv, sectionGroup);
 }
 
 function addRecipeResults(sectionDiv, recipeGroups)
@@ -1551,36 +1447,31 @@ function onAddRecipeResultPathDone(sectionDiv, recipeGroup)
 
 function addRecipeResultPath(sectionDiv, recipeGroup, onAddRecipeResultPathDone)
 {
-	getSectionById(recipeGroup.sectionId,
-		function (section)
+	var section = getSectionById(recipeGroup.sectionId);
+	var book = getBookById(section.bookId);
+
+	var resultPathDiv = $("<div class='resultPath'></div>");
+
+	var bookPathDiv = $("<div class='resultSubPath'>Book: " + book.name + "</div>");
+	bookPathDiv.on("click",
+		function ()
 		{
-			getBookById(section.bookId, 
-				function (book)
-				{
-					var resultPathDiv = $("<div class='resultPath'></div>");
-
-					var bookPathDiv = $("<div class='resultSubPath'>Book: " + book.name + "</div>");
-					bookPathDiv.on("click", 
-						function()
-						{
-							onSearchResultClick(RESULT_TYPE_BOOK, book.id);
-						});
-
-					var sectionPathDiv = $("<div class='resultSubPath'>Section: " + section.name + "</div>");
-						sectionPathDiv.on("click", 
-						function()
-						{
-							onSearchResultClick(RESULT_TYPE_SECTION, section.id);
-						});
-
-					resultPathDiv.append(bookPathDiv);
-					resultPathDiv.append(sectionPathDiv);
-
-					sectionDiv.append(resultPathDiv);
-
-					onAddRecipeResultPathDone(sectionDiv, recipeGroup);
-				});
+			onSearchResultClick(RESULT_TYPE_BOOK, book.id);
 		});
+
+	var sectionPathDiv = $("<div class='resultSubPath'>Section: " + section.name + "</div>");
+	sectionPathDiv.on("click",
+		function ()
+		{
+			onSearchResultClick(RESULT_TYPE_SECTION, section.id);
+		});
+
+	resultPathDiv.append(bookPathDiv);
+	resultPathDiv.append(sectionPathDiv);
+
+	sectionDiv.append(resultPathDiv);
+
+	onAddRecipeResultPathDone(sectionDiv, recipeGroup);
 }
 
 function addTagResults(sectionDiv, entries)
@@ -1778,17 +1669,14 @@ function addStarRating(resultDiv, type, id)
         
     function setNewRating(rating)
 	{
-		getRecipeById(id, 
-			function(recipe)
-			{	
-				recipe.rating = rating;
+		var recipe = Engine.getRecipeById(id);
+		recipe.rating = rating;
 
-				updateRecipe(recipe, 
-					function()
-					{
-						var entryDiv = resultDiv.children(".resultEntry");
-						entryDiv.data("rating", rating);
-					});
+		updateRecipe(recipe,
+			function ()
+			{
+				var entryDiv = resultDiv.children(".resultEntry");
+				entryDiv.data("rating", rating);
 			});
 	}
     
@@ -1825,65 +1713,36 @@ function onSearchResultClick(type, id)
 function showBooks()
 {
 	clearSearchBox();
-
-	chrome.runtime.sendMessage(
-	{
-		command: "getAllBooks",
-	}, 
-	function(response) 
-    {
-    	console.log("Search reply.");
-    	showSearchResults(response);
-	});
+	
+	var results = Engine.getAllBooks();
+	showSearchResults(results);
 }
 
 function showBookSections(id)
 {
 	clearSearchBox();
-
-	chrome.runtime.sendMessage(
-	{
-		command: "getBookSections",
-		id: id,
-	}, 
-	function(response) 
-    {
-    	console.log("Search reply.");
-    	showSearchResults(response);
-	});
+	
+	var results = Engine.getBookSections(id);
+	showSearchResults(response);
 }
 
 function showSectionRecipes(id)
 {
 	clearSearchBox();
-
-	chrome.runtime.sendMessage(
-	{
-		command: "getSectionRecipes",
-		id: id,
-	}, 
-	function(response) 
-    {
-    	console.log("Search reply.");
-    	showSearchResults(response);
-	});
+	
+	var results = Engine.getSectionRecipes(id);
+	showSearchResults(response);
 }
 
 function showRecipeDlg(recipe, isNewEntry)
 {
 	var recipeDlg = $("#recipe");
 
-	getSectionById(recipe.sectionId,
-		function(section)
-		{
-			recipeDlg.find("#sectionCtrl").val(section.name);
+	var section = getSectionById(recipe.sectionId);
+	recipeDlg.find("#sectionCtrl").val(section.name);
 
-			getBookById(section.bookId,
-				function(book)
-				{
-					recipeDlg.find("#bookCtrl").val(book.name);
-				});
-		});
+	var book = getBookById(section.bookId);
+	recipeDlg.find("#bookCtrl").val(book.name);
 
 	recipeDlg.find("#titleCtrl").val(recipe.name);
 	recipeDlg.find("#pageCtrl").val(recipe.page);
@@ -1937,62 +1796,39 @@ function showRecipe(id, parentId)
 		return;
 	}
 
-	getRecipeById(id,
-		function(recipe)
-		{
-			var isNewEntry = false;
+	var recipe = Engine.getRecipeById(id);
 
-			if (recipe === null)
-			{
-				isNewEntry = true;
+	var isNewEntry = false;
 
-				recipe = new Recipe();
+	if (recipe === null)
+	{
+		isNewEntry = true;
 
-				recipe.id = id;
-				recipe.sectionId = parentId;
+		recipe = new Recipe();
 
-				getSectionById(parentId,
-					function(section)
-					{
-						recipe.tagIds = section.tagIds;		
-						onRecipeEditClick();
+		recipe.id = id;
+		recipe.sectionId = parentId;
 
-						showRecipeDlg(recipe, isNewEntry);
-					});
+		var section = Engine.getSectionById(parentId);
+		recipe.tagIds = section.tagIds;
+		onRecipeEditClick();
+	}
 
-				return;
-			}
-
-			showRecipeDlg(recipe, isNewEntry);
-		});
+	showRecipeDlg(recipe, isNewEntry);
 }
 
 function showTagRecipes(id)
 {
-	chrome.runtime.sendMessage(
-	{
-		command: "getTagRecipes",
-		id: id,
-	}, 
-	function(response) 
-    {
-    	showSearchResults(response);
-	});
+	var results = Engine.getTagRecipes(id);
+    showSearchResults(results);
 }
 
 function showTags()
 {
-	clearSearchBox();
+	clearSerchBox();
 
-	chrome.runtime.sendMessage(
-	{
-		command: "getAllTags",
-	}, 
-	function(response) 
-    {
-    	console.log("Search reply.");
-    	showSearchResults(response);
-	});
+	var results = Engine.getAllTags();
+	showSearchResults(response);
 }
 
 function onRecipeCloseClick()
@@ -2070,41 +1906,34 @@ function onRecipeEditClick()
 
 function fillTagContainers()
 {
-	chrome.runtime.sendMessage(
+	var tags = Engine.getAllTags();
+
+	if (tags.length == 1)
+		return;
+
+	var tagContainer = $(".tagContainer");
+
+	var tagLabels = tagContainer.find(".tagLabels");
+	var tagControls = tagContainer.find(".tagControls");
+
+	tagLabels.empty();
+	tagControls.empty();
+
+	var size = tags.length;
+	for (var cnt = 0; cnt < size; cnt++)
 	{
-		command: "getAllTags",
-	}, 
-	function(response) 
-    {
-    	var tags = response.tags;
+		var tag = tags[cnt];
 
-    	if (tags.length == 1)
-    		return;
+		var tagLabel = $("<div class='tagLabel'>" + tag.name + "</div>");
+		var tagControlDiv = $("<div class='tagControl'></div>");
+		var tagControl = $("<input type='checkbox' disabled/>");
 
-    	var tagContainer = $(".tagContainer");
+		tagControlDiv.append(tagControl);
+		tagControl.data("id", tag.id);
 
-		var tagLabels = tagContainer.find(".tagLabels");
-		var tagControls = tagContainer.find(".tagControls");
-
-		tagLabels.empty();
-		tagControls.empty();
-
-		var size = tags.length;
-		for (var cnt = 0; cnt < size; cnt++)
-		{
-			var tag = tags[cnt];
-
-			var tagLabel = $("<div class='tagLabel'>" + tag.name + "</div>");
-			var tagControlDiv = $("<div class='tagControl'></div>");
-			var tagControl = $("<input type='checkbox' disabled/>");
-
-			tagControlDiv.append(tagControl);
-			tagControl.data("id", tag.id);
-
-			tagLabels.append(tagLabel);
-			tagControls.append(tagControlDiv);
-		}
-	});
+		tagLabels.append(tagLabel);
+		tagControls.append(tagControlDiv);
+	}
 }
 
 function checkTags(parent, tagIds)
@@ -2150,50 +1979,47 @@ function showSection(id, parentId)
 		return;
 	}
 
-	getSectionById(id,
-		function(section)
+	var section = getSectionById(id);
+	var isNewEntry = false;
+
+	if (section === null)
+	{
+		isNewEntry = true;
+
+		section = new Section();
+		section.id = id;
+		section.bookId = parentId;
+
+		onSectionEditClick();
+	}
+
+	var sectionDlg = $("#section");
+
+	sectionDlg.find("#titleCtrl").val(section.name);
+	checkTags(sectionDlg, section.tagIds);
+
+	var btnOK = sectionDlg.find(".btnOK");
+	btnOK.off("click");
+
+	btnOK.on("click",
+		function ()
 		{
-			var isNewEntry = false;
-
-			if (section === null)
-			{
-				isNewEntry = true;
-
-				section = new Section();
-				section.id = id;
-				section.bookId = parentId;
-
-				onSectionEditClick();
-			}
-
-			var sectionDlg = $("#section");
-
-			sectionDlg.find("#titleCtrl").val(section.name);
-			checkTags(sectionDlg, section.tagIds);
-
-			var btnOK = sectionDlg.find(".btnOK");
-			btnOK.off("click");
-
-			btnOK.on("click", 
-				function()
-				{
-					onSectionOKClick(id, section);
-				});
-
-			var btnCancel = sectionDlg.find(".btnCancel");
-			btnCancel.off("click");
-
-			btnCancel.on("click", 
-				function()
-				{
-					if (isNewEntry === true)
-						id = 0;
-
-					showSection(id, section.bookId);
-				});
-
-			showDialog(sectionDlg);
+			onSectionOKClick(id, section);
 		});
+
+	var btnCancel = sectionDlg.find(".btnCancel");
+	btnCancel.off("click");
+
+	btnCancel.on("click",
+		function ()
+		{
+			if (isNewEntry === true)
+				id = 0;
+
+			showSection(id, section.bookId);
+		});
+
+	showDialog(sectionDlg);
 }
 
 function onSectionOKClick(id, section)
@@ -2291,47 +2117,44 @@ function showBook(id)
 		return;
 	}
 
-	getBookById(id,
-		function (book)
+	var book = getBookById(id);
+	var isNewEntry = false;
+
+	if (book === null)
+	{
+		isNewEntry = true;
+
+		book = new Book();
+		book.id = id;
+
+		onBookEditClick();
+	}
+
+	var bookDlg = $("#book");
+	bookDlg.find("#titleCtrl").val(book.name);
+
+	var btnOK = bookDlg.find(".btnOK");
+	btnOK.off("click");
+
+	btnOK.on("click",
+		function ()
 		{
-			var isNewEntry = false;
-
-			if (book === null)
-			{
-				isNewEntry = true;
-
-				book = new Book();
-				book.id = id;
-
-				onBookEditClick();
-			}
-
-			var bookDlg = $("#book");
-			bookDlg.find("#titleCtrl").val(book.name);
-
-			var btnOK = bookDlg.find(".btnOK");
-			btnOK.off("click");
-
-			btnOK.on("click", 
-				function()
-				{
-					onBookOKClick(id, book);
-				});
-
-			var btnCancel = bookDlg.find(".btnCancel");
-			btnCancel.off("click");
-
-			btnCancel.on("click", 
-				function()
-				{
-					if (isNewEntry === true)
-						id = 0;
-
-					showBook(id);
-				});
-
-			showDialog(bookDlg);
+			onBookOKClick(id, book);
 		});
+
+	var btnCancel = bookDlg.find(".btnCancel");
+	btnCancel.off("click");
+
+	btnCancel.on("click",
+		function ()
+		{
+			if (isNewEntry === true)
+				id = 0;
+
+			showBook(id);
+		});
+
+	showDialog(bookDlg);
 }
 
 function resetBookDlg()
