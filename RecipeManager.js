@@ -39,8 +39,6 @@ function onAuthenticateReady()
 	Engine.loadDatabase(
 		function () 
 		{
-			console.log("omogmog");
-
 			_currDate = getCurrentDate();
 
 			//fillCalendarView(_currDate);

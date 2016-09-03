@@ -18,8 +18,10 @@ function Engine()
 
     var _googleAuth = new googleAuth();
     var _oAuth2Client = new _googleAuth.OAuth2(_clientId, _secret, "urn:ietf:wg:oauth:2.0:oob");
-
-    function checkAuth() 
+    
+    var _googleDrive = google.drive('v3');
+    
+    function checkAuth(callback) 
     {
         fs.readFile(_tokenPath, 
             function(error, token) 
@@ -27,17 +29,17 @@ function Engine()
                 if (error) 
                 {
                     console.log("Google authentication token not found");
-                    getNewToken();
+                    getNewToken(callback);
                 } 
                 else 
                 {
                     _oAuth2Client.credentials = JSON.parse(token);
-                    onAuthReady();
+                    onAuthReady(callback);
                 }
             });
     }
 
-    function getNewToken()
+    function getNewToken(callback)
     {
         var authUrl = _oAuth2Client.generateAuthUrl(
             {
@@ -71,13 +73,13 @@ function Engine()
                 var authCode = title.substr(pos);
                 console.log("Google authentication code detected: " + authCode);
 
-                generateAuthToken(authCode);
+                generateAuthToken(authCode, callback);
             });
 
         oAuthWin.loadURL(authUrl);
     }
 
-    function generateAuthToken(authCode)
+    function generateAuthToken(authCode, callback)
     {
         _oAuth2Client.getToken(authCode, 
             function(error, token) 
@@ -91,7 +93,7 @@ function Engine()
                 storeAuthToken(token);
 
                 _oAuth2Client.credentials = token;
-                onAuthReady();
+                onAuthReady(callback);
             });
     }
 
@@ -111,17 +113,17 @@ function Engine()
         console.log("Google authentication token stored to " + _tokenPath);
     }
 
-    function onAuthReady()
+    function onAuthReady(callback)
     {
        console.log("Google API authenticated.");
+
+       callback();
        getFileList();
     }
 
     function getFileList()
     {
-        var googleDrive = google.drive('v3');
-
-        googleDrive.files.list(
+        _googleDrive.files.list(
             {
                 auth: _oAuth2Client,
                 spaces: 'appDataFolder',
@@ -146,21 +148,54 @@ function Engine()
             });
     }
 
+    function uploadDatabase(callback)
+    {
+        console.log("Starting database upload...");
+        
+        _googleDrive.files.create(
+            {
+                auth: _oAuth2Client,
+                resource: 
+                {
+                    name: 'RecipeManager.json',
+                    parents: [ 'appDataFolder']
+                },
+                media: 
+                {
+                    mimeType: 'application/json',
+                    body: fs.createReadStream('RecipeManager.json') // read streams are awesome!
+                },
+                fields: 'id'  
+            }, 
+            function(error, file)
+            {
+                if (error)
+                {
+                    console.log("Database upload failed. " + error);
+                    return;
+                }
+
+                console.log("Database uploaded. ID: " + file.id);
+                callback();
+            });
+    }
+
     return {
         authenticate(callback)
         {
             callback = callback || null;
-
-            checkAuth();
-
-            //callback()
+            checkAuth(callback);
         },
 
         loadDatabase(callback)
         {
             callback = callback || null;
+            callback();
+        },
 
-            callback()
+        uploadDatabase(callback)
+        {
+            uploadDatabase(callback);
         }
     }
 }
