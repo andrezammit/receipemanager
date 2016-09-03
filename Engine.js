@@ -14,7 +14,7 @@ function Engine()
     var _clientId = "13277472194-s5rm0emfoq5fcfmqqlncjbejb5fhp42n.apps.googleusercontent.com";
     var _secret = "fBAQnEagqKhO0AUlXyEx6S26";
     //var _scopes = ["https://www.googleapis.com/auth/calendar.readonly"];
-    var _scopes = ["https://www.googleapis.com/auth/drive.metadata.readonly"];
+    var _scopes = ["https://www.googleapis.com/auth/drive.appdata"];
 
     var _googleAuth = new googleAuth();
     var _oAuth2Client = new _googleAuth.OAuth2(_clientId, _secret, "urn:ietf:wg:oauth:2.0:oob");
@@ -124,6 +124,7 @@ function Engine()
         googleDrive.files.list(
             {
                 auth: _oAuth2Client,
+                spaces: 'appDataFolder',
                 pageSize: 10,
                 fields: "nextPageToken, files(id, name)"
             },
