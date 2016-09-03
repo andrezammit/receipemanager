@@ -121,6 +121,24 @@ function Engine()
        getFileList();
     }
 
+    function loadDatabase(callback)
+    {
+        //1AQdWGNuFJ_3pd6GW6QanfPFvR_2R0xg73JE-y9tAxtc
+
+        _googleDrive.files.get(
+            {
+                auth: _oAuth2Client,
+                fileId: "1AQdWGNuFJ_3pd6GW6QanfPFvR_2R0xg73JE-y9tAxtc",
+                alt: 'media'
+            },
+            function(error, file)
+            {
+                _db = file;
+                callback();
+            }
+        )
+    }
+
     function getFileList()
     {
         _googleDrive.files.list(
@@ -190,7 +208,7 @@ function Engine()
         loadDatabase(callback)
         {
             callback = callback || null;
-            callback();
+            loadDatabase(callback);
         },
 
         uploadDatabase(callback)
