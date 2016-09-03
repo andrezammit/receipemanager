@@ -41,8 +41,8 @@ function onAuthenticateReady()
 		{
 			_currDate = getCurrentDate();
 
-			//fillCalendarView(_currDate);
-			//fillTagContainers();
+			fillCalendarView(_currDate);
+			fillTagContainers();
 		});
 }
 
@@ -216,8 +216,6 @@ function setHandlers()
 
 function onRecipeDragStopped(e, ui)
 {
-	console.log("drag stopped");
-
 	var nextRecipe = null;
 	var nextRecipeDiv = ui.item.next();
 
@@ -876,67 +874,67 @@ function fillDayRecipes(dayDiv)
 	var date = dayDiv.data("date");
 	var dateId = getDateIdFromDate(date);
 
-	getDateEntryById(dateId, 
-		function(dateEntry)
-		{
-			if (dateEntry === null)
-				return;
+	var dateEntry = Engine.getDateEntryById(dateId);
 
-			dayDiv.children(".dayViewRecipe").remove();
-			
-			var height = dayDiv.height();
-			
-			var padding = 5;
-			var recipeMargin = 5;
-			var dayNumberHeight = 18 + padding;
+	if (dateEntry === null)
+		return;
 
-			var recipeHeight = 20 + recipeMargin;
+	dayDiv.children(".dayViewRecipe").remove();
 
-			var availableSpace = height - dayNumberHeight;
-			var maxRecipesToShow = Math.floor(availableSpace / recipeHeight);
+	var height = dayDiv.height();
 
-			var addMoreEntry = false;
+	var padding = 5;
+	var recipeMargin = 5;
+	var dayNumberHeight = 18 + padding;
 
-			if (maxRecipesToShow < dateEntry.recipes.length)
-			{
-				addMoreEntry = true;
-				maxRecipesToShow--;
-			}
+	var recipeHeight = 20 + recipeMargin;
 
-			var dayViewRecipe = null;
-			var recipesToShow = Math.min(dateEntry.recipes.length, maxRecipesToShow);
+	var availableSpace = height - dayNumberHeight;
+	var maxRecipesToShow = Math.floor(availableSpace / recipeHeight);
 
-			for (var cnt = 0; cnt < recipesToShow; cnt++)
-			{
-				var recipe = dateEntry.recipes[cnt];
+	var addMoreEntry = false;
 
-				dayViewRecipe = $("<div class='dayViewRecipe'>" + recipe.name + "</div>");
-				dayDiv.append(dayViewRecipe);
-			}
+	if (maxRecipesToShow < dateEntry.recipes.length)
+	{
+		addMoreEntry = true;
+		maxRecipesToShow--;
+	}
 
-			if (addMoreEntry === true)
-			{
-				dayViewRecipe = $("<div class='dayViewRecipe'>More...</div>");
-				dayDiv.append(dayViewRecipe);
-			}
+	var dayViewRecipe = null;
+	var recipesToShow = Math.min(dateEntry.recipes.length, maxRecipesToShow);
 
-			$(".dayViewRecipe").css("width", dayDiv.width() - 16);
+	for (var cnt = 0; cnt < recipesToShow; cnt++)
+	{
+		var recipe = dateEntry.recipes[cnt];
 
-			var dayNumberDiv = dayDiv.children(".day");
+		dayViewRecipe = $("<div class='dayViewRecipe'>" + recipe.name + "</div>");
+		dayDiv.append(dayViewRecipe);
+	}
 
-			if (recipesToShow > 0)
-			{
-				dayNumberDiv.css("font-weight", "bold");
-			}
-			else
-			{
-				dayNumberDiv.css("font-weight", "normal");
-			}
-		});
+	if (addMoreEntry === true)
+	{
+		dayViewRecipe = $("<div class='dayViewRecipe'>More...</div>");
+		dayDiv.append(dayViewRecipe);
+	}
+
+	$(".dayViewRecipe").css("width", dayDiv.width() - 16);
+
+	var dayNumberDiv = dayDiv.children(".day");
+
+	if (recipesToShow > 0)
+	{
+		dayNumberDiv.css("font-weight", "bold");
+	}
+	else
+	{
+		dayNumberDiv.css("font-weight", "normal");
+	}
 }
 
 function refreshDayRecipes()
 {
+	console.log("Loading calendar...");
+
 	var dayDivs = $(".availDay");
 
 	for (var cnt = 0; cnt < dayDivs.length; cnt++)
@@ -944,6 +942,8 @@ function refreshDayRecipes()
 		var dayDiv = $(dayDivs[cnt]);
 		fillDayRecipes(dayDiv);
 	}
+
+	console.log("Calendar loaded.");
 }
 
 function onDayClicked(event)

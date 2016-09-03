@@ -28,11 +28,13 @@ function Engine()
             {
                 if (error) 
                 {
-                    console.log("Google authentication token not found");
+                    console.log("Google authentication token not found.");
                     getNewToken(callback);
                 } 
                 else 
                 {
+                    console.log("Google authentication token found.");
+                    
                     _oAuth2Client.credentials = JSON.parse(token);
                     onAuthReady(callback);
                 }
@@ -116,14 +118,13 @@ function Engine()
     function onAuthReady(callback)
     {
        console.log("Google API authenticated.");
-
        callback();
-       getFileList();
     }
 
     function loadDatabase(callback)
     {
         //1AQdWGNuFJ_3pd6GW6QanfPFvR_2R0xg73JE-y9tAxtc
+        console.log("Loading database from Google Drive...");
 
         _googleDrive.files.get(
             {
@@ -133,7 +134,15 @@ function Engine()
             },
             function(error, file)
             {
+                if (error)
+                {
+                    console.log("Failed to load database. " + error);
+                    return;
+                }
+
                 _db = file;
+                console.log("Database loaded.");
+                
                 callback();
             }
         )
@@ -198,6 +207,45 @@ function Engine()
             });
     }
 
+    function getObjectById(id, type)
+    {
+        var array = null;
+
+        switch (type)
+        {
+            case RESULT_TYPE_RECIPE:
+                array = _db.recipes;
+                break;
+
+            case RESULT_TYPE_SECTION:
+                array = _db.sections;
+                break;
+
+            case RESULT_TYPE_BOOK:
+                array = _db.books;
+                break;
+
+            case RESULT_TYPE_TAG:
+                array = _db.tags;
+                break;
+
+            case RESULT_TYPE_DATEENTRY:
+                array = _db.calendar;
+                break;
+        }
+
+        var size = array.length;
+        for (var cnt = 0; cnt < size; cnt++) 
+        {
+            var object = array[cnt];
+
+            if (object.id == id)
+                return object;
+        }
+
+        return null;
+    }
+
     return {
         authenticate(callback)
         {
@@ -214,6 +262,11 @@ function Engine()
         uploadDatabase(callback)
         {
             uploadDatabase(callback);
+        },
+
+        getDateEntryById(id)
+        {
+            return getObjectById(id, RESULT_TYPE_DATEENTRY);
         }
     }
 }
