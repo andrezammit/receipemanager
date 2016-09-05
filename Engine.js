@@ -450,6 +450,87 @@ function Engine()
         return results;
     }
 
+    function getTagResults(searchText, results)
+    {
+        var recipes = null;
+
+        if (searchText == "#cooked")
+        {
+            recipes = getCookedRecipes(results);
+        }
+        else if (searchText == "#interesting")
+        {
+            recipes = getInterestingRecipes(results);
+        }
+        else if (searchText == "#3stars")
+        {
+            recipes = getStarredRecipes(results, 3);
+        }
+        else if (searchText == "#2stars")
+        {
+            recipes = getStarredRecipes(results, 2);
+        }
+        else if (searchText == "#1star")
+        {
+            recipes = getStarredRecipes(results, 1);
+        }
+        else 
+        {
+            var name = searchText.substring(1);
+            var id = getTagIdByName(name);
+
+            if (id != -1)
+                recipes = getTagRecipes(id, results);
+        }
+
+        return recipes;
+    }
+
+    function getStarredRecipes(results, stars)
+    {
+        var recipes = [];
+
+        for (var cnt = 0; cnt < results.recipes.length; cnt++)
+        {
+            var recipe = results.recipes[cnt];
+
+            if (recipe.rating === stars)
+                recipes.push(recipe);
+        }
+
+        return recipes;
+    }
+
+    function getCookedRecipes(results)
+    {
+        var recipes = [];
+
+        for (var cnt = 0; cnt < results.recipes.length; cnt++)
+        {
+            var recipe = results.recipes[cnt];
+
+            if (recipe.isCooked === 1 || recipe.isCooked === true)
+                recipes.push(recipe);
+        }
+
+        return recipes;
+    }
+
+    function getInterestingRecipes()
+    {
+        var recipes = [];
+
+        for (var cnt = 0; cnt < _db.recipes.length; cnt++)
+        {
+            var recipe = _db.recipes[cnt];
+
+            if (recipe.isInteresting === 1 || recipe.isInteresting === true)
+                recipes.push(recipe);
+        }
+
+        return recipes;
+    }
+
     function getSearchResults(searchText)
     {
         var results =
@@ -496,6 +577,61 @@ function Engine()
         results.sections = [];
 
         groupSectionsByBook(sections, results.sections);
+
+        return results;
+    }
+
+    function searchTags(searchText)
+    {
+        var tags = [];
+
+        var size = _db.tags.length;
+        for (var cnt = 0; cnt < size; cnt++)
+        {
+            var tag = _db.tags[cnt];
+            var tagName = tag.name.toLowerCase();
+
+            if (tagName.indexOf(searchText) == -1)
+                continue;
+
+            tags.push(tag);
+        }
+
+        return tags;
+    }
+
+    function searchRecipes(searchText)
+    {
+        var recipes = [];
+
+        var size = _db.recipes.length;
+        for (var cnt = 0; cnt < size; cnt++)
+        {
+            var recipe = _db.recipes[cnt];
+            var recipeName = recipe.name.toLowerCase();
+
+            if (recipeName.indexOf(searchText) == -1)
+                continue;
+
+            recipes.push(recipe);
+        }
+
+        return recipes;
+    }
+
+    function getRecipeSuggestions(searchText)
+    {
+        searchText = searchText.toLowerCase();
+
+        var recipes = searchRecipes(searchText);
+
+        var recipesToReturn = Math.min(recipes.length, 5);
+        recipes = recipes.splice(0, recipesToReturn);
+
+        var results =
+            {
+                recipes: recipes,
+            };
 
         return results;
     }
@@ -606,6 +742,36 @@ function Engine()
     {
         for (var k in firstObj)
             firstObj[k] = secondObj[k];
+    }
+
+    function isSectionTag(sectionId, tagId)
+    {
+        var section = getSectionById(sectionId);
+
+        if (section.tagIds.indexOf(tagId) == -1)
+            return false;
+
+        return true;
+    }
+
+    function removeRecipeFromTag(tag, recipeId)
+    {
+        var index = tag.recipeIds.indexOf(recipeId);
+
+        if (index == -1)
+            return;
+
+        tag.recipeIds.splice(index, 1);
+    }
+
+    function addRecipeToTag(tag, recipeId)
+    {
+        var index = tag.recipeIds.indexOf(recipeId);
+
+        if (index != -1)
+            return;
+
+        tag.recipeIds.push(recipeId);
     }
 
     function updateTagRecipeReferences(recipe)
@@ -972,6 +1138,166 @@ function Engine()
         return -1;
     }
 
+    function deleteObject(id, type, removeFromParent)
+    {
+        switch (type)
+        {
+            case RESULT_TYPE_RECIPE:
+                deleteRecipe(id, removeFromParent);
+                break;
+
+            case RESULT_TYPE_SECTION:
+                deleteSection(id, removeFromParent);
+                break;
+
+            case RESULT_TYPE_BOOK:
+                deleteBook(id);
+                break;
+
+            case RESULT_TYPE_TAG:
+                deleteTag(id);
+                break;
+        }
+    }
+
+    function deleteSection(id, removeFromBook)
+    {
+        var section = getSectionById(id);
+
+        if (section === null)
+            return;
+
+        var size = section.recipeIds.length;
+        for (var cnt = 0; cnt < size; cnt++)
+        {
+            var recipeId = section.recipeIds[cnt];
+            deleteRecipe(recipeId, false);
+        }
+
+        var index = null;
+
+        if (removeFromBook === true)
+        {
+            var bookId = section.bookId;
+            var book = getBookById(bookId);
+
+            do
+            {
+                index = book.sectionIds.indexOf(id);
+
+                if (index == -1)
+                    continue;
+
+                book.sectionIds.splice(index, 1);
+            }
+            while (index != -1);
+        }
+
+        index = _db.sections.indexOf(section);
+
+        if (index != -1)
+            _db.sections.splice(index, 1);
+    }
+
+    function deleteBook(id)
+    {
+        var book = getBookById(id);
+
+        if (book === null)
+            return;
+
+        var size = book.sectionIds.length;
+        for (var cnt = 0; cnt < size; cnt++)
+        {
+            var sectionId = book.sectionIds[cnt];
+            deleteSection(sectionId, false);
+        }
+
+        var index = _db.books.indexOf(book);
+
+        if (index != -1)
+            _db.books.splice(index, 1);
+    }
+
+    function deleteTag(id)
+    {
+        var tag = getTagById(id);
+
+        if (tag === null)
+            return;
+
+        var index = null;
+
+        var size = tag.sectionIds.length;
+        for (var cnt = 0; cnt < size; cnt++)
+        {
+            var sectionId = tag.sectionIds[cnt];
+
+            var section = getSectionById(sectionId);
+
+            if (section === null)
+                continue;
+
+            index = section.tagIds.indexOf(id);
+            section.tagIds.splice(index, 1);
+        }
+
+        size = tag.recipeIds.length;
+        for (cnt = 0; cnt < size; cnt++)
+        {
+            var recipeId = tag.recipeIds[cnt];
+
+            var recipe = getRecipeById(recipeId);
+
+            if (recipe === null)
+                continue;
+
+            index = recipe.tagIds.indexOf(id);
+            recipe.tagIds.splice(index, 1);
+        }
+
+        index = _db.tags.indexOf(tag);
+
+        if (index != -1)
+            _db.tags.splice(index, 1);
+    }
+
+    function deleteRecipe(id, removeFromSection)
+    {
+        var recipe = getRecipeById(id);
+
+        if (recipe === null)
+            return;
+
+        recipe.tagIds.splice(0, recipe.tagIds.length);
+        updateTagRecipeReferences(recipe);
+
+        var index = null;
+
+        if (removeFromSection === true)
+        {
+            var sectionId = recipe.sectionId;
+            var section = getSectionById(sectionId);
+
+            do
+            {
+                index = section.recipeIds.indexOf(id);
+
+                if (index == -1)
+                    continue;
+
+                section.recipeIds.splice(index, 1);
+            }
+            while (index != -1);
+        }
+
+        index = _db.recipes.indexOf(recipe);
+
+        if (index != -1)
+            _db.recipes.splice(index, 1);
+    }
+
+
     return {
         authenticate(callback)
         {
@@ -1039,6 +1365,11 @@ function Engine()
             return getBunchOfResults();
         },
 
+        getBunchOfResults()
+        {
+            return getBunchOfResults();
+        },
+
         updateDateEntry(dateEntry)
         {
             updateDateEntry(dateEntry);
@@ -1078,6 +1409,12 @@ function Engine()
         {
             _currResults = getSearchResults(searchText);
             return getBunchOfResults();
+        },
+
+        deleteObject(id, type, removeFromParent)
+        {
+            deleteObject(id, type, removeFromParent);
+            saveDatabase();
         }
     }
 }

@@ -176,15 +176,8 @@ function setHandlers()
 				    
 			    if (yPos > limitFromBottom) 
 			    {
-			        chrome.runtime.sendMessage(
-			    	{
-			    		command: "getBunchOfResults",
-			    	}, 
-			    	function(response) 
-				    {
-				    	console.log("Search reply.");
-				    	showSearchResults(response, false);
-					});
+					var results = Engine.getBunchOfResults();
+				    showSearchResults(results, false);
 	    		}
 			});
 	
@@ -459,34 +452,6 @@ function onSearchBoxUpPressed()
 
 	prevSuggestion.focus();
 	prevSuggestion.addClass("suggestionHover");
-}
-
-function getTagById(id, onGetTagByIdDone)
-{
-	chrome.runtime.sendMessage(
-		{
-			command: "getObjectById",
-			id: id,
-			type: RESULT_TYPE_TAG
-		}, 
-		function(response) 
-	    {
-	    	onGetTagByIdDone(response);
-		});
-}
-
-function getDateEntryById(id, onGetDateEntryByIdDone)
-{
-	chrome.runtime.sendMessage(
-		{
-			command: "getObjectById",
-			id: id,
-			type: RESULT_TYPE_DATEENTRY
-		}, 
-		function(response) 
-	    {
-	    	onGetDateEntryByIdDone(response);
-		});
 }
 
 function getTagControlById(parent, id)
@@ -850,47 +815,44 @@ function onDayClicked(event)
 	var date = dayDiv.data("date");
 
 	var dateId = getDateIdFromDate(date);
+	var dateEntry = Engine.getDateEntryById(dateId);
 
-	getDateEntryById(dateId,
-		function(dateEntry)
+	if (dateEntry === null)
+	{
+		dateEntry = new DateEntry();
+		dateEntry.id = dateId;
+	}
+
+	console.log(date.toString());
+
+	var dayMenuDiv = $("#dayMenu");
+
+	dayMenuDiv.data("dayDiv", dayDiv);
+	dayMenuDiv.data("dateEntry", dateEntry);
+
+	showDialog(dayMenuDiv);
+
+	$("#recipeSuggestions").empty();
+
+	$(".recipeEntry").remove();
+	$(".addRecipeEntry").remove();
+
+	$("#dateHeader").text(date.toDateString());
+
+	for (var cnt = 0; cnt < dateEntry.recipes.length; cnt++)
+	{
+		var recipe = dateEntry.recipes[cnt];
+		addDateRecipeEntry(dateEntry, recipe);
+	}
+
+	var addRecipeEntry = $("<div class='addRecipeEntry'>Add Recipe...</div>");
+	addRecipeEntry.on("click",
+		function ()
 		{
-			if (dateEntry === null)
-			{
-				dateEntry = new DateEntry();
-				dateEntry.id = dateId;
-			}
-
-			console.log(date.toString());
-
-			var dayMenuDiv = $("#dayMenu");
-
-			dayMenuDiv.data("dayDiv", dayDiv);
-			dayMenuDiv.data("dateEntry", dateEntry);
-
-			showDialog(dayMenuDiv);
-
-			$("#recipeSuggestions").empty();
-			
-			$(".recipeEntry").remove();
-			$(".addRecipeEntry").remove();
-
-			$("#dateHeader").text(date.toDateString());
-
-			for (var cnt = 0; cnt < dateEntry.recipes.length; cnt++)
-			{
-				var recipe = dateEntry.recipes[cnt];
-				addDateRecipeEntry(dateEntry, recipe);
-			}
-
-			var addRecipeEntry = $("<div class='addRecipeEntry'>Add Recipe...</div>");
-			addRecipeEntry.on("click", 
-				function()
-				{
-					onAddRecipeEntryClick();
-				});
-
-			dayMenuDiv.append(addRecipeEntry);
+			onAddRecipeEntryClick();
 		});
+
+	dayMenuDiv.append(addRecipeEntry);
 }
 
 function onAddRecipeEntryClick()
@@ -966,24 +928,17 @@ function onRecipeSearchEnterPressed()
 	newDateRecipe.id = addRecipeInput.data("recipeId");
 
 	dateEntry.recipes.push(newDateRecipe);
+	Engine.updateDateEntry(dateEntry);
 
-	chrome.runtime.sendMessage(
-		{
-			command: "updateDateEntry",
-			dateEntry: dateEntry
-		}, 
-		function() 
-	    {
-	    	addDateRecipeEntry(dateEntry, newDateRecipe);
+	addDateRecipeEntry(dateEntry, newDateRecipe);
 
-			addRecipeInput.blur();
+	addRecipeInput.blur();
 
-			suggestionsDiv.hide();
-			suggestionsDiv.children().removeClass("recipeSuggestionHover");
+	suggestionsDiv.hide();
+	suggestionsDiv.children().removeClass("recipeSuggestionHover");
 
-			var dayDiv = dayMenuDiv.data("dayDiv");
-			fillDayRecipes(dayDiv);
-		});
+	var dayDiv = dayMenuDiv.data("dayDiv");
+	fillDayRecipes(dayDiv);
 }
 
 function addDateRecipeEntry(dateEntry, newDateRecipe)
@@ -1039,14 +994,7 @@ function removeRecipeFromDateEntry(dateEntry, recipeToRemove)
 		}
 	}
 
-	chrome.runtime.sendMessage(
-	{
-		command: "updateDateEntry",
-		dateEntry: dateEntry
-	}, 
-	function() 
-    {
-	});
+	Engine.updateDateEntry(dateEntry);
 }
 
 function onRecipeSearchDownPressed()
@@ -1106,15 +1054,8 @@ function onAddRecipeInputChanged(addRecipeInput)
 		return;
 	}
 
-	chrome.runtime.sendMessage(
-		{
-			command: "getRecipeSuggestions",
-			searchText: searchText,
-		}, 
-		function(response) 
-	    {
-	    	showRecipeSuggestions(addRecipeInput, response);
-		});
+	var results = Engine.getRecipeSuggestions(searchText);
+	showRecipeSuggestions(addRecipeInput, results);
 }
 
 function showRecipeSuggestions(addRecipeInput, results)
@@ -1356,7 +1297,7 @@ function onAddSectionResultPathDone(sectionDiv, sectionGroup)
 
 function addSectionResultPath(sectionDiv, sectionGroup, onAddSectionResultPathDone)
 {
-	var book = getBookById(sectionGroup.bookId);
+	var book = Engine.getBookById(sectionGroup.bookId);
 
 	var resultPathDiv = $("<div class='resultPath'></div>");
 
@@ -1447,8 +1388,8 @@ function onAddRecipeResultPathDone(sectionDiv, recipeGroup)
 
 function addRecipeResultPath(sectionDiv, recipeGroup, onAddRecipeResultPathDone)
 {
-	var section = getSectionById(recipeGroup.sectionId);
-	var book = getBookById(section.bookId);
+	var section = Engine.getSectionById(recipeGroup.sectionId);
+	var book = Engine.getBookById(section.bookId);
 
 	var resultPathDiv = $("<div class='resultPath'></div>");
 
@@ -1549,12 +1490,7 @@ function addDeleteButton(resultDiv, type, id)
 	deleteButton.on("click", 
 		function(e)
 		{
-			onDeleteClick(type, id,
-				function()
-				{
-					resultDiv.remove();
-				});
-			
+			Engine.deleteObject(type, id, true);
 			e.stopPropagation();
 		});
 
@@ -1672,12 +1608,10 @@ function addStarRating(resultDiv, type, id)
 		var recipe = Engine.getRecipeById(id);
 		recipe.rating = rating;
 
-		updateRecipe(recipe,
-			function ()
-			{
-				var entryDiv = resultDiv.children(".resultEntry");
-				entryDiv.data("rating", rating);
-			});
+		updateRecipe(recipe);
+				
+		var entryDiv = resultDiv.children(".resultEntry");
+		entryDiv.data("rating", rating);
 	}
     
     showStarRating(id, resultDiv, setNewRating, rating);
@@ -1738,10 +1672,10 @@ function showRecipeDlg(recipe, isNewEntry)
 {
 	var recipeDlg = $("#recipe");
 
-	var section = getSectionById(recipe.sectionId);
+	var section = Engine.getSectionById(recipe.sectionId);
 	recipeDlg.find("#sectionCtrl").val(section.name);
 
-	var book = getBookById(section.bookId);
+	var book = Engine.getBookById(section.bookId);
 	recipeDlg.find("#bookCtrl").val(book.name);
 
 	recipeDlg.find("#titleCtrl").val(recipe.name);
@@ -1850,27 +1784,16 @@ function onRecipeOKClick(id, recipe)
     
 	recipe.tagIds = getCheckedTagIds(recipeDlg);
 
-	updateRecipe(recipe, 
-		function()
-		{
-			showRecipe(id);
-			refreshResultsView();
-		});
+	updateRecipe(recipe);
+
+	showRecipe(id);
+	refreshResultsView();
 }
 
-function updateRecipe(recipe, updateRecipeDone)
+function updateRecipe(recipe)
 {
-	chrome.runtime.sendMessage(
-	{
-		command: "updateRecipe",
-		id: recipe.id,
-		recipe: recipe
-	}, 
-	function() 
-    {
-    	updateRecipeInResults(recipe);
-		updateRecipeDone();
-	});
+	Engine.updateRecipe(recipe.id, recipe);
+	updateRecipeInResults(recipe);
 }
 
 function resetRecipeDlg()
@@ -1979,7 +1902,7 @@ function showSection(id, parentId)
 		return;
 	}
 
-	var section = getSectionById(id);
+	var section = Engine.getSectionById(id);
 	var isNewEntry = false;
 
 	if (section === null)
@@ -2030,18 +1953,10 @@ function onSectionOKClick(id, section)
 	var tagIdDiff = getCheckedTagsDiff(sectionDlg, section.tagIds);
 	section.tagIds = getCheckedTagIds(sectionDlg);
 
-	chrome.runtime.sendMessage(
-	{
-		command: "updateSection",
-		id: id,
-		section: section,
-		tagIdDiff: tagIdDiff
-	}, 
-	function() 
-    {
-		showSection(id, section.bookId);
-		refreshResultsView();
-	});
+	Engine.updateSection(id, section, tagIdDiff);
+
+	showSection(id, section.bookId);
+	refreshResultsView();
 }
 
 function resetSectionDlg()
@@ -2117,7 +2032,7 @@ function showBook(id)
 		return;
 	}
 
-	var book = getBookById(id);
+	var book = Engine.getBookById(id);
 	var isNewEntry = false;
 
 	if (book === null)
@@ -2190,17 +2105,10 @@ function onBookOKClick(id, book)
 	var bookDlg = $("#book");
 	book.name = bookDlg.find("#titleCtrl").val();
 
-	chrome.runtime.sendMessage(
-	{
-		command: "updateBook",
-		id: id,
-		book: book,
-	}, 
-	function() 
-    {
-		showBook(id);
-		refreshResultsView();
-	});
+	Engine.updateBook(id, book);
+
+	showBook(id);
+	refreshResultsView();
 }
 
 function onEditClick(type, id)
@@ -2225,71 +2133,6 @@ function onEditClick(type, id)
 	}
 }
 
-function onDeleteClick(type, id, onDeleteDone)
-{
-	switch (type)
-	{
-		case RESULT_TYPE_RECIPE:
-			deleteRecipe(id, onDeleteDone);
-			return;
-
-		case RESULT_TYPE_SECTION:
-			deleteSection(id, onDeleteDone);
-			return;
-
-		case RESULT_TYPE_BOOK:
-			deleteBook(id, onDeleteDone);
-			return;
-	}
-}
-
-function deleteRecipe(id, onDeleteRecipeDone)
-{
-	chrome.runtime.sendMessage(
-	{
-		command: "deleteObject",
-		type: RESULT_TYPE_RECIPE,
-		id: id,
-		removeFromParent: true
-	}, 
-	function() 
-    {
-    	if (typeof onDeleteRecipeDone != "undefined")
-			onDeleteRecipeDone();
-	});
-}
-
-function deleteSection(id, onDeleteSectionDone)
-{
-	chrome.runtime.sendMessage(
-	{
-		command: "deleteObject",
-		type: RESULT_TYPE_SECTION,
-		id: id,
-		removeFromParent: true
-	}, 
-	function() 
-    {
-    	if (typeof onDeleteSectionDone != "undefined")
-			onDeleteSectionDone();
-	});
-}
-
-function deleteBook(id, onDeleteBookDone)
-{
-	chrome.runtime.sendMessage(
-	{
-		command: "deleteObject",
-		type: RESULT_TYPE_BOOK,
-		id: id,
-	}, 
-	function() 
-    {
-		if (typeof onDeleteBookDone != "undefined")
-			onDeleteBookDone();
-	});
-}
-
 function refreshResultsView()
 {
 	showSearchResults(_currentResults);
@@ -2297,41 +2140,26 @@ function refreshResultsView()
 
 function onAddClick(type, parentId)
 {
-	getNextAvailableId(type,
-		function(id)
-		{
-			switch (type)
-			{
-				case RESULT_TYPE_RECIPE:
-					showRecipe(id, parentId);
-					return;
+	var id = Engine.getNextAvailableId(type);
 
-				case RESULT_TYPE_SECTION:
-					showSection(id, parentId);
-					return;
-
-				case RESULT_TYPE_BOOK:
-					showBook(id);
-					return;
-
-				case RESULT_TYPE_TAG:
-					showTag(id);
-					return;
-			}
-		});
-}
-
-function getNextAvailableId(type, onGetNextAvailableIdDone)
-{
-	chrome.runtime.sendMessage(
+	switch (type)
 	{
-		command: "getNextAvailableId",
-		type: type
-	}, 
-	function(response) 
-    {
-		onGetNextAvailableIdDone(response);
-	});
+		case RESULT_TYPE_RECIPE:
+			showRecipe(id, parentId);
+			return;
+
+		case RESULT_TYPE_SECTION:
+			showSection(id, parentId);
+			return;
+
+		case RESULT_TYPE_BOOK:
+			showBook(id);
+			return;
+
+		case RESULT_TYPE_TAG:
+			showTag(id);
+			return;
+	}
 }
 
 function showTag(id)
@@ -2344,47 +2172,45 @@ function showTag(id)
 		return;
 	}
 
-	getTagById(id,
-		function(tag)
+	var tag = Engine.getTagById(id);
+
+	var isNewEntry = false;
+
+	if (tag === null)
+	{
+		isNewEntry = true;
+
+		tag = new Tag();
+		tag.id = id;
+
+		onTagEditClick();
+	}
+
+	var tagDlg = $("#tag");
+	tagDlg.find("#titleCtrl").val(tag.name);
+
+	var btnOK = tagDlg.find(".btnOK");
+	btnOK.off("click");
+
+	btnOK.on("click",
+		function ()
 		{
-			var isNewEntry = false;
-
-			if (tag === null)
-			{
-				isNewEntry = true;
-
-				tag = new Tag();
-				tag.id = id;
-
-				onTagEditClick();
-			}
-
-			var tagDlg = $("#tag");
-			tagDlg.find("#titleCtrl").val(tag.name);
-
-			var btnOK = tagDlg.find(".btnOK");
-			btnOK.off("click");
-
-			btnOK.on("click", 
-				function()
-				{
-					onTagOKClick(id, tag);
-				});
-
-			var btnCancel = tagDlg.find(".btnCancel");
-			btnCancel.off("click");
-
-			btnCancel.on("click", 
-				function()
-				{
-					if (isNewEntry === true)
-						id = 0;
-
-					showTag(id);
-				});
-
-			showDialog(tagDlg);
+			onTagOKClick(id, tag);
 		});
+
+	var btnCancel = tagDlg.find(".btnCancel");
+	btnCancel.off("click");
+
+	btnCancel.on("click",
+		function ()
+		{
+			if (isNewEntry === true)
+				id = 0;
+
+			showTag(id);
+		});
+
+	showDialog(tagDlg);
 }
 
 function resetTagDlg()
@@ -2420,19 +2246,12 @@ function onTagOKClick(id, tag)
 	var tagDlg = $("#tag");
 	tag.name = tagDlg.find("#titleCtrl").val();
 
-	chrome.runtime.sendMessage(
-	{
-		command: "updateTag",
-		id: id,
-		tag: tag,
-	}, 
-	function() 
-    {
-		showTag(id);
-		fillTagContainers();
+	Engine.updateTag(id, tag);
 
-		refreshResultsView();
-	});
+	showTag(id);
+	fillTagContainers();
+
+	refreshResultsView();
 }
 
 function resetDayMenu()
