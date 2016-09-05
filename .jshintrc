@@ -1,7 +1,3 @@
 {
-  "globals": 
-  {
-    "chrome": false,
-    "console": false
-  }
+  "esnext": true
 }
