@@ -4,7 +4,7 @@ var path = require('path');
 var google = require('googleapis');
 var googleAuth = require('google-auth-library');
 
-const { BrowserWindow } = require('electron').remote
+const { BrowserWindow } = require('electron').remote;
 
 function Engine()
 {
@@ -73,7 +73,7 @@ function Engine()
                 if (pos === -1)
                     return;
 
-                console.log("Closing OAuth2 window.")
+                console.log("Closing OAuth2 window.");
                 oAuthWin.close();
 
                 // skip "code="
@@ -151,8 +151,7 @@ function Engine()
                 console.log("Database loaded.");
 
                 callback();
-            }
-        )
+            });
     }
 
     function saveDatabase(callback)
@@ -1416,5 +1415,5 @@ function Engine()
             deleteObject(id, type, removeFromParent);
             saveDatabase();
         }
-    }
+    };
 }
