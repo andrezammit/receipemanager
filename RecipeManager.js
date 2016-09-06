@@ -1759,7 +1759,7 @@ function showTagRecipes(id)
 
 function showTags()
 {
-	clearSerchBox();
+	clearSearchBox();
 
 	var results = Engine.getAllTags();
 	showSearchResults(results);
