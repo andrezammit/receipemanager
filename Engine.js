@@ -413,7 +413,7 @@ function Engine()
         for (var cnt = 0; cnt < size; cnt++)
         {
             var recipeID = tag.recipeIds[cnt];
-            var recipe = getRecipeById(recipeID);
+            var recipe = getObjectById(recipeID, RESULT_TYPE_RECIPE);
 
             if (recipe !== null)
             {
@@ -636,7 +636,7 @@ function Engine()
 
     function updateBook(id, updatedBook)
     {
-        var book = getBookById(id);
+        var book = getObjectById(id, RESULT_TYPE_BOOK);
         var isNewBook = book === null;
 
         if (isNewBook === true)
@@ -650,7 +650,7 @@ function Engine()
 
     function updateRecipe(id, updatedRecipe)
     {
-        var recipe = getRecipeById(id);
+        var recipe = getObjectById(id, RESULT_TYPE_RECIPE);
         var isNewRecipe = recipe === null;
 
         if (isNewRecipe === true)
@@ -660,7 +660,7 @@ function Engine()
 
         if (isNewRecipe === true)
         {
-            var section = getSectionById(recipe.sectionId);
+            var section = getObjectById(recipe.sectionId, RESULT_TYPE_SECTION);
 
             section.recipeIds.push(id);
             _db.recipes.push(recipe);
@@ -671,7 +671,7 @@ function Engine()
 
     function updateTag(id, updatedTag)
     {
-        var tag = getTagById(id);
+        var tag = getObjectById(id, RESULT_TYPE_TAG);
         var isNewTag = tag === null;
 
         if (isNewTag === true)
@@ -685,7 +685,7 @@ function Engine()
 
     function updateSection(id, updatedSection, tagIdDiff)
     {
-        var section = getSectionById(id);
+        var section = getObjectById(id, RESULT_TYPE_SECTION);
         var isNewSection = section === null;
 
         if (isNewSection === true)
@@ -695,7 +695,7 @@ function Engine()
 
         if (isNewSection === true)
         {
-            var book = getBookById(section.bookId);
+            var book = getObjectById(section.bookId, RESULT_TYPE_BOOK);
 
             book.sectionIds.push(id);
             _db.sections.push(section);
@@ -705,7 +705,7 @@ function Engine()
         for (var cnt = 0; cnt < size; cnt++)
         {
             var recipeId = section.recipeIds[cnt];
-            var recipe = getRecipeById(recipeId);
+            var recipe = getObjectById(recipeId, RESULT_TYPE_RECIPE);
 
             var tagId = null;
             var index = null;
@@ -744,7 +744,7 @@ function Engine()
 
     function isSectionTag(sectionId, tagId)
     {
-        var section = getSectionById(sectionId);
+        var section = getObjectById(sectionId, RESULT_TYPE_SECTION);
 
         if (section.tagIds.indexOf(tagId) == -1)
             return false;
@@ -1371,6 +1371,11 @@ function Engine()
         getBunchOfResults()
         {
             return getBunchOfResults();
+        },
+
+        getRecipeSuggestions(searchText)
+        {
+            return getRecipeSuggestions(searchText);
         },
 
         updateDateEntry(dateEntry)
