@@ -312,7 +312,7 @@ function Engine()
 
     function getBookSections(id)
     {
-        var book = getBookById(id);
+        var book = getObjectById(id, RESULT_TYPE_BOOK);
         var sections = [];
 
         var section = null;
@@ -321,7 +321,7 @@ function Engine()
         for (var cnt = 0; cnt < size; cnt++)
         {
             var sectionID = book.sectionIds[cnt];
-            section = getSectionById(sectionID);
+            section = getObjectById(sectionID, RESULT_TYPE_SECTION);
 
             if (section !== null)
                 sections.push(section);
@@ -352,7 +352,7 @@ function Engine()
 
     function getSectionRecipes(id)
     {
-        var section = getSectionById(id);
+        var section = getObjectById(id, RESULT_TYPE_SECTION);
         var recipes = [];
 
         var recipe = null;
@@ -361,7 +361,7 @@ function Engine()
         for (var cnt = 0; cnt < size; cnt++)
         {
             var recipeID = section.recipeIds[cnt];
-            recipe = getRecipeById(recipeID);
+            recipe = getObjectById(recipeID, RESULT_TYPE_RECIPE);
 
             if (recipe !== null)
                 recipes.push(recipe);
@@ -406,7 +406,7 @@ function Engine()
 
     function getTagRecipes(id, results)
     {
-        var tag = getTagById(id);
+        var tag = getObjectById(id, RESULT_TYPE_TAG);
         var recipes = [];
 
         var size = tag.recipeIds.length;
@@ -564,8 +564,7 @@ function Engine()
         }
 
         sortBooks(results.books);
-        sortRecipes(results.recipes);
-        sortSections(results.sections);
+        sortRecipes(results.recipes);        sortSections(results.sections);
 
         var recipes = results.recipes;
         results.recipes = [];
@@ -1161,7 +1160,7 @@ function Engine()
 
     function deleteSection(id, removeFromBook)
     {
-        var section = getSectionById(id);
+        var section = getObjectById(id, RESULT_TYPE_SECTION);
 
         if (section === null)
             return;
@@ -1178,7 +1177,7 @@ function Engine()
         if (removeFromBook === true)
         {
             var bookId = section.bookId;
-            var book = getBookById(bookId);
+            var book = getObjectById(bookId, RESULT_TYPE_BOOK);
 
             do
             {
@@ -1200,7 +1199,7 @@ function Engine()
 
     function deleteBook(id)
     {
-        var book = getBookById(id);
+        var book = getObjectById(id, RESULT_TYPE_BOOK);
 
         if (book === null)
             return;
@@ -1220,7 +1219,7 @@ function Engine()
 
     function deleteTag(id)
     {
-        var tag = getTagById(id);
+        var tag = getObjectById(id, RESULT_TYPE_TAG);
 
         if (tag === null)
             return;
@@ -1232,7 +1231,7 @@ function Engine()
         {
             var sectionId = tag.sectionIds[cnt];
 
-            var section = getSectionById(sectionId);
+            var section = getObjectById(sectionId, RESULT_TYPE_SECTION);
 
             if (section === null)
                 continue;
@@ -1246,7 +1245,7 @@ function Engine()
         {
             var recipeId = tag.recipeIds[cnt];
 
-            var recipe = getRecipeById(recipeId);
+            var recipe = getObjectById(recipeId, RESULT_TYPE_RECIPE);
 
             if (recipe === null)
                 continue;
@@ -1263,7 +1262,7 @@ function Engine()
 
     function deleteRecipe(id, removeFromSection)
     {
-        var recipe = getRecipeById(id);
+        var recipe = getObjectById(id, RESULT_TYPE_RECIPE);
 
         if (recipe === null)
             return;
@@ -1276,7 +1275,7 @@ function Engine()
         if (removeFromSection === true)
         {
             var sectionId = recipe.sectionId;
-            var section = getSectionById(sectionId);
+            var section = getObjectById(sectionId, RESULT_TYPE_SECTION);
 
             do
             {
@@ -1319,6 +1318,11 @@ function Engine()
         uploadDatabase(callback)
         {
             uploadDatabase(callback);
+        },
+
+        getRecipeById(id)
+        {
+            return getObjectById(id, RESULT_TYPE_RECIPE);
         },
 
         getDateEntryById(id)

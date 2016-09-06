@@ -1657,7 +1657,7 @@ function showBookSections(id)
 	clearSearchBox();
 	
 	var results = Engine.getBookSections(id);
-	showSearchResults(response);
+	showSearchResults(results);
 }
 
 function showSectionRecipes(id)
@@ -1665,7 +1665,7 @@ function showSectionRecipes(id)
 	clearSearchBox();
 	
 	var results = Engine.getSectionRecipes(id);
-	showSearchResults(response);
+	showSearchResults(results);
 }
 
 function showRecipeDlg(recipe, isNewEntry)
@@ -1762,7 +1762,7 @@ function showTags()
 	clearSerchBox();
 
 	var results = Engine.getAllTags();
-	showSearchResults(response);
+	showSearchResults(results);
 }
 
 function onRecipeCloseClick()
