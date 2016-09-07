@@ -202,7 +202,7 @@ function Engine()
                 media:
                 {
                     mimeType: 'application/json',
-                    body: data
+                    body: JSON.stringify(data)
                 },
                 fields: 'id'
             },
