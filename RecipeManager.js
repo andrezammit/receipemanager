@@ -28,10 +28,20 @@ var _currentResultsDiv = null;
 var Engine = Engine();
 
 $(document).ready(
-	function()
+	function ()
 	{
-		Engine.authenticate(onAuthenticateReady);
-	    setHandlers();
+		Engine.setupEnvironment(
+			function (error)
+			{
+				if (error !== null)
+				{
+					console.log("Stopping application due to fatal error.");
+					return;
+				}
+
+				Engine.authenticate(onAuthenticateReady);
+				setHandlers();
+			});
 	});
 
 function onAuthenticateReady()

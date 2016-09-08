@@ -8,11 +8,19 @@ const { BrowserWindow } = require('electron').remote;
 
 function Engine()
 {
-    var _tokenDir = path.dirname(require.main.filename) + '/.credentials/';
+    "use strict";
+    
+    var _baseDir = path.dirname(require.main.filename);
+
+    var _tokenDir = _baseDir + '/.credentials/';
     var _tokenPath = _tokenDir + 'GoogleAuth.json';
+
+    var _localDbDir = _baseDir + '/.data/';
+    var _localDbPath = _localDbDir + 'RecipeManager.json';
 
     var _clientId = "13277472194-s5rm0emfoq5fcfmqqlncjbejb5fhp42n.apps.googleusercontent.com";
     var _secret = "fBAQnEagqKhO0AUlXyEx6S26";
+
     //var _scopes = ["https://www.googleapis.com/auth/calendar.readonly"];
     var _scopes = ["https://www.googleapis.com/auth/drive.appdata"];
 
@@ -21,12 +29,45 @@ function Engine()
 
     var _googleDrive = google.drive('v3');
 
+    var _fileId = null;
+
     var _currResults = 
     {
         books: [],
         sections: [],
         recipes: []
     };
+
+    function setupEnvironment(callback)
+    {
+        try
+        {
+            fs.mkdirSync(_tokenDir);
+        }
+        catch (error)
+        {
+            if (error.code != 'EEXIST')
+            {
+                console.log("Failed to setup application directories. " + error);
+                callback(error);
+            }
+        }
+
+        try
+        {
+            fs.mkdirSync(_localDbDir);
+        }
+        catch (error)
+        {
+            if (error.code != 'EEXIST')
+            {
+                console.log("Failed to setup application directories. " + error);
+                callback(error);
+            }
+        }
+
+        callback(null);        
+    }
 
     function checkAuth(callback) 
     {
@@ -108,18 +149,17 @@ function Engine()
 
     function storeAuthToken(token)
     {
-        try
-        {
-            fs.mkdirSync(_tokenDir);
-        }
-        catch (error)
-        {
-            if (error.code != 'EEXIST')
-                console.log("Google authentication token stored to " + _tokenPath + ". Error: " + error);
-        }
+        fs.writeFile(_tokenPath, JSON.stringify(token),
+            function(error)
+            {
+                if (error !== null)
+                {
+                    console.log("Failed to store Google authentication token. " + error);   
+                    return;
+                }
 
-        fs.writeFile(_tokenPath, JSON.stringify(token));
-        console.log("Google authentication token stored to " + _tokenPath);
+                console.log("Google authentication token stored to " + _tokenPath);
+            });
     }
 
     function onAuthReady(callback)
@@ -200,11 +240,23 @@ function Engine()
             });
     }
 
-    function updateDatabase(data, callback)
+    function updateLocalDatabase(jsonData, callback)
     {
         callback = callback || null;
 
-        console.log("Starting database update...");
+        fs.writeFile(_localDbPath, jsonData,
+            function(error)
+            {
+                if (error !== null)
+                    console.log("Local database update failed. " + error);
+
+                callback(error);
+            });
+    }
+
+    function uploadCloudDatabase(jsonData, callback)
+    {
+        callback = callback || null;
 
         _googleDrive.files.update(
             {
@@ -213,7 +265,7 @@ function Engine()
                 media:
                 {
                     mimeType: 'application/json',
-                    body: JSON.stringify(data)
+                    body: jsonData
                 },
                 fields: 'id'
             },
@@ -233,6 +285,21 @@ function Engine()
 
                 if (callback !== null)
                     callback();
+            });
+    }
+
+    function updateDatabase(data, callback)
+    {
+        callback = callback || null;
+
+        console.log("Starting database update...");
+
+        var jsonData = JSON.stringify(data);
+
+        updateLocalDatabase(jsonData,
+            function()
+            {
+                uploadCloudDatabase(jsonData, callback);
             });
     }
 
@@ -1348,6 +1415,12 @@ function Engine()
 
 
     return {
+        setupEnvironment(callback)
+        {
+            callback = callback || null;
+            setupEnvironment(callback);            
+        },
+
         authenticate(callback)
         {
             callback = callback || null;
