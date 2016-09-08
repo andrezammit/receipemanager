@@ -108,11 +108,11 @@ function Engine()
 
     function storeAuthToken(token)
     {
-        try 
+        try
         {
             fs.mkdirSync(_tokenDir);
         }
-        catch (error) 
+        catch (error)
         {
             if (error.code != 'EEXIST')
                 console.log("Google authentication token stored to " + _tokenPath + ". Error: " + error);
@@ -128,15 +128,14 @@ function Engine()
         callback();
     }
 
-    function loadDatabase(callback)
+    function loadDatabase(fileId, callback)
     {
-        //1AQdWGNuFJ_3pd6GW6QanfPFvR_2R0xg73JE-y9tAxtc
         console.log("Loading database from Google Drive...");
 
         _googleDrive.files.get(
             {
                 auth: _oAuth2Client,
-                fileId: "1AQdWGNuFJ_3pd6GW6QanfPFvR_2R0xg73JE-y9tAxtc",
+                fileId: fileId,
                 alt: 'media'
             },
             function (error, file)
@@ -148,6 +147,8 @@ function Engine()
                 }
 
                 _db = file;
+                _fileId = fileId;
+
                 console.log("Database loaded.");
 
                 callback();
@@ -157,33 +158,81 @@ function Engine()
     function saveDatabase(callback)
     {
         console.log("Saving database to Google Drive...");
-        uploadDatabase(_db, callback);
+        updateDatabase(_db, callback);
     }
 
-    function getFileList()
+    function getDatabaseId(callback)
     {
         _googleDrive.files.list(
             {
                 auth: _oAuth2Client,
                 spaces: 'appDataFolder',
                 pageSize: 10,
-                fields: "nextPageToken, files(id, name)"
+                fields: "files(id, name)"
             },
             function (error, response)
             {
                 if (error)
                 {
                     console.log("Google Drive API error: " + error);
+                    callback(null);
+
                     return;
                 }
 
                 var files = response.files;
 
-                for (var i = 0; i < files.length; i++) 
+                for (var i = 0; i < files.length; i++)
                 {
                     var file = files[i];
-                    console.log('%s (%s)', file.name, file.id);
+
+                    if (file.name !== "RecipeManager.json")
+                        continue;
+
+                    console.log("Database found: %s (%s)", file.name, file.id);
+                    callback(file.id);
+
+                    return;
                 }
+
+                console.log("Databsase not found on Google Drive.");
+                callback(null);
+            });
+    }
+
+    function updateDatabase(data, callback)
+    {
+        callback = callback || null;
+
+        console.log("Starting database update...");
+
+        _googleDrive.files.update(
+            {
+                auth: _oAuth2Client,
+                fileId: _fileId,
+                media:
+                {
+                    mimeType: 'application/json',
+                    body: JSON.stringify(data)
+                },
+                fields: 'id'
+            },
+            function (error, file)
+            {
+                if (error)
+                {
+                    console.log("Database update failed. " + error);
+
+                    if (callback !== null)
+                        callback();
+
+                    return;
+                }
+
+                console.log("Database updated. ID: " + file.id);
+
+                if (callback !== null)
+                    callback();
             });
     }
 
@@ -191,7 +240,7 @@ function Engine()
     {
         console.log("Starting database upload...");
 
-        _googleDrive.files.create(
+        _googleDrive.files.insert(
             {
                 auth: _oAuth2Client,
                 resource:
@@ -215,6 +264,8 @@ function Engine()
                 }
 
                 console.log("Database uploaded. ID: " + file.id);
+
+                _fileId = file.id;
                 callback();
             });
     }
@@ -1306,17 +1357,30 @@ function Engine()
         loadDatabase(callback)
         {
             callback = callback || null;
-            loadDatabase(callback);
+            getDatabaseId(
+                function(fileId)
+                {
+                    if (fileId === null)
+                    {
+                        console.log("Creating new database...");
+                        uploadDatabase(_db, callback);
+
+                        return;
+                    }
+
+                    loadDatabase(fileId, callback);
+                });
         },
 
         saveDatabase(callback)
         {
             callback = callback || null;
-            saveDatabase(callback);             
+            saveDatabase(callback);
         },
 
         uploadDatabase(callback)
         {
+            callback = callback || null;            
             uploadDatabase(callback);
         },
 
@@ -1412,7 +1476,7 @@ function Engine()
         {
             return getSearchSuggestions(searchText);
         },
-        
+
         search(searchText)
         {
             _currResults = getSearchResults(searchText);
