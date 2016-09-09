@@ -10,6 +10,8 @@ function Engine()
 {
     "use strict";
     
+    var _dbVersion = 0;
+
     var _baseDir = path.dirname(require.main.filename);
 
     var _tokenDir = _baseDir + '/.credentials/';
@@ -17,6 +19,8 @@ function Engine()
 
     var _localDbDir = _baseDir + '/.data/';
     var _localDbPath = _localDbDir + 'RecipeManager.json';
+
+    var _dbVersionPath = _localDbDir + 'version';
 
     var _clientId = "13277472194-s5rm0emfoq5fcfmqqlncjbejb5fhp42n.apps.googleusercontent.com";
     var _secret = "fBAQnEagqKhO0AUlXyEx6S26";
@@ -168,7 +172,36 @@ function Engine()
         callback();
     }
 
-    function loadDatabase(fileId, callback)
+    function loadLocalDatabase(callback)
+    {
+        try
+        {
+            _dbVersion = parseInt(fs.readFileSync(_dbVersionPath, 'utf-8'));
+        }
+        catch (error)
+        {  
+            _dbVersion = 0;
+        }
+
+        fs.readFile(_localDbPath,
+            function(error, data)
+            {
+                if (error !== null)
+                {
+                    console.log("Failed to load local database. " + error);   
+                    
+                    callback(error);
+                    return;
+                }
+
+                console.log("Loaded local database.");   
+                _db = JSON.parse(data);
+
+                callback(null);
+            });
+    }
+
+    function loadDatabase(fileId, dbVersion, callback)
     {
         console.log("Loading database from Google Drive...");
 
@@ -187,18 +220,19 @@ function Engine()
                 }
 
                 _db = file;
-                _fileId = fileId;
+                _dbVersion = dbVersion;
 
-                console.log("Database loaded.");
-
+                console.log("Database loaded. Version: " + _dbVersion);
                 callback();
             });
     }
 
     function saveDatabase(callback)
     {
-        console.log("Saving database to Google Drive...");
-        updateDatabase(_db, callback);
+        console.log("Saving database...");
+
+        var newDbVersion = _dbVersion + 1;
+        updateDatabase(_db, newDbVersion, callback);
     }
 
     function getDatabaseId(callback)
@@ -208,7 +242,7 @@ function Engine()
                 auth: _oAuth2Client,
                 spaces: 'appDataFolder',
                 pageSize: 10,
-                fields: "files(id, name)"
+                fields: "files(id, name, appProperties)"
             },
             function (error, response)
             {
@@ -230,8 +264,10 @@ function Engine()
                         continue;
 
                     console.log("Database found: %s (%s)", file.name, file.id);
-                    callback(file.id);
-
+                    
+                    var remoteDbVersion = parseInt(file.appProperties.version);
+    
+                    callback(file.id, remoteDbVersion);
                     return;
                 }
 
@@ -240,7 +276,22 @@ function Engine()
             });
     }
 
-    function updateLocalDatabase(jsonData, callback)
+    function updateLocalDatabaseVersion(newDbVersion)
+    {
+        try
+        {
+            fs.writeFileSync(_dbVersionPath, newDbVersion);
+        }
+        catch (error) 
+        {
+            console.log("Failed to save local database version. " + error);
+            return error;
+        }
+
+        return null;
+    }
+
+    function updateLocalDatabase(jsonData, newDbVersion, callback)
     {
         callback = callback || null;
 
@@ -248,13 +299,17 @@ function Engine()
             function(error)
             {
                 if (error !== null)
+                {
                     console.log("Local database update failed. " + error);
+                    callback(error);
+                }
 
+                error = updateLocalDatabaseVersion(newDbVersion);
                 callback(error);
             });
     }
 
-    function uploadCloudDatabase(jsonData, callback)
+    function uploadCloudDatabase(jsonData, newDbVersion, callback)
     {
         callback = callback || null;
 
@@ -262,6 +317,13 @@ function Engine()
             {
                 auth: _oAuth2Client,
                 fileId: _fileId,
+                resource:
+                {
+                    appProperties:
+                        {
+                            version: newDbVersion
+                        }
+                },
                 media:
                 {
                     mimeType: 'application/json',
@@ -288,7 +350,7 @@ function Engine()
             });
     }
 
-    function updateDatabase(data, callback)
+    function updateDatabase(data, newDbVersion, callback)
     {
         callback = callback || null;
 
@@ -296,10 +358,11 @@ function Engine()
 
         var jsonData = JSON.stringify(data);
 
-        updateLocalDatabase(jsonData,
+        updateLocalDatabase(jsonData, newDbVersion,
             function()
             {
-                uploadCloudDatabase(jsonData, callback);
+                _dbVersion = newDbVersion;
+                uploadCloudDatabase(jsonData, newDbVersion, callback);
             });
     }
 
@@ -1427,11 +1490,17 @@ function Engine()
             checkAuth(callback);
         },
 
+        loadLocalDatabase(callback)
+        {
+            callback = callback || null;
+            loadLocalDatabase(callback);
+        },
+
         loadDatabase(callback)
         {
             callback = callback || null;
             getDatabaseId(
-                function(fileId)
+                function(fileId, remoteDbVersion)
                 {
                     if (fileId === null)
                     {
@@ -1441,7 +1510,26 @@ function Engine()
                         return;
                     }
 
-                    loadDatabase(fileId, callback);
+                    _fileId = fileId;
+                    
+                    if (_dbVersion === remoteDbVersion)
+                    {
+                        console.log("Local database is the latest version.");
+                        return;                    
+                    }
+
+                    if (_dbVersion > remoteDbVersion)
+                    {
+                        console.log("Local database is the newer than remote. Starting upload...");
+
+                        var jsonData = JSON.stringify(_db);
+                        uploadCloudDatabase(jsonData, _dbVersion);
+
+                        return;
+                    }
+
+                    console.log("Remote database is the latest version.");
+                    loadDatabase(fileId, remoteDbVersion, callback);
                 });
         },
 

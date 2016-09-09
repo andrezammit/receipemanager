@@ -39,6 +39,19 @@ $(document).ready(
 					return;
 				}
 
+				_currDate = getCurrentDate();
+				fillCalendarView(_currDate);
+				
+				Engine.loadLocalDatabase(
+					function(error)
+					{
+						if (error !== null)
+							return;
+
+						fillCalendarView(_currDate);
+						fillTagContainers();
+					});
+				
 				Engine.authenticate(onAuthenticateReady);
 				setHandlers();
 			});
@@ -49,8 +62,6 @@ function onAuthenticateReady()
 	Engine.loadDatabase(
 		function () 
 		{
-			_currDate = getCurrentDate();
-
 			fillCalendarView(_currDate);
 			fillTagContainers();
 		});
