@@ -26,14 +26,17 @@ function Engine()
     var _secret = "fBAQnEagqKhO0AUlXyEx6S26";
 
     //var _scopes = ["https://www.googleapis.com/auth/calendar.readonly"];
-    var _scopes = ["https://www.googleapis.com/auth/drive.appdata"];
+    var _scopes = ["https://www.googleapis.com/auth/drive.appdata", "https://www.googleapis.com/auth/calendar.readonly"];
 
     var _googleAuth = new googleAuth();
     var _oAuth2Client = new _googleAuth.OAuth2(_clientId, _secret, "urn:ietf:wg:oauth:2.0:oob");
 
     var _googleDrive = google.drive('v3');
+    var _googleCalendar = google.calendar('v3');
 
     var _fileId = null;
+
+    var _token = null;
 
     var _currResults = 
     {
@@ -87,6 +90,7 @@ function Engine()
                 {
                     console.log("Google authentication token found.");
 
+                    _token = JSON.parse(token);
                     _oAuth2Client.credentials = JSON.parse(token);
                     onAuthReady(callback);
                 }
@@ -273,6 +277,51 @@ function Engine()
 
                 console.log("Databsase not found on Google Drive.");
                 callback(null);
+            });
+
+        _oAuth2Client.setCredentials(
+            {
+                refresh_token: _token.refresh_token
+            });
+
+        _oAuth2Client.refreshAccessToken(
+            function (error, token)
+            {
+                storeAuthToken(token);
+
+                _googleCalendar.events.list(
+                    {
+                        auth: _oAuth2Client,
+                        calendarId: 'primary',
+                        timeMin: (new Date()).toISOString(),
+                        maxResults: 10,
+                        singleEvents: true,
+                        orderBy: 'startTime'
+                    },
+                    function (error, response)
+                    {
+                        if (error)
+                        {
+                            console.log('Failed to load Google Calendar. ' + error);
+                            return;
+                        }
+
+                        var events = response.items;
+                        if (events.length === 0)
+                        {
+                            console.log('No upcoming events found.');
+                        }
+                        else
+                        {
+                            console.log('Upcoming 10 events:');
+                            for (var i = 0; i < events.length; i++)
+                            {
+                                var event = events[i];
+                                var start = event.start.dateTime || event.start.date;
+                                console.log('%s - %s', start, event.summary);
+                            }
+                        }
+                    });
             });
     }
 
