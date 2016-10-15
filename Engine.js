@@ -26,7 +26,7 @@ function Engine()
     var _secret = "fBAQnEagqKhO0AUlXyEx6S26";
 
     //var _scopes = ["https://www.googleapis.com/auth/calendar.readonly"];
-    var _scopes = ["https://www.googleapis.com/auth/drive.appdata", "https://www.googleapis.com/auth/calendar.readonly"];
+    var _scopes = ["https://www.googleapis.com/auth/drive.appdata", "https://www.googleapis.com/auth/calendar"];
 
     var _googleAuth = new googleAuth();
     var _oAuth2Client = new _googleAuth.OAuth2(_clientId, _secret, "urn:ietf:wg:oauth:2.0:oob");
@@ -288,70 +288,7 @@ function Engine()
             function (error, token)
             {
                 storeAuthToken(token);
-
-                _googleCalendar.calendarList.list(
-                    {
-                        auth: _oAuth2Client
-                    },
-                    function (error, response)
-                    {
-                        if (error)
-                        {
-                            console.log('Failed to list Google Calendars. ' + error);
-                            return;
-                        }
-
-                        var calendars = response.items;
-                        if (calendars.length === 0)
-                        {
-                            console.log('No calendars found.');
-                        }
-                        else
-                        {
-                            for (var i = 0; i < calendars.length; i++)
-                            {
-                                var calendar = calendars[i];
-                                console.log('%s - %s', calendar.id, calendar.summary);
-                            }
-                        }
-                    }
-                );
             });
-
-            //     _googleCalendar.events.list(
-            //         {
-            //             auth: _oAuth2Client,
-            //             calendarId: 'primary',
-            //             timeMin: (new Date()).toISOString(),
-            //             maxResults: 10,
-            //             singleEvents: true,
-            //             orderBy: 'startTime'
-            //         },
-            //         function (error, response)
-            //         {
-            //             if (error)
-            //             {
-            //                 console.log('Failed to load Google Calendar. ' + error);
-            //                 return;
-            //             }
-
-            //             var events = response.items;
-            //             if (events.length === 0)
-            //             {
-            //                 console.log('No upcoming events found.');
-            //             }
-            //             else
-            //             {
-            //                 console.log('Upcoming 10 events:');
-            //                 for (var i = 0; i < events.length; i++)
-            //                 {
-            //                     var event = events[i];
-            //                     var start = event.start.dateTime || event.start.date;
-            //                     console.log('%s - %s', start, event.summary);
-            //                 }
-            //             }
-            //         });
-            // });
     }
 
     function updateLocalDatabaseVersion(newDbVersion)
@@ -477,6 +414,123 @@ function Engine()
                 callback();
             });
     }
+
+    function initGoogleCalendar(callback)
+    {
+        getGoogleCalendarId(
+            function(error, calendarId)
+            {
+                if (error)
+                    return;
+                
+                if (calendarId === null)
+                {
+                    createNewGoogleCalenadar(callback);
+                    return;
+                }
+
+                console.log('Google Calendar found. ID: ' + calendarId);
+                
+                if (callback !== null)
+                    callback();
+            }
+        );
+    }
+
+    function createNewGoogleCalenadar(callback)
+    {
+        var newCalendar =
+            {
+                summary: "Recipe Manager",
+            };
+
+        _googleCalendar.calendars.insert(
+            {
+                auth: _oAuth2Client,
+                resource: newCalendar
+            },
+            function (error, response)
+            {
+                if (error)
+                {
+                    console.log('Failed to add Google Calendar. ' + error);
+                }
+                else
+                {
+                    console.log('Created new Google Calendar. ID: ' + response.id);
+                }
+
+                if (callback !== null)
+                    callback();
+            }
+        );
+    }
+
+    function getGoogleCalendarId(callback)
+    {
+        _googleCalendar.calendarList.list(
+            {
+                auth: _oAuth2Client
+            },
+            function (error, response)
+            {
+                if (error)
+                {
+                    console.log('Failed to list Google Calendars. ' + error);
+                    return;
+                }
+
+                var calendars = response.items;
+                for (var i = 0; i < calendars.length; i++)
+                {
+                    var calendar = calendars[i];
+
+                    if (calendar.summary === "Recipe Manager")
+                    {
+                        callback(null, calendar.id);
+                        return;
+                    }
+                }
+
+                console.log('Google calendars not found.');
+                callback(null, null);
+            });
+    }
+
+            //     _googleCalendar.events.list(
+            //         {
+            //             auth: _oAuth2Client,
+            //             calendarId: 'primary',
+            //             timeMin: (new Date()).toISOString(),
+            //             maxResults: 10,
+            //             singleEvents: true,
+            //             orderBy: 'startTime'
+            //         },
+            //         function (error, response)
+            //         {
+            //             if (error)
+            //             {
+            //                 console.log('Failed to load Google Calendar. ' + error);
+            //                 return;
+            //             }
+
+            //             var events = response.items;
+            //             if (events.length === 0)
+            //             {
+            //                 console.log('No upcoming events found.');
+            //             }
+            //             else
+            //             {
+            //                 console.log('Upcoming 10 events:');
+            //                 for (var i = 0; i < events.length; i++)
+            //                 {
+            //                     var event = events[i];
+            //                     var start = event.start.dateTime || event.start.date;
+            //                     console.log('%s - %s', start, event.summary);
+            //                 }
+            //             }
+            //         });
+            // });
 
     function getObjectById(id, type)
     {
@@ -1609,6 +1663,12 @@ function Engine()
                     console.log("Remote database is the latest version.");
                     loadDatabase(fileId, remoteDbVersion, callback);
                 });
+        },
+
+        initGoogleCalendar(callback)
+        {
+            callback = callback || null;
+            initGoogleCalendar(callback);
         },
 
         saveDatabase(callback)

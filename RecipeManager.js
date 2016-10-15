@@ -65,6 +65,12 @@ function onAuthenticateReady()
 			fillCalendarView(_currDate);
 			fillTagContainers();
 		});
+
+	Engine.initGoogleCalendar(
+		function()
+		{
+			console.log('Google Calendar loaded.');
+		});
 }
 
 function setHandlers()
