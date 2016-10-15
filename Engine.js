@@ -289,40 +289,69 @@ function Engine()
             {
                 storeAuthToken(token);
 
-                _googleCalendar.events.list(
+                _googleCalendar.calendarList.list(
                     {
-                        auth: _oAuth2Client,
-                        calendarId: 'primary',
-                        timeMin: (new Date()).toISOString(),
-                        maxResults: 10,
-                        singleEvents: true,
-                        orderBy: 'startTime'
+                        auth: _oAuth2Client
                     },
                     function (error, response)
                     {
                         if (error)
                         {
-                            console.log('Failed to load Google Calendar. ' + error);
+                            console.log('Failed to list Google Calendars. ' + error);
                             return;
                         }
 
-                        var events = response.items;
-                        if (events.length === 0)
+                        var calendars = response.items;
+                        if (calendars.length === 0)
                         {
-                            console.log('No upcoming events found.');
+                            console.log('No calendars found.');
                         }
                         else
                         {
-                            console.log('Upcoming 10 events:');
-                            for (var i = 0; i < events.length; i++)
+                            for (var i = 0; i < calendars.length; i++)
                             {
-                                var event = events[i];
-                                var start = event.start.dateTime || event.start.date;
-                                console.log('%s - %s', start, event.summary);
+                                var calendar = calendars[i];
+                                console.log('%s - %s', calendar.id, calendar.summary);
                             }
                         }
-                    });
+                    }
+                );
             });
+
+            //     _googleCalendar.events.list(
+            //         {
+            //             auth: _oAuth2Client,
+            //             calendarId: 'primary',
+            //             timeMin: (new Date()).toISOString(),
+            //             maxResults: 10,
+            //             singleEvents: true,
+            //             orderBy: 'startTime'
+            //         },
+            //         function (error, response)
+            //         {
+            //             if (error)
+            //             {
+            //                 console.log('Failed to load Google Calendar. ' + error);
+            //                 return;
+            //             }
+
+            //             var events = response.items;
+            //             if (events.length === 0)
+            //             {
+            //                 console.log('No upcoming events found.');
+            //             }
+            //             else
+            //             {
+            //                 console.log('Upcoming 10 events:');
+            //                 for (var i = 0; i < events.length; i++)
+            //                 {
+            //                     var event = events[i];
+            //                     var start = event.start.dateTime || event.start.date;
+            //                     console.log('%s - %s', start, event.summary);
+            //                 }
+            //             }
+            //         });
+            // });
     }
 
     function updateLocalDatabaseVersion(newDbVersion)
