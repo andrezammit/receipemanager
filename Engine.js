@@ -501,11 +501,14 @@ function Engine()
 
     function getGoogleCalendarEvent(date, recipe, callback)
     {
+        var dateArray = date.split("-");
+        var googleDate = new Date(parseInt(dateArray[2]), parseInt(dateArray[1]), parseInt(dateArray[0]));
+
         _googleCalendar.events.list(
             {
                 auth: _oAuth2Client,
                 calendarId: _googleCalendarId,
-                timeMin: date,
+                timeMin: googleDate.toISOString(),
                 maxResults: 10,
                 singleEvents: true,
                 orderBy: 'startTime'
@@ -530,26 +533,29 @@ function Engine()
                         callback(null, event);
                         return;                    
                     }
-
-                    callback(null, null);
                 }
+
+                callback(null, null);
             });
     }
 
     function createGoogleCalendarEvent(date, recipe, callback)
     {
+        var dateArray = date.split("-");
+        var adjustedMonth = parseInt(dateArray[1]) + 1;
+
+        var eventDate = dateArray[2] + "-" + adjustedMonth + "-" + dateArray[0];
+
         var event = 
         {
             summary: recipe.name,
             start: 
             {
-                'dateTime': '2016-10-28T09:00:00-07:00',
-                'timeZone': 'America/Los_Angeles',
+                date: eventDate,
             },
             end: 
             {
-                'dateTime': '2016-10-28T17:00:00-07:00',
-                'timeZone': 'America/Los_Angeles',
+                date: eventDate,
             }
         };
 
