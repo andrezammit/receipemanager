@@ -499,7 +499,7 @@ function Engine()
             });
     }
 
-    function getGoogleCalendarEvent(date, recipe, callback)
+    function getGoogleCalendarEvents(date, callback)
     {
         var dateArray = date.split("-");
         var googleDate = new Date(parseInt(dateArray[2]), parseInt(dateArray[1]), parseInt(dateArray[0]));
@@ -521,21 +521,7 @@ function Engine()
                     return;
                 }
 
-                var events = response.items;
-                for (var i = 0; i < events.length; i++)
-                {
-                    var event = events[i];
-
-                    if (event.summary === recipe.name)
-                    {
-                        console.log('Google Calendar event found: ', event.summary);
-
-                        callback(null, event);
-                        return;                    
-                    }
-                }
-
-                callback(null, null);
+                callback(null, response.items);
             });
     }
 
@@ -577,30 +563,112 @@ function Engine()
                 }
 
                 if (callback !== null)
-                    callback();
+                    callback(error, response);
             }
         );
     }
 
+    function deleteGoogleCalendarEvent(event)
+    {
+        _googleCalendar.events.delete(
+            {
+                auth: _oAuth2Client,
+                calendarId: _googleCalendarId,
+                eventId: event.id
+            },
+            function(error, response)
+            {
+                if (error)
+                {
+                    console.log('Failed to delete Google Calendar event. ' + error);
+                }
+                else
+                {
+                    console.log('Deleted Google Calendar event.');
+                }
+            }
+        )
+    }
+
+    function isRecipeInEvents(events, recipe)
+    {
+        for (var cnt = 0; cnt < events.length; cnt++)
+        {
+            var event = events[cnt];
+            
+            if (event.summary === recipe.name)
+                return true;
+        }
+
+        return false;
+    }
+
+    function isEventInRecipes(recipes, event)
+    {
+        for (var cnt = 0; cnt < recipes.length; cnt++)
+        {
+            var recipe = recipes[cnt];
+            
+            if (recipe.name === event.summary)
+                return true;
+        }
+
+        return false;
+    }
+
     function updateDateEntryInGoogleCalendar(dateEntry)
     {
-        getGoogleCalendarEvent(dateEntry.id, dateEntry.recipes[0],
-            function(error, event)
-            {
-                if (event === null)
-                {
-                    createGoogleCalendarEvent(dateEntry.id, dateEntry.recipes[0],
-                        function (error)
-                        {
-                            console.log('Google Calendar event created.');
-                            return;
-                        });
+        function googleCalendarEventCreated(error, event)
+        {
+        }
 
-                    return; 
+        getGoogleCalendarEvents(dateEntry.id, 
+            function(error, events)
+            {
+                var recipes = dateEntry.recipes;
+
+                for (var cnt = 0; cnt < recipes.length; cnt++)
+                {
+                    var recipe = recipes[cnt];
+
+                    if (isRecipeInEvents(events, recipe))
+                        continue;
+
+                    createGoogleCalendarEvent(dateEntry.id,
+                        recipe,
+                        googleCalendarEventCreated);
                 }
 
+                for (cnt = 0; cnt < events.length; cnt++)
+                {
+                    var event = events[cnt];
 
+                    if (isEventInRecipes(recipes, event))
+                        continue;
+
+                    deleteGoogleCalendarEvent(event);
+                }
             });
+        
+        
+        
+        // , dateEntry.recipes[0],
+        //     function(error, event)
+        //     {
+        //         if (event === null)
+        //         {
+        //             createGoogleCalendarEvent(dateEntry.id, dateEntry.recipes[0],
+        //                 function (error)
+        //                 {
+        //                     console.log('Google Calendar event created.');
+        //                     return;
+        //                 });
+
+        //             return; 
+        //         }
+
+
+        //     });
     }
 
             //     _googleCalendar.events.list(
