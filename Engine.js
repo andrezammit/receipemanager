@@ -1,5 +1,6 @@
 var fs = require('fs');
 var path = require('path');
+var zlib = require('zlib');
 
 var google = require('googleapis');
 var googleAuth = require('google-auth-library');
@@ -206,7 +207,7 @@ function Engine()
             });
     }
 
-    function loadDatabase(fileId, dbVersion, callback)
+    function downloadDatabase(fileId, dbVersion, unzip, callback)
     {
         console.log("Loading database from Google Drive...");
 
@@ -221,13 +222,23 @@ function Engine()
                 if (error)
                 {
                     console.log("Failed to load database. " + error);
+
+                    callback();
                     return;
                 }
 
-                _db = file;
+                var jsonData = file;
+
+                if (unzip)
+                {
+                    var zipBuffer = new Buffer(file, 'base64');
+                    jsonData = zlib.inflateSync(zipBuffer).toString();    
+                }
+
+                _db = JSON.parse(jsonData);
                 _dbVersion = dbVersion;
 
-                console.log("Database loaded. Version: " + _dbVersion);
+                console.log("Database downloaded. Version: " + _dbVersion);
                 callback();
             });
     }
@@ -247,7 +258,7 @@ function Engine()
                 auth: _oAuth2Client,
                 spaces: 'appDataFolder',
                 pageSize: 10,
-                fields: "files(id, name, appProperties)"
+                fields: 'files(id, name, mimeType, appProperties)'
             },
             function (error, response)
             {
@@ -265,14 +276,23 @@ function Engine()
                 {
                     var file = files[i];
 
-                    if (file.name !== "RecipeManager.json")
+                    if (file.name !== 'RecipeManager.json')
                         continue;
 
                     console.log("Database found: %s (%s)", file.name, file.id);
                     
                     var remoteDbVersion = parseInt(file.appProperties.version);
-    
-                    callback(file.id, remoteDbVersion);
+                    var unzip = file.mimeType === 'application/zip';
+                    
+                    if (!unzip && file.mimeType !== 'application/json')
+                    {
+                        console.log("Invalid database file type: %s.", file.mimeType);
+                        
+                        callback(null);
+                        return;
+                    }
+
+                    callback(file.id, remoteDbVersion, unzip);
                     return;
                 }
 
@@ -325,7 +345,18 @@ function Engine()
             });
     }
 
-    function uploadCloudDatabase(jsonData, newDbVersion, callback)
+    function uploadZippedDatabase(jsonData, newDbVersion, callback)
+    {
+        callback = callback || null;
+
+        compressDatabase(jsonData,
+            function (error, zipData)
+            {
+                uploadCloudDatabase(zipData, newDbVersion, callback);
+            });
+    }
+
+    function uploadCloudDatabase(zipData, newDbVersion, callback)
     {
         callback = callback || null;
 
@@ -342,8 +373,8 @@ function Engine()
                 },
                 media:
                 {
-                    mimeType: 'application/json',
-                    body: jsonData
+                    mimeType: 'application/zip',
+                    body: zipData.toString('base64')
                 },
                 fields: 'id'
             },
@@ -378,7 +409,16 @@ function Engine()
             function()
             {
                 _dbVersion = newDbVersion;
-                uploadCloudDatabase(jsonData, newDbVersion, callback);
+                uploadZippedDatabase(jsonData, newDbVersion, callback);
+            });
+    }
+
+    function compressDatabase(jsonData, callback)
+    {
+        zlib.deflate(jsonData,
+            function (error, zipData)
+            {
+                callback(error, zipData);
             });
     }
 
@@ -1807,12 +1847,12 @@ function Engine()
         {
             callback = callback || null;
             getDatabaseId(
-                function(fileId, remoteDbVersion)
+                function(fileId, remoteDbVersion, unzip)
                 {
                     if (fileId === null)
                     {
                         console.log("Creating new database...");
-                        uploadDatabase(_db, callback);
+                        uploadZippedDatabase(_db, _dbVersion, callback);
 
                         return;
                     }
@@ -1830,13 +1870,13 @@ function Engine()
                         console.log("Local database is the newer than remote. Starting upload...");
 
                         var jsonData = JSON.stringify(_db);
-                        uploadCloudDatabase(jsonData, _dbVersion);
+                        uploadZippedDatabase(jsonData, _dbVersion, callback);
 
                         return;
                     }
 
                     console.log("Remote database is the latest version.");
-                    loadDatabase(fileId, remoteDbVersion, callback);
+                    downloadDatabase(fileId, remoteDbVersion, unzip, callback);
                 });
         },
 
