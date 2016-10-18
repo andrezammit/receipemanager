@@ -367,9 +367,9 @@ function Engine()
                 resource:
                 {
                     appProperties:
-                        {
-                            version: newDbVersion
-                        }
+                    {
+                        version: newDbVersion
+                    }
                 },
                 media:
                 {
@@ -422,9 +422,9 @@ function Engine()
             });
     }
 
-    function uploadDatabase(data, callback)
+    function createCloudDatabase(data, dbVersion, callback)
     {
-        console.log("Starting database upload...");
+        console.log("Creating new cloud database...");
 
         _googleDrive.files.insert(
             {
@@ -432,7 +432,11 @@ function Engine()
                 resource:
                 {
                     name: 'RecipeManager.json',
-                    parents: ['appDataFolder']
+                    parents: ['appDataFolder'],
+                    appProperties:
+                    {
+                        version: dbVersion
+                    }
                 },
                 media:
                 {
@@ -1851,9 +1855,7 @@ function Engine()
                 {
                     if (fileId === null)
                     {
-                        console.log("Creating new database...");
-                        uploadZippedDatabase(_db, _dbVersion, callback);
-
+                        createCloudDatabase(_db, _dbVersion, callback);
                         return;
                     }
 
