@@ -25,6 +25,8 @@ var _lastSectionId = -1;
 var _currentResultsType = -1;
 var _currentResultsDiv = null;
 
+var app = require('electron').remote; 
+
 var Engine = Engine();
 
 $(document).ready(
@@ -324,11 +326,6 @@ function showResultsView(show)
 	calendarDiv.show();
 }
 
-function saveDatabase(onSaveDatabaseDone)
-{
-	Engine.saveDatabase(onSaveDatabaseDone);
-}
-
 function onSearchBoxChanged()
 {
 	var searchBox = $("#searchBox");
@@ -507,42 +504,47 @@ function onCalendarLinkClick()
 
 function onLoadDataClick()
 {
-	chrome.fileSystem.chooseEntry(
-		{
-			type: "openFile", 
-			accepts: [ { extensions: ["json"] } ], 
-			acceptsMultiple: false 
-		}, 
-		function(fileEntry) 
-		{
-			fileEntry = fileEntry[0];
+	var dialog = app.dialog;
 
-			fileEntry.file(
-				function(file)
+	dialog.showOpenDialog(
+		function (fileNames)
+		{
+			if (fileNames === undefined)
+			{
+				console.log("No file selected.");
+				return;
+			}
+
+			Engine.importDatabase(fileNames[0],
+				function(error)
 				{
-					var reader = new FileReader();
+					if (error !== null)
+						return;
 
-					reader.onloadend = 
-						function()
-						{
-							importDatabase(this.result,
-								function()
-								{
-									_currDate = getCurrentDate();
-									
-									fillCalendarView(_currDate);
-									fillTagContainers();
-								});
-						};
+					_currDate = getCurrentDate();
 
-					reader.readAsText(file);
-				});
+					fillCalendarView(_currDate);
+					fillTagContainers();
+				}
+			);
 		});
 }
 
 function onSaveDataClick()
 {
-	saveDatabase();
+	var dialog = app.dialog;
+
+	dialog.showSaveDialog(
+		function (fileName)
+		{
+			if (fileName === undefined)
+			{
+				console.log("No file selected.");
+				return;
+			}
+			
+			Engine.exportDatabase(fileName);
+		});
 }
 
 function onTitleClick()

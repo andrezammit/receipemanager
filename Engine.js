@@ -245,10 +245,78 @@ function Engine()
 
     function saveDatabase(callback)
     {
+        callback = callback || null;
+        
         console.log("Saving database...");
 
         var newDbVersion = _dbVersion + 1;
         updateDatabase(_db, newDbVersion, callback);
+    }
+
+    function importDatabase(importPath, callback)
+    {
+        callback = callback || null;
+        
+        console.log("Importing database...");
+
+        fs.readFile(importPath, 
+            function (error, exportJSON)
+            {
+                var exportData = JSON.parse(exportJSON);
+
+                _dbVersion = exportData.dbVersion;
+                var zipData = exportData.data;
+
+                var zipBuffer = new Buffer(zipData, 'base64');
+                
+                var jsonData = zlib.inflateSync(zipBuffer).toString();
+                _db = JSON.parse(jsonData);
+
+                uploadZippedDatabase(jsonData, _dbVersion);
+
+                console.log("Database imported.");
+                
+                if (callback !== null)
+                    callback(error);
+            });
+    }
+
+    function exportDatabase(exportPath, callback)
+    {
+        callback = callback || null;
+        
+        console.log("Exporting database...");
+
+        var jsonData = JSON.stringify(_db);
+        var zipData = zlib.deflateSync(jsonData);
+
+        var exportData = 
+        {
+            dbVersion: _dbVersion,
+            data: zipData
+        };
+
+        var exportJSON = JSON.stringify(exportData);
+
+        fs.writeFile(exportPath, exportJSON,
+            function(error)
+            {
+                if (error !== null)
+                {
+                    console.log("Database export failed. " + error);
+                    
+                    if (callback !== null)
+                        callback(error);
+
+                    return;
+                }
+
+                console.log("Database exported to " + exportPath);
+                
+                if (callback !== null)
+                    callback(error);
+            });
+
     }
 
     function getDatabaseId(callback)
@@ -630,8 +698,7 @@ function Engine()
                 {
                     console.log('Deleted Google Calendar event.');
                 }
-            }
-        )
+            });
     }
 
     function isRecipeInEvents(events, recipe)
@@ -1888,10 +1955,16 @@ function Engine()
             initGoogleCalendar(callback);
         },
 
-        saveDatabase(callback)
+        importDatabase(importPath, callback)
         {
             callback = callback || null;
-            saveDatabase(callback);
+            importDatabase(importPath, callback);
+        },
+
+        exportDatabase(exportPath, callback)
+        {
+            callback = callback || null;
+            exportDatabase(exportPath, callback);
         },
 
         uploadDatabase(callback)
