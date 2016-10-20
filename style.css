@@ -27,8 +27,10 @@ body
 
 #title
 {
-	margin-left: 15px;
+	position: absolute;
 	width: 200px;
+
+	margin-left: 15px;
 }
 
 #title:hover
@@ -38,30 +40,30 @@ body
 
 #search
 {
-	position: absolute;
+    position: relative;
 
-	top: 20px;
-    left: 142px;
+    left: 230px;
+    width: calc(100% - 333px);
 	
-	text-align: right;
-	width: calc(100% - 230px);
+    margin-left: 15px;
+    margin-top: 14px;
+    margin-bottom: 19px;
 }
 
 #searchBox
 {
-	width: calc(100% - 100px);
-    height: 30px;
+    position: absolute;
+    width: 100%;
+
     font-size: large;
 }
 
 #suggestions
 {
-	position: absolute;
+    position: relative;
+    width: calc(100% - 2px);
 
-    width: calc(100% - 102px);
-
-	margin-left: 100px;
-    text-align: left;
+    top: 38px;
 
     border-left: solid 1px #dcdcdc;
     border-right: solid 1px #dcdcdc;
@@ -383,7 +385,7 @@ body
 
 .dummyDay
 {
-	background-color: lightgrey;
+	background-color: rgba(211,211,211,0.6);
 }
 
 #days
@@ -393,6 +395,8 @@ body
 
 #month
 {
+	position: relative;
+
 	text-align: center;
     font-size: 24px;
 
@@ -972,4 +976,18 @@ button
 {
 	background-image: url("images/star_full.png");
 	background-size: 18px 18px;
+}
+
+.background
+{
+	position: absolute;
+
+    left: 0;
+    right: 0;
+    top: 0;
+    bottom: 0;
+
+    background-image: url(images/food_1.jpeg);
+	
+    opacity: 0.1;
 }
