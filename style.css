@@ -102,25 +102,21 @@ body
 
 #sidebar
 {
-	position: fixed;
-	z-index: 1;
+    position: fixed;
+    z-index: 1;
 
-	background-color: lightcyan;
-
-	margin-left: -160px;
-
-	top: 71px;
-
-	width: 160px;
-	height: calc(100% - 71px);
-
-	transition: margin 0.5s;
-
-	border-right: 1px #A7A7E4 solid;
+    margin-top: 71px;
+    width: 170px;
+    height: 100%;
+    
+    transition: margin 0.5s;
+    border-right: 1px #A7A7E4 solid;
 }
 
 .sidebarItem
 {
+    position: relative;
+
 	height: 32px;
 
 	padding-left: 20px;
@@ -978,6 +974,16 @@ button
 	background-size: 18px 18px;
 }
 
+#sidebar_background
+{
+    background-image: url(images/food_pattern.jpg);
+}
+
+#calendar_background
+{
+    background-image: url(images/food_2.jpg);
+}
+
 .background
 {
 	position: absolute;
@@ -986,8 +992,6 @@ button
     right: 0;
     top: 0;
     bottom: 0;
-
-    background-image: url(images/food_1.jpeg);
 	
     opacity: 0.1;
 }
