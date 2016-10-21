@@ -2,7 +2,7 @@ html
 {
 	overflow: auto;
 	
-	font-family: sans-serif;
+	font-family: 'Ubuntu', sans-serif;
 	font-size: small;
 }
 
@@ -28,9 +28,14 @@ body
 #title
 {
 	position: absolute;
-	width: 200px;
+	
+    top: 17px;
+    width: 200px;
 
 	margin-left: 15px;
+
+    font-family: 'Trocchi', sans-serif;
+    font-size: 25px;
 }
 
 #title:hover
@@ -132,7 +137,7 @@ body
 
 .sidebarItem:hover
 {
-	background-color: lightblue;
+	background-color: rgba(173,216,230,0.6);
 	cursor: pointer;
 }
 
@@ -366,7 +371,7 @@ body
 
 .dayCell:hover
 {
-	background-color: lightblue;
+	background-color: rgba(173,216,230,0.7);
 	cursor: pointer;
 }
 
@@ -408,6 +413,7 @@ body
 #prevMonth:hover
 {
 	cursor: pointer;
+    font-weight: bold;
 }
 
 #currMonth
@@ -433,6 +439,7 @@ body
 #nextMonth:hover
 {
 	cursor: pointer;
+    font-weight: bold;
 }
 
 #dayName
