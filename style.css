@@ -29,7 +29,7 @@ body
 {
 	position: absolute;
 	
-    top: 17px;
+    top: 21px;
     width: 200px;
 
 	margin-left: 15px;
@@ -51,7 +51,7 @@ body
     width: calc(100% - 333px);
 	
     margin-left: 15px;
-    margin-top: 14px;
+    margin-top: 18px;
     margin-bottom: 19px;
 }
 
@@ -988,7 +988,15 @@ button
 
 #calendar_background
 {
-    background-image: url(images/food_2.jpg);
+    background-image: url(images/food_3.jpg);
+    background-size: 100%;
+}
+
+#header_background
+{
+    background-image: url(images/pattern.jpg);
+
+    opacity: 0.2;
 }
 
 .background
