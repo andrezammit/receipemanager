@@ -12,11 +12,12 @@ function createWindow () {
       width: 1300, 
       height: 800,
       minWidth: 1150,
-      minHeight: 780
+      minHeight: 780,
+      icon: 'icon-128.png'
     });
 
   win.setMenu(null);
-  
+
   // and load the index.html of the app.
   win.loadURL(`file://${__dirname}/index.html`);
 
