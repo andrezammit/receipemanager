@@ -55,6 +55,16 @@ body
     margin-bottom: 19px;
 }
 
+#loader
+{
+    position: relative;
+
+    left: 250px;
+    top: 18px;
+    width: 36px;
+    height: 36px;
+}
+
 #searchBox
 {
     position: absolute;
@@ -170,7 +180,7 @@ body
 	padding-top: 15px;
 	padding-left: 15px;
 	padding-right: 15px;
-	padding-bottom: 15px;
+	padding-bottom: 3px;
 
 	background-color: lightcyan;
 

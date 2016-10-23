@@ -32,6 +32,8 @@ var Engine = Engine();
 $(document).ready(
 	function ()
 	{
+		showLoader();
+
 		Engine.setupEnvironment(
 			function (error)
 			{
@@ -62,7 +64,7 @@ $(document).ready(
 function onAuthenticateReady()
 {
 	Engine.loadDatabase(
-		function () 
+		function() 
 		{
 			fillCalendarView(_currDate);
 			fillTagContainers();
@@ -71,6 +73,7 @@ function onAuthenticateReady()
 	Engine.initGoogleCalendar(
 		function()
 		{
+			hideLoader();
 			console.log('Google Calendar loaded.');
 		});
 }
@@ -2339,4 +2342,14 @@ function updateRecipeInResults(updatedRecipe)
 		if (recipeUpdated === true)
 			break;
 	}
+}
+
+function showLoader()
+{
+	$("#loader").show();
+}
+
+function hideLoader()
+{
+	$("#loader").hide();
 }
