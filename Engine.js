@@ -1931,6 +1931,10 @@ function Engine()
                     if (_dbVersion === remoteDbVersion)
                     {
                         console.log("Local database is the latest version.");
+                        
+                        if (callback !== null)
+                            callback();
+                            
                         return;                    
                     }
 

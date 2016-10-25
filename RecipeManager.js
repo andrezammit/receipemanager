@@ -63,18 +63,41 @@ $(document).ready(
 
 function onAuthenticateReady()
 {
+	var isDatabaseLoaded = false;
+	var isCalendarLoaded = false;
+
+	function isAllLoaded()
+	{
+		return isDatabaseLoaded === true && 
+			isCalendarLoaded === true;
+	}
+
+	function hideLoaderIfLoaded()
+	{
+		if (!isAllLoaded())
+			return;
+
+		console.log("Hiding loader...");
+		hideLoader();
+	}
+
 	Engine.loadDatabase(
 		function() 
 		{
 			fillCalendarView(_currDate);
 			fillTagContainers();
+
+			isDatabaseLoaded = true;
+			hideLoaderIfLoaded();
 		});
 
 	Engine.initGoogleCalendar(
 		function()
 		{
-			hideLoader();
 			console.log('Google Calendar loaded.');
+			
+			isCalendarLoaded = true;
+			hideLoaderIfLoaded();			
 		});
 }
 
