@@ -239,7 +239,7 @@ function Engine()
                 _dbVersion = dbVersion;
 
                 console.log("Database downloaded. Version: " + _dbVersion);
-                callback();
+                updateLocalDatabase(jsonData, dbVersion, callback);
             });
     }
 
