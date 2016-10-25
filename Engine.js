@@ -316,7 +316,6 @@ function Engine()
                 if (callback !== null)
                     callback(error);
             });
-
     }
 
     function getDatabaseId(callback)
@@ -2035,34 +2034,34 @@ function Engine()
             return getRecipeSuggestions(searchText);
         },
 
-        updateDateEntry(dateEntry)
+        updateDateEntry(dateEntry, callback)
         {
             updateDateEntry(dateEntry);
-            saveDatabase();
+            saveDatabase(callback);
         },
 
-        updateBook(id, updatedBook)
+        updateBook(id, updatedBook, callback)
         {
             updateBook(id, updatedBook);
-            saveDatabase();
+            saveDatabase(callback);
         },
 
-        updateRecipe(id, updatedRecipe)
+        updateRecipe(id, updatedRecipe, callback)
         {
             updateRecipe(id, updateRecipe);
-            saveDatabase();
+            saveDatabase(callback);
         },
 
-        updateTag(id, updatedTag)
+        updateTag(id, updatedTag, callback)
         {
             updateTag(id, updatedTag);
-            saveDatabase();
+            saveDatabase(callback);
         },
 
-        updateSection(id, updatedSection, tagIdDiff)
+        updateSection(id, updatedSection, tagIdDiff, callback)
         {
             updateSection(id, updatedSection, tagIdDiff);
-            saveDatabase();
+            saveDatabase(callback);
         },
 
         getSearchSuggestions(searchText)
@@ -2076,10 +2075,10 @@ function Engine()
             return getBunchOfResults();
         },
 
-        deleteObject(id, type, removeFromParent)
+        deleteObject(id, type, removeFromParent, callback)
         {
             deleteObject(id, type, removeFromParent);
-            saveDatabase();
+            saveDatabase(callback);
         }
     };
 }

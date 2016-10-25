@@ -312,7 +312,7 @@ function moveRecipeInDateEntry(recipeToMove, nextRecipe)
 		}
 	}
 
-	Engine.updateDateEntry(dateEntry);
+	Engine.updateDateEntry(dateEntry, hideLoader);
 }
 
 function showLoadingView(show)
@@ -541,9 +541,13 @@ function onLoadDataClick()
 				return;
 			}
 
+			showLoader();
+
 			Engine.importDatabase(fileNames[0],
 				function(error)
 				{
+					hideLoader();
+
 					if (error !== null)
 						return;
 
@@ -569,7 +573,8 @@ function onSaveDataClick()
 				return;
 			}
 			
-			Engine.exportDatabase(fileName);
+			showLoader();
+			Engine.exportDatabase(fileName, hideLoader);
 		});
 }
 
@@ -983,7 +988,9 @@ function onRecipeSearchEnterPressed()
 	newDateRecipe.id = addRecipeInput.data("recipeId");
 
 	dateEntry.recipes.push(newDateRecipe);
-	Engine.updateDateEntry(dateEntry);
+
+	showLoader();
+	Engine.updateDateEntry(dateEntry, hideLoader);
 
 	addDateRecipeEntry(dateEntry, newDateRecipe);
 
@@ -1049,7 +1056,8 @@ function removeRecipeFromDateEntry(dateEntry, recipeToRemove)
 		}
 	}
 
-	Engine.updateDateEntry(dateEntry);
+	showLoader();
+	Engine.updateDateEntry(dateEntry, hideLoader);
 }
 
 function onRecipeSearchDownPressed()
@@ -1545,7 +1553,9 @@ function addDeleteButton(resultDiv, type, id)
 	deleteButton.on("click", 
 		function(e)
 		{
-			Engine.deleteObject(type, id, true);
+			showLoader();
+			Engine.deleteObject(type, id, true, hideLoader);
+
 			e.stopPropagation();
 		});
 
@@ -1847,7 +1857,9 @@ function onRecipeOKClick(id, recipe)
 
 function updateRecipe(recipe)
 {
-	Engine.updateRecipe(recipe.id, recipe);
+	showLoader();
+	Engine.updateRecipe(recipe.id, recipe, hideLoader);
+
 	updateRecipeInResults(recipe);
 }
 
@@ -2008,7 +2020,8 @@ function onSectionOKClick(id, section)
 	var tagIdDiff = getCheckedTagsDiff(sectionDlg, section.tagIds);
 	section.tagIds = getCheckedTagIds(sectionDlg);
 
-	Engine.updateSection(id, section, tagIdDiff);
+	showLoader();
+	Engine.updateSection(id, section, tagIdDiff, hideLoader);
 
 	showSection(id, section.bookId);
 	refreshResultsView();
@@ -2160,7 +2173,8 @@ function onBookOKClick(id, book)
 	var bookDlg = $("#book");
 	book.name = bookDlg.find("#titleCtrl").val();
 
-	Engine.updateBook(id, book);
+	showLoader();
+	Engine.updateBook(id, book, hideLoader);
 
 	showBook(id);
 	refreshResultsView();
@@ -2301,7 +2315,8 @@ function onTagOKClick(id, tag)
 	var tagDlg = $("#tag");
 	tag.name = tagDlg.find("#titleCtrl").val();
 
-	Engine.updateTag(id, tag);
+	showLoader();
+	Engine.updateTag(id, tag, hideLoader);
 
 	showTag(id);
 	fillTagContainers();
