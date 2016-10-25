@@ -32,8 +32,6 @@ var Engine = Engine();
 $(document).ready(
 	function ()
 	{
-		showLoader();
-
 		Engine.setupEnvironment(
 			function (error)
 			{
@@ -78,7 +76,7 @@ function onAuthenticateReady()
 			return;
 
 		console.log("Hiding loader...");
-		hideLoader();
+		hideSplash();
 	}
 
 	Engine.loadDatabase(
@@ -2390,4 +2388,9 @@ function showLoader()
 function hideLoader()
 {
 	$("#loader").hide();
+}
+
+function hideSplash()
+{
+	$("#splash").fadeOut();
 }
