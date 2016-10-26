@@ -175,6 +175,7 @@ function setHandlers()
 	$("#saveData").on("click", onSaveDataClick);
 	$("#books").on("click", showBooks);
 	$("#tags").on("click", showTags);
+	$("#syncCalendar").on("click", syncCalendar);
 
 	var recipeDlg = $("#recipe");
 
@@ -2393,4 +2394,19 @@ function hideLoader()
 function hideSplash()
 {
 	$("#splash").fadeOut();
+}
+
+function syncCalendar()
+{
+	var month = _currDate.getMonth();
+	var year = _currDate.getFullYear();
+
+	showLoader();
+
+	Engine.syncCalendar(month, year,
+		function(error)
+		{
+			hideLoader();
+		}
+	);
 }

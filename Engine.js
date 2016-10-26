@@ -613,13 +613,18 @@ function Engine()
     function getGoogleCalendarEvents(date, callback)
     {
         var dateArray = date.split("-");
-        var googleDate = new Date(parseInt(dateArray[2]), parseInt(dateArray[1]), parseInt(dateArray[0]));
+
+        var googleDateStart = new Date(parseInt(dateArray[2]), parseInt(dateArray[1]), parseInt(dateArray[0]));
+
+        var googleDateEnd = new Date(googleDateStart);
+        googleDateEnd.setDate(googleDateEnd.getDate() + 1);
 
         _googleCalendar.events.list(
             {
                 auth: _oAuth2Client,
                 calendarId: _googleCalendarId,
-                timeMin: googleDate.toISOString(),
+                timeMin: googleDateStart.toISOString(),
+                timeMax: googleDateEnd.toISOString(),
                 maxResults: 10,
                 singleEvents: true,
                 orderBy: 'startTime'
@@ -679,7 +684,7 @@ function Engine()
         );
     }
 
-    function deleteGoogleCalendarEvent(event)
+    function deleteGoogleCalendarEvent(event, callback)
     {
         _googleCalendar.events.delete(
             {
@@ -697,6 +702,9 @@ function Engine()
                 {
                     console.log('Deleted Google Calendar event.');
                 }
+
+                if (callback !== null)
+                    callback(error);
             });
     }
 
@@ -726,42 +734,76 @@ function Engine()
         return false;
     }
 
-    function updateDateEntryInGoogleCalendar(dateEntry)
+    function updateDateEntryInGoogleCalendar(dateEntry, callback)
     {
-        function googleCalendarEventCreated(error, event)
+        callback = callback || null;
+        
+        var eventsToCreate = 0;
+        var eventsToDelete = 0;
+
+        function checkIfReady()
         {
+            if (eventsToCreate === 0 && eventsToDelete === 0)
+            {
+                if (callback !== null)
+                    callback();
+            }
         }
 
-        getGoogleCalendarEvents(dateEntry.id, 
-            function(error, events)
+        function eventCreated(error, event)
+        {
+            eventsToCreate--;
+            checkIfReady();
+        }
+
+        function eventDeleted(error)
+        {
+            eventsToDelete--;
+            checkIfReady();
+        }
+
+        function mergeCalendar(events)
+        {
+            var recipes = dateEntry.recipes;
+
+            for (var cnt = 0; cnt < recipes.length; cnt++)
             {
-                var recipes = dateEntry.recipes;
+                var recipe = recipes[cnt];
 
-                for (var cnt = 0; cnt < recipes.length; cnt++)
+                if (isRecipeInEvents(events, recipe))
+                    continue;
+
+                eventsToCreate++;
+
+                createGoogleCalendarEvent(dateEntry.id,
+                    recipe,
+                    eventCreated);
+            }
+
+            for (cnt = 0; cnt < events.length; cnt++)
+            {
+                var event = events[cnt];
+
+                if (isEventInRecipes(recipes, event))
+                    continue;
+
+                eventsToDelete++;
+                deleteGoogleCalendarEvent(event, eventDeleted);
+            }
+        }
+
+        (function(dateEntry)
+        {
+            getGoogleCalendarEvents(dateEntry.id,
+                function (error, events)
                 {
-                    var recipe = recipes[cnt];
+                    mergeCalendar(events);
+                });
 
-                    if (isRecipeInEvents(events, recipe))
-                        continue;
+        })(dateEntry);
 
-                    createGoogleCalendarEvent(dateEntry.id,
-                        recipe,
-                        googleCalendarEventCreated);
-                }
+        checkIfReady();
 
-                for (cnt = 0; cnt < events.length; cnt++)
-                {
-                    var event = events[cnt];
-
-                    if (isEventInRecipes(recipes, event))
-                        continue;
-
-                    deleteGoogleCalendarEvent(event);
-                }
-            });
-        
-        
-        
         // , dateEntry.recipes[0],
         //     function(error, event)
         //     {
@@ -1893,6 +1935,40 @@ function Engine()
             _db.recipes.splice(index, 1);
     }
 
+    function syncCalendar(month, year, callback)
+    {
+        callback = callback || null;
+
+        var dateEntriesPending = 0;
+
+        function dateEntrySynced(error)
+        {
+            dateEntriesPending--;
+
+            if (dateEntriesPending === 0)
+                callback();
+        }
+
+        function syncDateEntry(dateEntry)
+        {
+            dateEntriesPending++;
+            updateDateEntryInGoogleCalendar(dateEntry, dateEntrySynced);
+        }
+
+        for (var cnt = 1; cnt < 32; cnt++)
+        {
+            var id = cnt + '-' + month + '-' + year;
+            var dateEntry = getObjectById(id, RESULT_TYPE_DATEENTRY);
+
+            if (dateEntry === null)
+                continue;
+
+            syncDateEntry(dateEntry);
+        }
+
+        if (dateEntriesPending === 0 && callback !== null)
+            callback();
+    }
 
     return {
         setupEnvironment(callback)
@@ -2079,6 +2155,11 @@ function Engine()
         {
             deleteObject(id, type, removeFromParent);
             saveDatabase(callback);
+        },
+
+        syncCalendar(month, year, callback)
+        {
+            syncCalendar(month, year, callback);
         }
     };
 }
