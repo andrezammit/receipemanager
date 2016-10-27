@@ -767,6 +767,15 @@ function fillCalendarView(date)
 		var dateData = new Date(date);
 		dateData.setDate(day);
 
+		var isToday = false;
+
+		if (dateData.getDate() === _currDate.getDate() &&
+			dateData.getMonth() === _currDate.getMonth() &&
+			dateData.getFullYear() === _currDate.getFullYear())
+		{
+			isToday = true;
+		}
+
 		var dayDiv = $("<div class='dayCell availDay'><div class='day'>" + day + "</div></div>");
 		dayDiv.data("date", dateData);
 
