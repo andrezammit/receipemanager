@@ -436,6 +436,11 @@ body
 	cursor: pointer;
 }
 
+.todayCell
+{
+    background-color: rgba(211, 230, 173, 0.5);
+}
+
 .day
 {
 	width: 18px;
