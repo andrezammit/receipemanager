@@ -18,7 +18,7 @@
 
 var _currDate = 0;
 var _currentResults = null;
-var _sidebarVisible = false;
+var _sidebarVisible = true;
 var _currentSearchText = "";
 
 var _lastSectionId = -1;
@@ -28,36 +28,51 @@ var _currentResultsDiv = null;
 var app = require('electron').remote; 
 
 var Engine = Engine();
+var LocalSettings = LocalSettings();
 
 $(document).ready(
 	function ()
 	{
-		Engine.setupEnvironment(
+		LocalSettings.load(
 			function (error)
 			{
 				if (error !== null)
-				{
-					console.log("Stopping application due to fatal error.");
-					return;
-				}
+					console.log("Failed to load local settings." + error);
 
-				_currDate = getCurrentDate();
-				fillCalendarView(_currDate);
-				
-				Engine.loadLocalDatabase(
-					function(error)
+				processLocalSettings();
+
+				Engine.setupEnvironment(
+					function (error)
 					{
 						if (error !== null)
+						{
+							console.log("Stopping application due to fatal error.");
 							return;
+						}
 
+						_currDate = getCurrentDate();
 						fillCalendarView(_currDate);
-						fillTagContainers();
+
+						Engine.loadLocalDatabase(
+							function (error)
+							{
+								if (error !== null)
+									return;
+
+								fillCalendarView(_currDate);
+								fillTagContainers();
+							});
+
+						Engine.authenticate(onAuthenticateReady);
+						setHandlers();
 					});
-				
-				Engine.authenticate(onAuthenticateReady);
-				setHandlers();
 			});
 	});
+
+function processLocalSettings()
+{
+	showSidebar(LocalSettings.isSidebarOpen());
+}
 
 function onAuthenticateReady()
 {
@@ -577,22 +592,35 @@ function onSaveDataClick()
 		});
 }
 
-function onTitleClick()
+function showSidebar(show)
 {
 	var sidebarDiv = $("#sidebar");
 	var sidebarWidth = sidebarDiv.width();
 
-	if (_sidebarVisible)
+	if (show)
+	{
+		sidebarDiv.css("margin-left", "0px");		
+	}
+	else
 	{
 		sidebarDiv.css("margin-left", "-" + sidebarWidth + "px");
-
-		_sidebarVisible = false;
-		return;
 	}
+}
 
-	sidebarDiv.css("margin-left", "0px");
+function onTitleClick()
+{
+	var isSidebarOpen = LocalSettings.isSidebarOpen();
+	
+	showSidebar(!isSidebarOpen);
+	LocalSettings.setSidebarOpen(!isSidebarOpen);
 
-	_sidebarVisible = true;
+	showLoader();
+	LocalSettings.save(
+		function(error)
+		{
+			hideLoader();
+		}
+	);
 }
 
 function getPrevMonthDate(date)

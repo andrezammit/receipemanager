@@ -1,5 +1,7 @@
 /* jshint unused: false */
 
+var path = require('path');
+
 var _db = 
 	{ 
 		books: [], 
@@ -57,6 +59,11 @@ function DateEntry()
 	this.recipes = [];
 }
 
+function Settings()
+{
+	this.isSidebarOpen = true;
+}
+
 var RESULT_TYPE_BOOK 		= 1;
 var RESULT_TYPE_SECTION 	= 2;
 var RESULT_TYPE_RECIPE		= 3;
@@ -67,3 +74,15 @@ var KEY_UP 					= 38;
 var KEY_DOWN 				= 40;
 var KEY_ENTER				= 13;
 var KEY_ESC					= 27;
+
+var _baseDir = path.dirname(require.main.filename);
+
+var _tokenDir = _baseDir + '/.credentials/';
+var _tokenPath = _tokenDir + 'GoogleAuth.json';
+
+var _localDataDir = _baseDir + '/.data/';
+var _localDbPath = _localDataDir + 'RecipeManager.json';
+
+var _dbVersionPath = _localDataDir + 'version';
+
+var _localSettingsPath = _localDataDir + 'localSettings.json';

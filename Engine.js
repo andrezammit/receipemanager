@@ -1,5 +1,4 @@
 var fs = require('fs');
-var path = require('path');
 var zlib = require('zlib');
 
 var google = require('googleapis');
@@ -12,16 +11,6 @@ function Engine()
     "use strict";
     
     var _dbVersion = 0;
-
-    var _baseDir = path.dirname(require.main.filename);
-
-    var _tokenDir = _baseDir + '/.credentials/';
-    var _tokenPath = _tokenDir + 'GoogleAuth.json';
-
-    var _localDbDir = _baseDir + '/.data/';
-    var _localDbPath = _localDbDir + 'RecipeManager.json';
-
-    var _dbVersionPath = _localDbDir + 'version';
 
     var _clientId = "13277472194-s5rm0emfoq5fcfmqqlncjbejb5fhp42n.apps.googleusercontent.com";
     var _secret = "fBAQnEagqKhO0AUlXyEx6S26";
@@ -405,6 +394,8 @@ function Engine()
                 {
                     console.log("Local database update failed. " + error);
                     callback(error);
+
+                    return;
                 }
 
                 error = updateLocalDatabaseVersion(newDbVersion);
