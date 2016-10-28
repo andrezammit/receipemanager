@@ -27,8 +27,8 @@ var _currentResultsDiv = null;
 
 var app = require('electron').remote; 
 
-var Engine = Engine();
-var LocalSettings = LocalSettings();
+var Engine = require('./Engine');
+var LocalSettings = require('./LocalSettings');
 
 $(document).ready(
 	function ()
