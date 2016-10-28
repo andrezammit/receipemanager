@@ -2051,7 +2051,7 @@ exports.updateDateEntry =
         saveDatabase(callback);
     };
 
-exports.updateDateEntry =
+exports.updateBook =
     function (id, updatedBook, callback)
     {
         updateBook(id, updatedBook);
