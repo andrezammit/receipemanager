@@ -1,28 +1,9 @@
 var fs = require('fs');
 var zlib = require('zlib');
 
-var google = require('googleapis');
-var googleAuth = require('google-auth-library');
-
-const { BrowserWindow } = require('electron').remote;
+var GoogleAPI = require('./GoogleAPI');
 
 var _dbVersion = 0;
-
-var _clientId = "13277472194-s5rm0emfoq5fcfmqqlncjbejb5fhp42n.apps.googleusercontent.com";
-var _secret = "fBAQnEagqKhO0AUlXyEx6S26";
-
-var _scopes = ["https://www.googleapis.com/auth/drive.appdata", "https://www.googleapis.com/auth/calendar"];
-
-var _googleAuth = new googleAuth();
-var _oAuth2Client = new _googleAuth.OAuth2(_clientId, _secret, "urn:ietf:wg:oauth:2.0:oob");
-
-var _googleDrive = google.drive('v3');
-var _googleCalendar = google.calendar('v3');
-
-var _fileId = null;
-var _googleCalendarId = null;
-
-var _token = null;
 
 var _currResults =
     {
@@ -62,106 +43,6 @@ function setupEnvironment(callback)
     callback(null);
 }
 
-function checkAuth(callback) 
-{
-    fs.readFile(_tokenPath,
-        function (error, token) 
-        {
-            if (error) 
-            {
-                console.log("Google authentication token not found.");
-                getNewToken(callback);
-            }
-            else 
-            {
-                console.log("Google authentication token found.");
-
-                _token = JSON.parse(token);
-                _oAuth2Client.credentials = JSON.parse(token);
-                onAuthReady(callback);
-            }
-        });
-}
-
-function getNewToken(callback)
-{
-    var authUrl = _oAuth2Client.generateAuthUrl(
-        {
-            access_type: 'offline',
-            scope: _scopes
-        });
-
-    console.log("Google authentication URL generated.");
-
-    var oAuthWin = new BrowserWindow(
-        {
-            modal: true,
-            width: 800,
-            height: 600
-        });
-
-    oAuthWin.on('page-title-updated',
-        function (event, title)
-        {
-            var pos = title.indexOf("code=");
-
-            if (pos === -1)
-                return;
-
-            console.log("Closing OAuth2 window.");
-            oAuthWin.close();
-
-            // skip "code="
-            pos += 5;
-
-            var authCode = title.substr(pos);
-            console.log("Google authentication code detected: " + authCode);
-
-            generateAuthToken(authCode, callback);
-        });
-
-    oAuthWin.loadURL(authUrl);
-}
-
-function generateAuthToken(authCode, callback)
-{
-    _oAuth2Client.getToken(authCode,
-        function (error, token) 
-        {
-            if (error) 
-            {
-                console.log("Google authentication token error: ", error);
-                return;
-            }
-
-            storeAuthToken(token);
-
-            _oAuth2Client.credentials = token;
-            onAuthReady(callback);
-        });
-}
-
-function storeAuthToken(token)
-{
-    fs.writeFile(_tokenPath, JSON.stringify(token),
-        function (error)
-        {
-            if (error !== null)
-            {
-                console.log("Failed to store Google authentication token. " + error);
-                return;
-            }
-
-            console.log("Google authentication token stored to " + _tokenPath);
-        });
-}
-
-function onAuthReady(callback)
-{
-    console.log("Google API authenticated.");
-    callback();
-}
-
 function loadLocalDatabase(callback)
 {
     try
@@ -195,17 +76,12 @@ function downloadDatabase(fileId, dbVersion, unzip, callback)
 {
     console.log("Loading database from Google Drive...");
 
-    _googleDrive.files.get(
-        {
-            auth: _oAuth2Client,
-            fileId: fileId,
-            alt: 'media'
-        },
+    GoogleAPI.downloadFile(fileId,
         function (error, file)
         {
             if (error)
             {
-                console.log("Failed to load database. " + error);
+                console.log("Failed to load database.");
 
                 callback();
                 return;
@@ -302,67 +178,6 @@ function exportDatabase(exportPath, callback)
         });
 }
 
-function getDatabaseId(callback)
-{
-    _googleDrive.files.list(
-        {
-            auth: _oAuth2Client,
-            spaces: 'appDataFolder',
-            pageSize: 10,
-            fields: 'files(id, name, mimeType, appProperties)'
-        },
-        function (error, response)
-        {
-            if (error)
-            {
-                console.log("Google Drive API error: " + error);
-                callback(null);
-
-                return;
-            }
-
-            var files = response.files;
-
-            for (var i = 0; i < files.length; i++)
-            {
-                var file = files[i];
-
-                if (file.name !== 'RecipeManager.json')
-                    continue;
-
-                console.log("Database found: %s (%s)", file.name, file.id);
-
-                var remoteDbVersion = parseInt(file.appProperties.version);
-                var unzip = file.mimeType === 'application/zip';
-
-                if (!unzip && file.mimeType !== 'application/json')
-                {
-                    console.log("Invalid database file type: %s.", file.mimeType);
-
-                    callback(null);
-                    return;
-                }
-
-                callback(file.id, remoteDbVersion, unzip);
-                return;
-            }
-
-            console.log("Databsase not found on Google Drive.");
-            callback(null);
-        });
-
-    _oAuth2Client.setCredentials(
-        {
-            refresh_token: _token.refresh_token
-        });
-
-    _oAuth2Client.refreshAccessToken(
-        function (error, token)
-        {
-            storeAuthToken(token);
-        });
-}
-
 function updateLocalDatabaseVersion(newDbVersion)
 {
     try
@@ -413,29 +228,14 @@ function uploadCloudDatabase(zipData, newDbVersion, callback)
 {
     callback = callback || null;
 
-    _googleDrive.files.update(
-        {
-            auth: _oAuth2Client,
-            fileId: _fileId,
-            resource:
-            {
-                appProperties:
-                {
-                    version: newDbVersion
-                }
-            },
-            media:
-            {
-                mimeType: 'application/zip',
-                body: zipData.toString('base64')
-            },
-            fields: 'id'
-        },
+    var fileData = zipData.toString('base64');
+
+    GoogleAPI.updateDatabase(fileData, newDbVersion, 
         function (error, file)
         {
             if (error)
             {
-                console.log("Database update failed. " + error);
+                console.log("Database update failed.");
 
                 if (callback !== null)
                     callback();
@@ -479,26 +279,10 @@ function createCloudDatabase(data, dbVersion, callback)
 {
     console.log("Creating new cloud database...");
 
-    _googleDrive.files.insert(
-        {
-            auth: _oAuth2Client,
-            resource:
-            {
-                name: 'RecipeManager.json',
-                parents: ['appDataFolder'],
-                appProperties:
-                {
-                    version: dbVersion
-                }
-            },
-            media:
-            {
-                mimeType: 'application/json',
-                body: JSON.stringify(data)
-            },
-            fields: 'id'
-        },
-        function (error, file)
+    var fileData = JSON.stringify(data);
+
+    GoogleAPI.addDatabase(fileData, dbVersion, 
+        function(error, file)
         {
             if (error)
             {
@@ -507,92 +291,7 @@ function createCloudDatabase(data, dbVersion, callback)
             }
 
             console.log("Database uploaded. ID: " + file.id);
-
-            _fileId = file.id;
             callback();
-        });
-}
-
-function initGoogleCalendar(callback)
-{
-    getGoogleCalendarId(
-        function (error, calendarId)
-        {
-            if (error)
-                return;
-
-            if (calendarId === null)
-            {
-                createNewGoogleCalenadar(callback);
-                return;
-            }
-
-            _googleCalendarId = calendarId;
-            console.log('Google Calendar found. ID: ' + _googleCalendarId);
-
-            if (callback !== null)
-                callback();
-        }
-    );
-}
-
-function createNewGoogleCalenadar(callback)
-{
-    var newCalendar =
-        {
-            summary: "Recipe Manager",
-        };
-
-    _googleCalendar.calendars.insert(
-        {
-            auth: _oAuth2Client,
-            resource: newCalendar
-        },
-        function (error, response)
-        {
-            if (error)
-            {
-                console.log('Failed to add Google Calendar. ' + error);
-            }
-            else
-            {
-                console.log('Created new Google Calendar. ID: ' + response.id);
-            }
-
-            if (callback !== null)
-                callback();
-        }
-    );
-}
-
-function getGoogleCalendarId(callback)
-{
-    _googleCalendar.calendarList.list(
-        {
-            auth: _oAuth2Client
-        },
-        function (error, response)
-        {
-            if (error)
-            {
-                console.log('Failed to list Google Calendars. ' + error);
-                return;
-            }
-
-            var calendars = response.items;
-            for (var i = 0; i < calendars.length; i++)
-            {
-                var calendar = calendars[i];
-
-                if (calendar.summary === "Recipe Manager")
-                {
-                    callback(null, calendar.id);
-                    return;
-                }
-            }
-
-            console.log('Google calendars not found.');
-            callback(null, null);
         });
 }
 
@@ -600,26 +299,14 @@ function getGoogleCalendarEvents(date, callback)
 {
     var dateArray = date.split("-");
 
-    var googleDateStart = new Date(parseInt(dateArray[2]), parseInt(dateArray[1]), parseInt(dateArray[0]));
-
-    var googleDateEnd = new Date(googleDateStart);
-    googleDateEnd.setDate(googleDateEnd.getDate() + 1);
-
-    _googleCalendar.events.list(
-        {
-            auth: _oAuth2Client,
-            calendarId: _googleCalendarId,
-            timeMin: googleDateStart.toISOString(),
-            timeMax: googleDateEnd.toISOString(),
-            maxResults: 10,
-            singleEvents: true,
-            orderBy: 'startTime'
-        },
+    GoogleAPI.getCalendarEvents(dateArray,
         function (error, response)
         {
             if (error)
             {
                 console.log('Failed to get Google Calendar events for ' + date + '. ' + error);
+                callback(error, null);
+
                 return;
             }
 
@@ -647,38 +334,22 @@ function createGoogleCalendarEvent(date, recipe, callback)
             }
         };
 
-    _googleCalendar.events.insert(
+    GoogleAPI.createCalendarEvent(event,
+        function (error)
         {
-            auth: _oAuth2Client,
-            calendarId: _googleCalendarId,
-            resource: event
-        },
-        function (error, response)
-        {
-            if (error)
-            {
-                console.log('Failed to add Google Calendar event. ' + error);
-            }
-            else
-            {
+            if (error !== null)
                 console.log('Created new Google Calendar event.');
-            }
 
             if (callback !== null)
-                callback(error, response);
+                callback(error);
         }
     );
 }
 
 function deleteGoogleCalendarEvent(event, callback)
 {
-    _googleCalendar.events.delete(
-        {
-            auth: _oAuth2Client,
-            calendarId: _googleCalendarId,
-            eventId: event.id
-        },
-        function (error, response)
+    GoogleAPI.deleteCalendarEvent(event,
+        function (error)
         {
             if (error)
             {
@@ -1960,7 +1631,7 @@ function loadDatabase(callback)
 {
     callback = callback || null;
 
-    getDatabaseId(
+    GoogleAPI.findDatabase(
         function (fileId, remoteDbVersion, unzip)
         {
             if (fileId === null)
@@ -1968,9 +1639,7 @@ function loadDatabase(callback)
                 createCloudDatabase(_db, _dbVersion, callback);
                 return;
             }
-
-            _fileId = fileId;
-
+            
             if (_dbVersion === remoteDbVersion)
             {
                 console.log("Local database is the latest version.");
@@ -2017,10 +1686,8 @@ function getSectionById(id)
 }
 
 exports.setupEnvironment = setupEnvironment;
-exports.authenticate = checkAuth;
 exports.loadLocalDatabase = loadLocalDatabase;
 exports.loadDatabase = loadDatabase;
-exports.initGoogleCalendar = initGoogleCalendar;
 exports.importDatabase = importDatabase;
 exports.exportDatabase = exportDatabase;
 exports.getRecipeById = getRecipeById;
@@ -2034,6 +1701,18 @@ exports.getSectionRecipes = getSectionRecipes;
 exports.getBunchOfResults = getBunchOfResults;
 exports.getRecipeSuggestions = getRecipeSuggestions;
 exports.getSearchSuggestions = getSearchSuggestions;
+
+exports.authenticate = 
+    function(callback)
+    {
+        GoogleAPI.authenticate(callback);
+    };
+
+exports.initGoogleCalendar = 
+    function(callback)
+    {
+        GoogleAPI.initCalendar(callback);
+    };
 
 exports.getTagRecipes =
     function (id)
