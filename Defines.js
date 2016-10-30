@@ -2,14 +2,14 @@
 
 var path = require('path');
 
-var _db = 
-	{ 
-		books: [], 
-		sections: [],
-		recipes: [],
-		tags: [],
-		calendar: []
-	};
+function Database() 
+{
+	this.books = [];
+	this.sections = [];
+	this.recipes = [];
+	this.tags = [];
+	this.calendar = [];
+}
 
 function Recipe()
 {
@@ -86,3 +86,60 @@ var _localDbPath = _localDataDir + 'RecipeManager.json';
 var _dbVersionPath = _localDataDir + 'version';
 
 var _localSettingsPath = _localDataDir + 'localSettings.json';
+
+exports.getTokenDir = 
+	function()
+	{
+		return _tokenDir;
+	};
+
+exports.getLocalDataDir = 
+	function()
+	{
+		return _localDataDir;
+	};
+
+exports.getLocalSettingsPath = 
+	function()
+	{
+		return _localSettingsPath;
+	};
+
+exports.getDbVersionPath = 
+	function()
+	{
+		return _dbVersionPath;
+	};
+
+exports.getLocalDbPath = 
+	function()
+	{
+		return _localDbPath;
+	};
+
+exports.getTokenPath =
+	function()
+	{
+		return _tokenPath;
+	};
+
+exports.Database = Database;
+exports.DateEntry = DateEntry;
+exports.Recipe = Recipe;
+exports.Book = Book; 
+exports.Tag = Tag;
+exports.Section = Section;
+exports.DateRecipe = DateRecipe;
+
+exports.Settings = Settings;
+
+exports.KEY_UP = KEY_UP;
+exports.KEY_ESC = KEY_ESC;
+exports.KEY_DOWN = KEY_DOWN;
+exports.KEY_ENTER = KEY_ENTER;
+
+exports.RESULT_TYPE_BOOK = RESULT_TYPE_BOOK;
+exports.RESULT_TYPE_DATEENTRY = RESULT_TYPE_DATEENTRY;
+exports.RESULT_TYPE_RECIPE = RESULT_TYPE_RECIPE;
+exports.RESULT_TYPE_SECTION = RESULT_TYPE_SECTION;
+exports.RESULT_TYPE_TAG = RESULT_TYPE_TAG;

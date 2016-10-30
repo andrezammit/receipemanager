@@ -1,24 +1,6 @@
-/* globals RESULT_TYPE_BOOK */
-/* globals RESULT_TYPE_SECTION */
-/* globals RESULT_TYPE_RECIPE */
-/* globals RESULT_TYPE_TAG */
-/* globals RESULT_TYPE_DATEENTRY */
+/* globals window */
 
-/* globals KEY_UP */
-/* globals KEY_DOWN */
-/* globals KEY_ENTER */
-/* globals KEY_ESC */
-
-/* globals Recipe */
-/* globals Book */
-/* globals Section */
-/* globals Tag */
-/* globals DateEntry */
-/* globals DateRecipe */
-
-var _currDate = 0;
 var _currentResults = null;
-var _sidebarVisible = true;
 var _currentSearchText = "";
 
 var _lastSectionId = -1;
@@ -28,46 +10,44 @@ var _currentResultsDiv = null;
 var app = require('electron').remote; 
 
 var Engine = require('./Engine');
+var Defines = require('./Defines');
+var Calendar = require('./Calendar');
 var LocalSettings = require('./LocalSettings');
 
-$(document).ready(
-	function ()
-	{
-		LocalSettings.load(
-			function (error)
-			{
-				if (error !== null)
-					console.log("Failed to load local settings." + error);
+function start()
+{
+	LocalSettings.load(
+		function (error)
+		{
+			if (error !== null)
+				console.log("Failed to load local settings." + error);
 
-				processLocalSettings();
+			processLocalSettings();
 
-				Engine.setupEnvironment(
-					function (error)
+			Engine.setupEnvironment(
+				function (error)
+				{
+					if (error !== null)
 					{
-						if (error !== null)
+						console.log("Stopping application due to fatal error.");
+						return;
+					}
+
+					Engine.loadLocalDatabase(
+						function (error)
 						{
-							console.log("Stopping application due to fatal error.");
-							return;
-						}
+							if (error !== null)
+								return;
 
-						_currDate = getCurrentDate();
-						fillCalendarView(_currDate);
+							Calendar.fillCalendarView();
+							fillTagContainers();
+						});
 
-						Engine.loadLocalDatabase(
-							function (error)
-							{
-								if (error !== null)
-									return;
-
-								fillCalendarView(_currDate);
-								fillTagContainers();
-							});
-
-						Engine.authenticate(onAuthenticateReady);
-						setHandlers();
-					});
-			});
-	});
+					Engine.authenticate(onAuthenticateReady);
+					setHandlers();
+				});
+		});
+}
 
 function processLocalSettings()
 {
@@ -97,7 +77,7 @@ function onAuthenticateReady()
 	Engine.loadDatabase(
 		function() 
 		{
-			fillCalendarView(_currDate);
+			Calendar.fillCalendarView();
 			fillTagContainers();
 
 			isDatabaseLoaded = true;
@@ -132,15 +112,15 @@ function setHandlers()
 			{
 				switch (event.keyCode)
 				{
-					case KEY_ENTER:
+					case Defines.KEY_ENTER:
 						onSearchBoxEnterPressed();
 						break;
 
-					case KEY_UP:
+					case Defines.KEY_UP:
 						onSearchBoxUpPressed();
 						break;
 
-					case KEY_DOWN:
+					case Defines.KEY_DOWN:
 						onSearchBoxDownPressed();
 						break;
 				}
@@ -184,13 +164,11 @@ function setHandlers()
 
 	$("#calendarLink").on("click", onCalendarLinkClick);
 	$("#title").on("click", onTitleClick);
-	$("#prevMonth").on("click", onPrevMonthClick);
-	$("#nextMonth").on("click", onNextMonthClick);
 	$("#loadData").on("click", onLoadDataClick);
 	$("#saveData").on("click", onSaveDataClick);
 	$("#books").on("click", showBooks);
 	$("#tags").on("click", showTags);
-	$("#syncCalendar").on("click", syncCalendar);
+	$("#syncCalendar").on("click", Calendar.syncCalendar);
 
 	var recipeDlg = $("#recipe");
 
@@ -215,16 +193,6 @@ function setHandlers()
 	var dayMenuDlg = $("#dayMenu");
 	
 	dayMenuDlg.find(".closeButton").on("click", onDayMenuCloseClick);
-
-	$("#recipeContainer").sortable(
-		{
-			axis: "y",
-			revert: true,
-			scroll: false,
-			cursor: "move",
-			stop: onRecipeDragStopped,
-			helper: "clone"
-		});
 
 	$("#dialogContainer").children().draggable(
 		{ 
@@ -253,13 +221,13 @@ function setHandlers()
 	$(window).on("resize",
 		function()
 		{
-			refreshDayRecipes();
+			Calendar.refreshDayRecipes();
 		});
 
 	$("#dialogContainer").keydown(
 		function(event)
 			{
-				if (event.keyCode !== KEY_ESC)
+				if (event.keyCode !== Defines.KEY_ESC)
 					return;
 
 				var dialog = $("#dialogContainer").find("div:visible:first");
@@ -274,59 +242,8 @@ function setHandlers()
 
 				dialog.find(".closeButton").click();
 			});
-}
 
-function onRecipeDragStopped(e, ui)
-{
-	var nextRecipe = null;
-	var nextRecipeDiv = ui.item.next();
-
-	if (nextRecipeDiv.length === 0)
-        return;
-        
-	nextRecipe = nextRecipeDiv.data("recipe");
-
-	var recipe = ui.item.data("recipe");
-	moveRecipeInDateEntry(recipe, nextRecipe);
-
-	e.stopPropagation();
-
-	var dayMenuDiv = $("#dayMenu");
-	var dayDiv = dayMenuDiv.data("dayDiv");
-
-	fillDayRecipes(dayDiv);
-}
-
-function moveRecipeInDateEntry(recipeToMove, nextRecipe)
-{
-	var dayMenuDlg = $("#dayMenu");
-	var dateEntry = dayMenuDlg.data("dateEntry");
-
-	var recipe = null;
-
-	for (var cnt = 0; cnt < dateEntry.recipes.length; cnt++)
-	{
-		recipe = dateEntry.recipes[cnt];
-
-		if (recipe === recipeToMove)
-		{
-			dateEntry.recipes.splice(cnt, 1);
-			break;
-		}
-	}
-
-	for (cnt = 0; cnt < dateEntry.recipes.length; cnt++)
-	{
-		recipe = dateEntry.recipes[cnt];
-
-		if (recipe === nextRecipe)
-		{
-			dateEntry.recipes.splice(cnt, 0, recipeToMove);
-			break;
-		}
-	}
-
-	Engine.updateDateEntry(dateEntry, hideLoader);
+	Calendar.setHandlers();
 }
 
 function showLoadingView(show)
@@ -565,9 +482,7 @@ function onLoadDataClick()
 					if (error !== null)
 						return;
 
-					_currDate = getCurrentDate();
-
-					fillCalendarView(_currDate);
+					Calendar.fillCalendarView();
 					fillTagContainers();
 				}
 			);
@@ -616,624 +531,11 @@ function onTitleClick()
 
 	showLoader();
 	LocalSettings.save(
-		function(error)
+		function()
 		{
 			hideLoader();
 		}
 	);
-}
-
-function getPrevMonthDate(date)
-{
-	var prevMonthDate = new Date(date);
-
-	if (date.getMonth() === 0)
-	{
-		var year = date.getFullYear();
-
-		prevMonthDate.setYear(--year);
-		prevMonthDate.setMonth(11);
-	}
-	else
-	{
-		var month = date.getMonth();
-		prevMonthDate.setMonth(--month);
-	}
-
-	return prevMonthDate;
-}
-
-function getNextMonthDate(date)
-{
-	var nextMonthDate = new Date(date);
-
-	if (date.month == 11)
-	{
-		var year = date.getFullYear();
-
-		nextMonthDate.setYear(++year);
-		nextMonthDate.setMonth(0);
-	}
-	else
-	{
-		var month = date.getMonth();
-		nextMonthDate.setMonth(++month);
-	}
-
-	return nextMonthDate;
-}
-
-function onPrevMonthClick()
-{
-	_currDate = getPrevMonthDate(_currDate);
-	fillCalendarView(_currDate);
-}
-
-function onNextMonthClick()
-{
-	_currDate = getNextMonthDate(_currDate);
-	fillCalendarView(_currDate);
-}
-
-function getCurrentDate()
-{
-	return new Date();
-}
-
-function getDaysInMonth(month)
-{
-	switch (month)
-	{
-		case 3:
-		case 5:
-		case 8:
-		case 10:
-			return 30;
-
-		case 1:
-			return 28;
-	}
-
-	return 31;
-}
-
-function getMonthName(month)
-{
-	switch (month)
-	{
-		case 0:
-			return "January";
-
-		case 1:
-			return "February";
-
-		case 2:
-			return "March";
-
-		case 3:
-			return "April";
-
-		case 4:
-			return "May";
-
-		case 5:
-			return "June";
-
-		case 6:
-			return "July";
-
-		case 7:
-			return "August";
-
-		case 8:
-			return "September";
-
-		case 9:
-			return "October";
-
-		case 10:
-			return "November";
-
-		case 11:
-			return "December";
-	}
-}
-
-function fillCalendarView(date)
-{
-	var monthName = getMonthName(date.getMonth());
-
-	var monthTitleDiv = $("#currMonth");
-	monthTitleDiv.text(monthName);
-
-	var yearDiv = $("#year");
-	yearDiv.text(date.getFullYear());
-
-	var daysDiv = $("#days");
-	daysDiv.empty();
-
-	var firstDay = getDayOfWeek(1, date.getMonth(), date.getFullYear()) - 1;
-
-	var days = getDaysInMonth(date.getMonth());
-	var lastDay = getDayOfWeek(days, date.getMonth(), date.getFullYear());
-	
-	var daysToAdd = 7 - lastDay;
-	
-	var totalDays = firstDay + days + daysToAdd;
-
-	if ((totalDays / 7) < 6)
-	{
-		daysToAdd += 7;
-		totalDays += 7;
-	}
-
-	if ((totalDays / 7) < 6)
-	{
-		firstDay += 7;
-		totalDays += 7;
-	}
-
-	var prevMonthDate = getPrevMonthDate(date);
-	var prevMonthDays = getDaysInMonth(prevMonthDate.getMonth());
-
-	var dummyDay = null;
-
-	for (var cnt = 0; cnt < firstDay; cnt++)
-	{
-		var prevMonthDay = prevMonthDays - (firstDay - cnt - 1);
-
-		dummyDay = $("<div class='dayCell dummyDay'><div class='day'>" + prevMonthDay + "</div></div>");
-		dummyDay.on("click", onPrevMonthClick);
-
-		daysDiv.append(dummyDay);
-	}
-
-	for (cnt = 0; cnt < days; cnt++)
-	{
-		var day = cnt + 1;
-
-		var dateData = new Date(date);
-		dateData.setDate(day);
-
-		var isToday = false;
-
-		if (dateData.getDate() === _currDate.getDate() &&
-			dateData.getMonth() === _currDate.getMonth() &&
-			dateData.getFullYear() === _currDate.getFullYear())
-		{
-			isToday = true;
-		}
-
-		var dayDiv = $("<div class='dayCell availDay'><div class='day'>" + day + "</div></div>");
-		dayDiv.data("date", dateData);
-		
-		if (isToday)
-			dayDiv.addClass("todayCell");
-
-		dayDiv.on("click", onDayClicked);
-
-		daysDiv.append(dayDiv);
-	}
-
-	for (cnt = 0; cnt < daysToAdd; cnt++)
-	{
-		dummyDay = $("<div class='dayCell dummyDay'><div class='day'>" + (cnt + 1) + "</div></div>");
-		dummyDay.on("click", onNextMonthClick);
-
-		daysDiv.append(dummyDay);
-	}
-
-	refreshDayRecipes();
-}
-
-function getDateIdFromDate(date)
-{
-	return date.getDate() + "-" + date.getMonth() + "-" + date.getFullYear();
-}
-
-function fillDayRecipes(dayDiv)
-{
-	var date = dayDiv.data("date");
-	var dateId = getDateIdFromDate(date);
-
-	var dateEntry = Engine.getDateEntryById(dateId);
-
-	if (dateEntry === null)
-		return;
-
-	dayDiv.children(".dayViewRecipe").remove();
-
-	var height = dayDiv.height();
-
-	var padding = 5;
-	var recipeMargin = 5;
-	var dayNumberHeight = 18 + padding;
-
-	var recipeHeight = 20 + recipeMargin;
-
-	var availableSpace = height - dayNumberHeight;
-	var maxRecipesToShow = Math.floor(availableSpace / recipeHeight);
-
-	var addMoreEntry = false;
-
-	if (maxRecipesToShow < dateEntry.recipes.length)
-	{
-		addMoreEntry = true;
-		maxRecipesToShow--;
-	}
-
-	var dayViewRecipe = null;
-	var recipesToShow = Math.min(dateEntry.recipes.length, maxRecipesToShow);
-
-	for (var cnt = 0; cnt < recipesToShow; cnt++)
-	{
-		var recipe = dateEntry.recipes[cnt];
-
-		dayViewRecipe = $("<div class='dayViewRecipe'>" + recipe.name + "</div>");
-		dayDiv.append(dayViewRecipe);
-	}
-
-	if (addMoreEntry === true)
-	{
-		dayViewRecipe = $("<div class='dayViewRecipe'>More...</div>");
-		dayDiv.append(dayViewRecipe);
-	}
-
-	$(".dayViewRecipe").css("width", dayDiv.width() - 16);
-
-	var dayNumberDiv = dayDiv.children(".day");
-
-	if (recipesToShow > 0)
-	{
-		dayNumberDiv.css("font-weight", "bold");
-	}
-	else
-	{
-		dayNumberDiv.css("font-weight", "normal");
-	}
-}
-
-function refreshDayRecipes()
-{
-	console.log("Loading calendar...");
-
-	var dayDivs = $(".availDay");
-
-	for (var cnt = 0; cnt < dayDivs.length; cnt++)
-	{
-		var dayDiv = $(dayDivs[cnt]);
-		fillDayRecipes(dayDiv);
-	}
-
-	console.log("Calendar loaded.");
-}
-
-function onDayClicked(event)
-{
-	var dayDiv = $(event.target);
-	var date = dayDiv.data("date");
-
-	var dateId = getDateIdFromDate(date);
-	var dateEntry = Engine.getDateEntryById(dateId);
-
-	if (dateEntry === null)
-	{
-		dateEntry = new DateEntry();
-		dateEntry.id = dateId;
-	}
-
-	console.log(date.toString());
-
-	var dayMenuDiv = $("#dayMenu");
-
-	dayMenuDiv.data("dayDiv", dayDiv);
-	dayMenuDiv.data("dateEntry", dateEntry);
-
-	showDialog(dayMenuDiv);
-
-	$("#recipeSuggestions").empty();
-
-	$(".recipeEntry").remove();
-	$(".addRecipeEntry").remove();
-
-	$("#dateHeader").text(date.toDateString());
-
-	for (var cnt = 0; cnt < dateEntry.recipes.length; cnt++)
-	{
-		var recipe = dateEntry.recipes[cnt];
-		addDateRecipeEntry(dateEntry, recipe);
-	}
-
-	var addRecipeEntry = $("<div class='addRecipeEntry'>Add Recipe...</div>");
-	addRecipeEntry.on("click",
-		function ()
-		{
-			onAddRecipeEntryClick();
-		});
-
-	dayMenuDiv.append(addRecipeEntry);
-}
-
-function onAddRecipeEntryClick()
-{
-	var addRecipeEntry = $(".addRecipeEntry");
-	var inputState = addRecipeEntry.data("inputState");
-
-	if (inputState === true)
-		return;
-
-	addRecipeEntry.html("<input id='recipeSearch' type='text'>");
-	addRecipeEntry.data("inputState", true);
-
-	var addRecipeInput = addRecipeEntry.children("input");
-	addRecipeInput.focus();
-
-	addRecipeInput
-		.on("input", 
-			function()
-			{
-				onAddRecipeInputChanged(addRecipeInput);
-			})
-		.blur(
-			function()
-			{
-				if ($("#recipeSuggestions").data("hovered") === true)
-					return;
-
-				addRecipeEntry.html("Add Recipe...");
-				addRecipeEntry.data("inputState", false);
-
-				addRecipeEntry.off("blur");
-			})
-		.keydown(
-			function(event)
-			{
-				switch (event.keyCode)
-				{
-					case KEY_ENTER:
-						onRecipeSearchEnterPressed();
-						break;
-
-					case KEY_UP:
-						onRecipeSearchUpPressed();
-						break;
-
-					case KEY_DOWN:
-						onRecipeSearchDownPressed();
-						break;
-				}
-			});
-}
-
-function onRecipeSearchEnterPressed()
-{
-	var suggestionsDiv = $("#recipeSuggestions");
-	var currentSuggestion = suggestionsDiv.find(".recipeSuggestionHover");
-
-	if (currentSuggestion.length !== 0)
-	{
-		currentSuggestion.click();
-		return;
-	}
-
-	var dayMenuDiv = $("#dayMenu");
-	var dateEntry = dayMenuDiv.data("dateEntry");
-
-	var addRecipeEntry = $(".addRecipeEntry");
-	var addRecipeInput = addRecipeEntry.children("input");
-
-	var newDateRecipe = new DateRecipe();
-	newDateRecipe.name = addRecipeInput.val();
-	newDateRecipe.id = addRecipeInput.data("recipeId");
-
-	dateEntry.recipes.push(newDateRecipe);
-
-	showLoader();
-	Engine.updateDateEntry(dateEntry, hideLoader);
-
-	addDateRecipeEntry(dateEntry, newDateRecipe);
-
-	addRecipeInput.blur();
-
-	suggestionsDiv.hide();
-	suggestionsDiv.children().removeClass("recipeSuggestionHover");
-
-	var dayDiv = dayMenuDiv.data("dayDiv");
-	fillDayRecipes(dayDiv);
-}
-
-function addDateRecipeEntry(dateEntry, newDateRecipe)
-{
-	var newRecipeEntry = $("<div class='recipeEntry'></div>");
-	    	
-	var recipeEntryName = $("<div class='recipeEntryName'>" + newDateRecipe.name + "</div>");
-	newRecipeEntry.append(recipeEntryName);
-	
-	var recipeEntryDelete = $("<div class='recipeEntryButton'><img src='images/delete.png' class='recipeEntryIcon'></div>");
-	newRecipeEntry.append(recipeEntryDelete);
-
-	recipeEntryDelete.on("click",
-		function()
-		{
-			removeRecipeFromDateEntry(dateEntry, newDateRecipe);
-			newRecipeEntry.remove();
-
-			var dayMenuDiv = $("#dayMenu");
-			var dayDiv = dayMenuDiv.data("dayDiv");
-
-			fillDayRecipes(dayDiv);
-		});
-
-	newRecipeEntry.data("recipe", newDateRecipe);
-
-	recipeEntryName.on("click", onRecipeEntryClick);
-
-	var recipeContainer = $("#recipeContainer");
-	recipeContainer.append(newRecipeEntry);
-}
-
-function onRecipeEntryClick(event)
-{
-	var recipeEntry = $(event.target).parent();
-
-	var recipe = recipeEntry.data("recipe");
-
-	if (recipe.id !== 0)
-		showRecipe(recipe.id);
-}
-
-function removeRecipeFromDateEntry(dateEntry, recipeToRemove)
-{
-	for (var cnt = 0; cnt < dateEntry.recipes.length; cnt++)
-	{
-		var recipe = dateEntry.recipes[cnt];
-
-		if (recipe === recipeToRemove)
-		{
-			dateEntry.recipes.splice(cnt, 1);
-			break;
-		}
-	}
-
-	showLoader();
-	Engine.updateDateEntry(dateEntry, hideLoader);
-}
-
-function onRecipeSearchDownPressed()
-{
-	var suggestionsDiv = $("#recipeSuggestions");
-	var currentSuggestion = suggestionsDiv.find(".recipeSuggestionHover");
-
-	var nextSuggestion = null;
-	if (currentSuggestion.length === 0 || currentSuggestion.next().length === 0)
-	{
-		nextSuggestion = suggestionsDiv.find(":first-child");
-	}
-	else
-	{
-		nextSuggestion = currentSuggestion.next();
-	}
-
-	if (currentSuggestion.length !== 0)
-		currentSuggestion.removeClass("recipeSuggestionHover");
-
-	nextSuggestion.focus();
-	nextSuggestion.addClass("recipeSuggestionHover");
-}
-
-function onRecipeSearchUpPressed()
-{
-	var suggestionsDiv = $("#recipeSuggestions");
-	var currentSuggestion = suggestionsDiv.find(".recipeSuggestionHover");
-
-	if (currentSuggestion.length === 0)
-		return;
-
-	var prevSuggestion = null;
-	if (currentSuggestion.prev().length === 0)
-	{
-		prevSuggestion = suggestionsDiv.find(":last-child");
-	}
-	else
-	{
-		prevSuggestion = currentSuggestion.prev();
-	}
-
-	if (currentSuggestion.length !== 0)
-		currentSuggestion.removeClass("recipeSuggestionHover");
-
-	prevSuggestion.focus();
-	prevSuggestion.addClass("recipeSuggestionHover");
-}
-
-function onAddRecipeInputChanged(addRecipeInput)
-{
-	var searchText = addRecipeInput.val();
-
-	if (searchText === "")
-	{
-		$("#recipeSuggestions").empty();
-		return;
-	}
-
-	var results = Engine.getRecipeSuggestions(searchText);
-	showRecipeSuggestions(addRecipeInput, results);
-}
-
-function showRecipeSuggestions(addRecipeInput, results)
-{
-	var recipeSuggestions = $("#recipeSuggestions");
-
-	var inputPos = addRecipeInput.position();
-	recipeSuggestions.css("top", inputPos.top + addRecipeInput.outerHeight() + 1);
-	recipeSuggestions.css("left", inputPos.left);
-	recipeSuggestions.css("width", addRecipeInput.outerWidth() - 2);
-
-	recipeSuggestions.show();
-	recipeSuggestions.empty();
-
-	var searchText = addRecipeInput.val();
-
-	var customRecipe = new Recipe();
-	customRecipe.name = searchText;
-	customRecipe.id = 0;
-
-	addRecipeSuggestion(recipeSuggestions, customRecipe);
-
-	var size = results.recipes.length;
-	for (var cnt = 0; cnt < size; cnt++)
-	{
-		var recipe = results.recipes[cnt];
-		console.log(cnt + " - " + recipe.name);
-
-		addRecipeSuggestion(recipeSuggestions, recipe);
-	}
-}
-
-function addRecipeSuggestion(recipeSuggestionsDiv, recipe)
-{
-	var recipeSuggestionDiv = $("<div class='recipeSuggestion'>" + recipe.name + "</div>");
-
-	if (recipe.id === 0)
-		recipeSuggestionDiv.addClass("recipeSuggestionHover");
-
-	recipeSuggestionDiv.on("click",
-		function(event)
-		{
-			$("#recipeSearch").val(recipe.name);
-			$("#recipeSearch").data("recipeId", recipe.id);
-
-			recipeSuggestionsDiv.hide();
-			recipeSuggestionsDiv.children().removeClass("recipeSuggestionHover");
-
-			$("#recipeSearch").focus();
-
-			event.stopPropagation();
-		});
-
-	recipeSuggestionDiv.hover(
-		function()
-       	{ 
-       		$("#recipeSuggestions").children().removeClass("recipeSuggestionHover");
-			$(this).addClass("recipeSuggestionHover");
-		},
-		function()
-		{ 
-			$(this).removeClass("recipeSuggestionHover");
-		});
-
-	recipeSuggestionsDiv.append(recipeSuggestionDiv);
-}
-
-function getDayOfWeek(day, month, year)
-{
-	var date = new Date(year, month, day, 1, 1, 1, 1);
-	var weekDay = date.getDay();
-
-	if (weekDay === 0)
-		weekDay = 7;
-
-	return weekDay;
 }
 
 function showSearchResults(results, clearResults)
@@ -1245,22 +547,22 @@ function showSearchResults(results, clearResults)
 
 	if (results.books)
 	{
-		addResultsSection("Books", RESULT_TYPE_BOOK, results.books);
+		addResultsSection("Books", Defines.RESULT_TYPE_BOOK, results.books);
 	}
 
 	if (results.sections)
 	{
-		addResultsSection("Sections", RESULT_TYPE_SECTION, results.sections);
+		addResultsSection("Sections", Defines.RESULT_TYPE_SECTION, results.sections);
 	}
 
 	if (results.recipes)
 	{
-		addResultsSection("Recipes", RESULT_TYPE_RECIPE, results.recipes);
+		addResultsSection("Recipes", Defines.RESULT_TYPE_RECIPE, results.recipes);
 	}
 
 	if (results.tags)
 	{
-		addResultsSection("Tags", RESULT_TYPE_TAG, results.tags);
+		addResultsSection("Tags", Defines.RESULT_TYPE_TAG, results.tags);
 	}
 
 	showLoadingView(false);
@@ -1305,19 +607,19 @@ function addResults(sectionDiv, type, results)
 {
 	switch (type)
 	{
-		case RESULT_TYPE_BOOK:
+		case Defines.RESULT_TYPE_BOOK:
 			addBookResults(sectionDiv, results);
 			return;
 
-		case RESULT_TYPE_SECTION:
+		case Defines.RESULT_TYPE_SECTION:
 			addSectionResults(sectionDiv, results);
 			return;
 
-		case RESULT_TYPE_RECIPE:
+		case Defines.RESULT_TYPE_RECIPE:
 			addRecipeResults(sectionDiv, results);
 			return;
 
-		case RESULT_TYPE_TAG:
+		case Defines.RESULT_TYPE_TAG:
 			addTagResults(sectionDiv, results);
 			return;
 	}
@@ -1333,7 +635,7 @@ function addBookResults(sectionDiv, entries)
 	sectionAdd.on("click",
 		function(e)
 		{
-			onAddClick(RESULT_TYPE_BOOK);
+			onAddClick(Defines.RESULT_TYPE_BOOK);
 			e.stopPropagation();
 		});
 
@@ -1346,7 +648,7 @@ function addBookResults(sectionDiv, entries)
 		if (book.id === 0)
 			entryDiv.addClass("addNewEntry");
 
-		addResultEntry(sectionDiv, RESULT_TYPE_BOOK, book, entryDiv);
+		addResultEntry(sectionDiv, Defines.RESULT_TYPE_BOOK, book, entryDiv);
 	}
 }
 
@@ -1369,7 +671,7 @@ function addSectionResults(sectionDiv, sectionGroups)
 		sectionAdd.on("click",
 			function(e)
 			{
-				onAddClick(RESULT_TYPE_SECTION, sectionGroup.bookId);
+				onAddClick(Defines.RESULT_TYPE_SECTION, sectionGroup.bookId);
 				e.stopPropagation();
 			});
 	}
@@ -1393,7 +695,7 @@ function onAddSectionResultPathDone(sectionDiv, sectionGroup)
 		if (section.id === 0)
 			entryDiv.addClass("addNewEntry");
 
-		addResultEntry(sectionDiv, RESULT_TYPE_SECTION, section, entryDiv);
+		addResultEntry(sectionDiv, Defines.RESULT_TYPE_SECTION, section, entryDiv);
 	}	
 }
 
@@ -1407,7 +709,7 @@ function addSectionResultPath(sectionDiv, sectionGroup, onAddSectionResultPathDo
 	bookPathDiv.on("click",
 		function ()
 		{
-			onSearchResultClick(RESULT_TYPE_BOOK, book.id);
+			onSearchResultClick(Defines.RESULT_TYPE_BOOK, book.id);
 		});
 
 	resultPathDiv.append(bookPathDiv);
@@ -1435,7 +737,7 @@ function addRecipeResults(sectionDiv, recipeGroups)
 		sectionAdd.on("click",
 			function(e)
 			{
-				onAddClick(RESULT_TYPE_RECIPE, recipeGroup.sectionId);
+				onAddClick(Defines.RESULT_TYPE_RECIPE, recipeGroup.sectionId);
 				e.stopPropagation();
 			});
 	}
@@ -1473,7 +775,7 @@ function addRecipeResult(sectionDiv, recipe)
 		entryDiv.data("rating", recipe.rating);
 	}
 
-	addResultEntry(sectionDiv, RESULT_TYPE_RECIPE, recipe, entryDiv);
+	addResultEntry(sectionDiv, Defines.RESULT_TYPE_RECIPE, recipe, entryDiv);
 }
 
 function onAddRecipeResultPathDone(sectionDiv, recipeGroup)
@@ -1499,14 +801,14 @@ function addRecipeResultPath(sectionDiv, recipeGroup, onAddRecipeResultPathDone)
 	bookPathDiv.on("click",
 		function ()
 		{
-			onSearchResultClick(RESULT_TYPE_BOOK, book.id);
+			onSearchResultClick(Defines.RESULT_TYPE_BOOK, book.id);
 		});
 
 	var sectionPathDiv = $("<div class='resultSubPath'>Section: " + section.name + "</div>");
 	sectionPathDiv.on("click",
 		function ()
 		{
-			onSearchResultClick(RESULT_TYPE_SECTION, section.id);
+			onSearchResultClick(Defines.RESULT_TYPE_SECTION, section.id);
 		});
 
 	resultPathDiv.append(bookPathDiv);
@@ -1527,7 +829,7 @@ function addTagResults(sectionDiv, entries)
 	sectionAdd.on("click",
 		function(e)
 		{
-			onAddClick(RESULT_TYPE_TAG);
+			onAddClick(Defines.RESULT_TYPE_TAG);
 			e.stopPropagation();
 		});
 
@@ -1537,7 +839,7 @@ function addTagResults(sectionDiv, entries)
 		var tag = entries[cnt];
 		var entryDiv = $("<div class='resultEntry'>" + tag.name + "</div>");
 
-		addResultEntry(sectionDiv, RESULT_TYPE_TAG, tag, entryDiv);
+		addResultEntry(sectionDiv, Defines.RESULT_TYPE_TAG, tag, entryDiv);
 	}
 }
 
@@ -1701,7 +1003,7 @@ function showStarRating(recipeId, parent, setNewRating, initialRating)
 
 function addStarRating(resultDiv, type, id)
 {
-	if (type != RESULT_TYPE_RECIPE)
+	if (type != Defines.RESULT_TYPE_RECIPE)
 		return;
 
     var entryDiv = resultDiv.children(".resultEntry");
@@ -1730,19 +1032,19 @@ function onSearchResultClick(type, id)
 {
 	switch (type)
 	{
-		case RESULT_TYPE_BOOK:
+		case Defines.RESULT_TYPE_BOOK:
 			showBookSections(id);
 			return;
 
-		case RESULT_TYPE_SECTION:
+		case Defines.RESULT_TYPE_SECTION:
 			showSectionRecipes(id);
 			return;
 
-		case RESULT_TYPE_RECIPE:
+		case Defines.RESULT_TYPE_RECIPE:
 			showRecipe(id);
 			return;
 
-		case RESULT_TYPE_TAG:
+		case Defines.RESULT_TYPE_TAG:
 			showTagRecipes(id);
 			return;
 	}
@@ -1842,7 +1144,7 @@ function showRecipe(id, parentId)
 	{
 		isNewEntry = true;
 
-		recipe = new Recipe();
+		recipe = new Defines.Recipe();
 
 		recipe.id = id;
 		recipe.sectionId = parentId;
@@ -2015,7 +1317,7 @@ function showSection(id, parentId)
 	{
 		isNewEntry = true;
 
-		section = new Section();
+		section = new Defines.Section();
 		section.id = id;
 		section.bookId = parentId;
 
@@ -2146,7 +1448,7 @@ function showBook(id)
 	{
 		isNewEntry = true;
 
-		book = new Book();
+		book = new Defines.Book();
 		book.id = id;
 
 		onBookEditClick();
@@ -2223,19 +1525,19 @@ function onEditClick(type, id)
 {
 	switch (type)
 	{
-		case RESULT_TYPE_RECIPE:
+		case Defines.RESULT_TYPE_RECIPE:
 			showRecipe(id);
 			return;
 
-		case RESULT_TYPE_SECTION:
+		case Defines.RESULT_TYPE_SECTION:
 			showSection(id);
 			return;
 
-		case RESULT_TYPE_BOOK:
+		case Defines.RESULT_TYPE_BOOK:
 			showBook(id);
 			return;
 
-		case RESULT_TYPE_TAG:
+		case Defines.RESULT_TYPE_TAG:
 			showTag(id);
 			return;
 	}
@@ -2252,19 +1554,19 @@ function onAddClick(type, parentId)
 
 	switch (type)
 	{
-		case RESULT_TYPE_RECIPE:
+		case Defines.RESULT_TYPE_RECIPE:
 			showRecipe(id, parentId);
 			return;
 
-		case RESULT_TYPE_SECTION:
+		case Defines.RESULT_TYPE_SECTION:
 			showSection(id, parentId);
 			return;
 
-		case RESULT_TYPE_BOOK:
+		case Defines.RESULT_TYPE_BOOK:
 			showBook(id);
 			return;
 
-		case RESULT_TYPE_TAG:
+		case Defines.RESULT_TYPE_TAG:
 			showTag(id);
 			return;
 	}
@@ -2288,7 +1590,7 @@ function showTag(id)
 	{
 		isNewEntry = true;
 
-		tag = new Tag();
+		tag = new Defines.Tag();
 		tag.id = id;
 
 		onTagEditClick();
@@ -2436,17 +1738,8 @@ function hideSplash()
 	$("#splash").fadeOut();
 }
 
-function syncCalendar()
-{
-	var month = _currDate.getMonth();
-	var year = _currDate.getFullYear();
-
-	showLoader();
-
-	Engine.syncCalendar(month, year,
-		function(error)
-		{
-			hideLoader();
-		}
-	);
-}
+exports.showDialog = showDialog;
+exports.showLoader = showLoader;
+exports.hideLoader = hideLoader;
+exports.showRecipe = showRecipe;
+exports.start = start;

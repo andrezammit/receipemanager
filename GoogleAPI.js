@@ -171,7 +171,7 @@ function initCalendar(callback)
 
             if (calendarId === null)
             {
-                createNewCalenadar(callback);
+                createNewCalendar(callback);
                 return;
             }
 
@@ -184,7 +184,7 @@ function initCalendar(callback)
     );
 }
 
-function createNewGoogleCalenadar(callback)
+function createNewCalendar(callback)
 {
     var newCalendar =
         {
@@ -267,7 +267,7 @@ function getCalendarEvents(dateArray, callback)
         {
             if (error)
             {
-                console.log('Failed to get Google Calendar events for ' + date + '. ' + error);
+                console.log('Failed to get Google Calendar events for ' + dateStart + '. ' + error);
                 return;
             }
 
@@ -283,7 +283,7 @@ function createCalendarEvent(event, callback)
             calendarId: _calendarId,
             resource: event
         },
-        function (error, response)
+        function (error)
         {
             if (error)
                 console.log('Failed to add Google Calendar event. ' + error);
@@ -302,7 +302,7 @@ function deleteCalendarEvent(event, callback)
             calendarId: _calendarId,
             eventId: event.id
         },
-        function (error, response)
+        function (error)
         {
             if (error)
                 console.log('Failed to delete Google Calendar event. ' + error);

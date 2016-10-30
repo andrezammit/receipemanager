@@ -3,6 +3,8 @@ const { BrowserWindow } = require('electron').remote;
 var fs = require('fs');
 var googleAuth = require('google-auth-library');
 
+var Defines = require('./Defines.js');
+
 var _clientId = "13277472194-s5rm0emfoq5fcfmqqlncjbejb5fhp42n.apps.googleusercontent.com";
 var _secret = "fBAQnEagqKhO0AUlXyEx6S26";
 
@@ -15,7 +17,7 @@ var _token = null;
 
 function checkAuth(callback) 
 {
-    fs.readFile(_tokenPath,
+    fs.readFile(Defines.getTokenPath(),
         function (error, token) 
         {
             if (error) 
@@ -107,7 +109,7 @@ function generateAuthToken(authCode, callback)
 
 function storeAuthToken(token)
 {
-    fs.writeFile(_tokenPath, JSON.stringify(token),
+    fs.writeFile(Defines.getTokenPath(), JSON.stringify(token),
         function (error)
         {
             if (error !== null)
@@ -116,7 +118,7 @@ function storeAuthToken(token)
                 return;
             }
 
-            console.log("Google authentication token stored to " + _tokenPath);
+            console.log("Google authentication token stored to " + Defines.getTokenPath());
         });
 }
 

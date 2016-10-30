@@ -1,9 +1,11 @@
 var fs = require('fs');
 var zlib = require('zlib');
 
+var Defines = require('./Defines.js');
 var GoogleAPI = require('./GoogleAPI');
 
 var _dbVersion = 0;
+var _db = new Defines.Database();
 
 var _currResults =
     {
@@ -16,7 +18,7 @@ function setupEnvironment(callback)
 {
     try
     {
-        fs.mkdirSync(_tokenDir);
+        fs.mkdirSync(Defines.getTokenDir());
     }
     catch (error)
     {
@@ -29,7 +31,7 @@ function setupEnvironment(callback)
 
     try
     {
-        fs.mkdirSync(_localDataDir);
+        fs.mkdirSync(Defines.getLocalDataDir());
     }
     catch (error)
     {
@@ -47,14 +49,15 @@ function loadLocalDatabase(callback)
 {
     try
     {
-        _dbVersion = parseInt(fs.readFileSync(_dbVersionPath, 'utf-8'));
+        var fileData = fs.readFileSync(Defines.getDbVersionPath(), 'utf-8');
+        _dbVersion = parseInt(fileData);
     }
     catch (error)
     {
         _dbVersion = 0;
     }
 
-    fs.readFile(_localDbPath,
+    fs.readFile(Defines.getLocalDbPath(),
         function (error, data)
         {
             if (error !== null)
@@ -182,7 +185,7 @@ function updateLocalDatabaseVersion(newDbVersion)
 {
     try
     {
-        fs.writeFileSync(_dbVersionPath, newDbVersion);
+        fs.writeFileSync(Defines.getDbVersionPath(), newDbVersion);
     }
     catch (error) 
     {
@@ -197,7 +200,7 @@ function updateLocalDatabase(jsonData, newDbVersion, callback)
 {
     callback = callback || null;
 
-    fs.writeFile(_localDbPath, jsonData,
+    fs.writeFile(Defines.getLocalDbPath(), jsonData,
         function (error)
         {
             if (error !== null)
@@ -407,13 +410,13 @@ function updateDateEntryInGoogleCalendar(dateEntry, callback)
         }
     }
 
-    function eventCreated(error, event)
+    function eventCreated()
     {
         eventsToCreate--;
         checkIfReady();
     }
 
-    function eventDeleted(error)
+    function eventDeleted()
     {
         eventsToDelete--;
         checkIfReady();
@@ -521,23 +524,23 @@ function getObjectById(id, type)
 
     switch (type)
     {
-        case RESULT_TYPE_RECIPE:
+        case Defines.RESULT_TYPE_RECIPE:
             array = _db.recipes;
             break;
 
-        case RESULT_TYPE_SECTION:
+        case Defines.RESULT_TYPE_SECTION:
             array = _db.sections;
             break;
 
-        case RESULT_TYPE_BOOK:
+        case Defines.RESULT_TYPE_BOOK:
             array = _db.books;
             break;
 
-        case RESULT_TYPE_TAG:
+        case Defines.RESULT_TYPE_TAG:
             array = _db.tags;
             break;
 
-        case RESULT_TYPE_DATEENTRY:
+        case Defines.RESULT_TYPE_DATEENTRY:
             array = _db.calendar;
             break;
     }
@@ -580,7 +583,7 @@ function getAllTags()
 
     if (results.tags.length === 0)
     {
-        var tag = new Tag();
+        var tag = new Defines.Tag();
         tag.name = "Add tag...";
 
         results.tags.push(tag);
@@ -597,7 +600,7 @@ function getAllBooks()
 
     if (results.books.length === 0)
     {
-        var book = new Book();
+        var book = new Defines.Book();
         book.name = "Add book...";
 
         results.books.push(book);
@@ -608,7 +611,7 @@ function getAllBooks()
 
 function getBookSections(id)
 {
-    var book = getObjectById(id, RESULT_TYPE_BOOK);
+    var book = getObjectById(id, Defines.RESULT_TYPE_BOOK);
     var sections = [];
 
     var section = null;
@@ -617,7 +620,7 @@ function getBookSections(id)
     for (var cnt = 0; cnt < size; cnt++)
     {
         var sectionID = book.sectionIds[cnt];
-        section = getObjectById(sectionID, RESULT_TYPE_SECTION);
+        section = getObjectById(sectionID, Defines.RESULT_TYPE_SECTION);
 
         if (section !== null)
             sections.push(section);
@@ -625,7 +628,7 @@ function getBookSections(id)
 
     if (sections.length === 0)
     {
-        section = new Section();
+        section = new Defines.Section();
 
         section.bookId = id;
         section.name = "Add section...";
@@ -648,7 +651,7 @@ function getBookSections(id)
 
 function getSectionRecipes(id)
 {
-    var section = getObjectById(id, RESULT_TYPE_SECTION);
+    var section = getObjectById(id, Defines.RESULT_TYPE_SECTION);
     var recipes = [];
 
     var recipe = null;
@@ -657,7 +660,7 @@ function getSectionRecipes(id)
     for (var cnt = 0; cnt < size; cnt++)
     {
         var recipeID = section.recipeIds[cnt];
-        recipe = getObjectById(recipeID, RESULT_TYPE_RECIPE);
+        recipe = getObjectById(recipeID, Defines.RESULT_TYPE_RECIPE);
 
         if (recipe !== null)
             recipes.push(recipe);
@@ -665,7 +668,7 @@ function getSectionRecipes(id)
 
     if (recipes.length === 0)
     {
-        recipe = new Recipe();
+        recipe = new Defines.Recipe();
 
         recipe.sectionId = id;
         recipe.name = "Add recipe...";
@@ -688,12 +691,12 @@ function getSectionRecipes(id)
 
 function updateDateEntry(updatedDateEntry)
 {
-    var dateEntry = getObjectById(updatedDateEntry.id, RESULT_TYPE_DATEENTRY);
+    var dateEntry = getObjectById(updatedDateEntry.id, Defines.RESULT_TYPE_DATEENTRY);
     var isNewDateEntry = dateEntry === null;
 
     if (isNewDateEntry === true)
     {
-        dateEntry = new DateEntry();
+        dateEntry = new Defines.DateEntry();
         _db.calendar.push(dateEntry);
     }
 
@@ -703,14 +706,14 @@ function updateDateEntry(updatedDateEntry)
 
 function getTagRecipes(id, results)
 {
-    var tag = getObjectById(id, RESULT_TYPE_TAG);
+    var tag = getObjectById(id, Defines.RESULT_TYPE_TAG);
     var recipes = [];
 
     var size = tag.recipeIds.length;
     for (var cnt = 0; cnt < size; cnt++)
     {
         var recipeID = tag.recipeIds[cnt];
-        var recipe = getObjectById(recipeID, RESULT_TYPE_RECIPE);
+        var recipe = getObjectById(recipeID, Defines.RESULT_TYPE_RECIPE);
 
         if (recipe !== null)
         {
@@ -933,12 +936,12 @@ function getRecipeSuggestions(searchText)
 
 function updateBook(id, updatedBook)
 {
-    var book = getObjectById(id, RESULT_TYPE_BOOK);
+    var book = getObjectById(id, Defines.RESULT_TYPE_BOOK);
     var isNewBook = book === null;
 
     if (isNewBook === true)
     {
-        book = new Book();
+        book = new Defines.Book();
         _db.books.push(book);
     }
 
@@ -947,17 +950,17 @@ function updateBook(id, updatedBook)
 
 function updateRecipe(id, updatedRecipe)
 {
-    var recipe = getObjectById(id, RESULT_TYPE_RECIPE);
+    var recipe = getObjectById(id, Defines.RESULT_TYPE_RECIPE);
     var isNewRecipe = recipe === null;
 
     if (isNewRecipe === true)
-        recipe = new Recipe();
+        recipe = new Defines.Recipe();
 
     copyObject(recipe, updatedRecipe);
 
     if (isNewRecipe === true)
     {
-        var section = getObjectById(recipe.sectionId, RESULT_TYPE_SECTION);
+        var section = getObjectById(recipe.sectionId, Defines.RESULT_TYPE_SECTION);
 
         section.recipeIds.push(id);
         _db.recipes.push(recipe);
@@ -968,12 +971,12 @@ function updateRecipe(id, updatedRecipe)
 
 function updateTag(id, updatedTag)
 {
-    var tag = getObjectById(id, RESULT_TYPE_TAG);
+    var tag = getObjectById(id, Defines.RESULT_TYPE_TAG);
     var isNewTag = tag === null;
 
     if (isNewTag === true)
     {
-        tag = new Tag();
+        tag = new Defines.Tag();
         _db.tags.push(tag);
     }
 
@@ -982,17 +985,17 @@ function updateTag(id, updatedTag)
 
 function updateSection(id, updatedSection, tagIdDiff)
 {
-    var section = getObjectById(id, RESULT_TYPE_SECTION);
+    var section = getObjectById(id, Defines.RESULT_TYPE_SECTION);
     var isNewSection = section === null;
 
     if (isNewSection === true)
-        section = new Section();
+        section = new Defines.Section();
 
     copyObject(section, updatedSection);
 
     if (isNewSection === true)
     {
-        var book = getObjectById(section.bookId, RESULT_TYPE_BOOK);
+        var book = getObjectById(section.bookId, Defines.RESULT_TYPE_BOOK);
 
         book.sectionIds.push(id);
         _db.sections.push(section);
@@ -1002,7 +1005,7 @@ function updateSection(id, updatedSection, tagIdDiff)
     for (var cnt = 0; cnt < size; cnt++)
     {
         var recipeId = section.recipeIds[cnt];
-        var recipe = getObjectById(recipeId, RESULT_TYPE_RECIPE);
+        var recipe = getObjectById(recipeId, Defines.RESULT_TYPE_RECIPE);
 
         var tagId = null;
         var index = null;
@@ -1041,7 +1044,7 @@ function copyObject(firstObj, secondObj)
 
 function isSectionTag(sectionId, tagId)
 {
-    var section = getObjectById(sectionId, RESULT_TYPE_SECTION);
+    var section = getObjectById(sectionId, Defines.RESULT_TYPE_SECTION);
 
     if (section.tagIds.indexOf(tagId) == -1)
         return false;
@@ -1437,19 +1440,19 @@ function deleteObject(id, type, removeFromParent)
 {
     switch (type)
     {
-        case RESULT_TYPE_RECIPE:
+        case Defines.RESULT_TYPE_RECIPE:
             deleteRecipe(id, removeFromParent);
             break;
 
-        case RESULT_TYPE_SECTION:
+        case Defines.RESULT_TYPE_SECTION:
             deleteSection(id, removeFromParent);
             break;
 
-        case RESULT_TYPE_BOOK:
+        case Defines.RESULT_TYPE_BOOK:
             deleteBook(id);
             break;
 
-        case RESULT_TYPE_TAG:
+        case Defines.RESULT_TYPE_TAG:
             deleteTag(id);
             break;
     }
@@ -1457,7 +1460,7 @@ function deleteObject(id, type, removeFromParent)
 
 function deleteSection(id, removeFromBook)
 {
-    var section = getObjectById(id, RESULT_TYPE_SECTION);
+    var section = getObjectById(id, Defines.RESULT_TYPE_SECTION);
 
     if (section === null)
         return;
@@ -1474,7 +1477,7 @@ function deleteSection(id, removeFromBook)
     if (removeFromBook === true)
     {
         var bookId = section.bookId;
-        var book = getObjectById(bookId, RESULT_TYPE_BOOK);
+        var book = getObjectById(bookId, Defines.RESULT_TYPE_BOOK);
 
         do
         {
@@ -1496,7 +1499,7 @@ function deleteSection(id, removeFromBook)
 
 function deleteBook(id)
 {
-    var book = getObjectById(id, RESULT_TYPE_BOOK);
+    var book = getObjectById(id, Defines.RESULT_TYPE_BOOK);
 
     if (book === null)
         return;
@@ -1516,7 +1519,7 @@ function deleteBook(id)
 
 function deleteTag(id)
 {
-    var tag = getObjectById(id, RESULT_TYPE_TAG);
+    var tag = getObjectById(id, Defines.RESULT_TYPE_TAG);
 
     if (tag === null)
         return;
@@ -1528,7 +1531,7 @@ function deleteTag(id)
     {
         var sectionId = tag.sectionIds[cnt];
 
-        var section = getObjectById(sectionId, RESULT_TYPE_SECTION);
+        var section = getObjectById(sectionId, Defines.RESULT_TYPE_SECTION);
 
         if (section === null)
             continue;
@@ -1542,7 +1545,7 @@ function deleteTag(id)
     {
         var recipeId = tag.recipeIds[cnt];
 
-        var recipe = getObjectById(recipeId, RESULT_TYPE_RECIPE);
+        var recipe = getObjectById(recipeId, Defines.RESULT_TYPE_RECIPE);
 
         if (recipe === null)
             continue;
@@ -1559,7 +1562,7 @@ function deleteTag(id)
 
 function deleteRecipe(id, removeFromSection)
 {
-    var recipe = getObjectById(id, RESULT_TYPE_RECIPE);
+    var recipe = getObjectById(id, Defines.RESULT_TYPE_RECIPE);
 
     if (recipe === null)
         return;
@@ -1572,7 +1575,7 @@ function deleteRecipe(id, removeFromSection)
     if (removeFromSection === true)
     {
         var sectionId = recipe.sectionId;
-        var section = getObjectById(sectionId, RESULT_TYPE_SECTION);
+        var section = getObjectById(sectionId, Defines.RESULT_TYPE_SECTION);
 
         do
         {
@@ -1598,7 +1601,7 @@ function syncCalendar(month, year, callback)
 
     var dateEntriesPending = 0;
 
-    function dateEntrySynced(error)
+    function dateEntrySynced()
     {
         dateEntriesPending--;
 
@@ -1615,7 +1618,7 @@ function syncCalendar(month, year, callback)
     for (var cnt = 1; cnt < 32; cnt++)
     {
         var id = cnt + '-' + month + '-' + year;
-        var dateEntry = getObjectById(id, RESULT_TYPE_DATEENTRY);
+        var dateEntry = getObjectById(id, Defines.RESULT_TYPE_DATEENTRY);
 
         if (dateEntry === null)
             continue;
@@ -1667,22 +1670,22 @@ function loadDatabase(callback)
 
 function getRecipeById(id)
 {
-    return getObjectById(id, RESULT_TYPE_RECIPE);
+    return getObjectById(id, Defines.RESULT_TYPE_RECIPE);
 }
 
 function getDateEntryById(id)
 {
-    return getObjectById(id, RESULT_TYPE_DATEENTRY);
+    return getObjectById(id, Defines.RESULT_TYPE_DATEENTRY);
 }
 
 function getBookById(id)
 {
-    return getObjectById(id, RESULT_TYPE_BOOK);
+    return getObjectById(id, Defines.RESULT_TYPE_BOOK);
 }
 
 function getSectionById(id)
 {
-    return getObjectById(id, RESULT_TYPE_SECTION);
+    return getObjectById(id, Defines.RESULT_TYPE_SECTION);
 }
 
 exports.setupEnvironment = setupEnvironment;

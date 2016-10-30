@@ -4,10 +4,12 @@ const {app, BrowserWindow} = require('electron');
 // be closed automatically when the JavaScript object is garbage collected.
 let win;
 
-function createWindow () {
+function createWindow () 
+{
   // Create the browser window.
   win = new BrowserWindow(
     {
+      show: false,
       title: 'Recipe Manager',
       width: 1300, 
       height: 800,
@@ -16,13 +18,18 @@ function createWindow () {
       icon: 'icon-128.png'
     });
 
-  win.setMenu(null);
+  //win.setMenu(null);
 
   // and load the index.html of the app.
-  win.loadURL(`file://${__dirname}/index.html`);
+  win.loadURL(`file://${__dirname}/index.html`, { });
+
+  win.once('ready-to-show', () => 
+  {
+    win.show();
+  });
 
   // Open the DevTools.
-  //win.webContents.openDevTools();
+  win.webContents.openDevTools();
 
   // Emitted when the window is closed.
   win.on('closed', () => {

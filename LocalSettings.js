@@ -1,11 +1,11 @@
 var fs = require('fs');
-var path = require('path');
 
-var _settings = new Settings();
+var Defines = require('./Defines');
+var _settings = new Defines.Settings();
 
 function load(callback)
 {
-    fs.readFile(_localSettingsPath,
+    fs.readFile(Defines.getLocalSettingsPath(),
         function (error, jsonSettings)
         {
             if (error !== null)
@@ -23,7 +23,7 @@ function save(callback)
 {
     var jsonSettings = JSON.stringify(_settings);
 
-    fs.writeFile(_localSettingsPath, jsonSettings,
+    fs.writeFile(Defines.getLocalSettingsPath(), jsonSettings,
         function (error)
         {
             callback(error);
