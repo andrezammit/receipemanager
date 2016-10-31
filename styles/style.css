@@ -52,7 +52,7 @@ body
 
     background-size: 119%;
     background-position: center;
-    background-image: url(images/food_4.jpg);
+    background-image: url(../images/food_4.jpg);
 }
 
 #logo
@@ -1043,24 +1043,24 @@ button
 
 .starFull
 {
-	background-image: url("images/star_full.png");
+	background-image: url(../images/star_full.png);
 	background-size: 18px 18px;
 }
 
 #sidebar_background
 {
-    background-image: url(images/food_pattern.jpg);
+    background-image: url(../images/food_pattern.jpg);
 }
 
 #calendar_background
 {
-    background-image: url(images/food_3.jpg);
+    background-image: url(../images/food_3.jpg);
     background-size: 100%;
 }
 
 #header_background
 {
-    background-image: url(images/pattern.jpg);
+    background-image: url(../images/pattern.jpg);
 
     opacity: 0.2;
 }
