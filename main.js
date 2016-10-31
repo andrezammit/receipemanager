@@ -15,7 +15,7 @@ function createWindow ()
       height: 800,
       minWidth: 1150,
       minHeight: 780,
-      icon: 'icon-128.png'
+      icon: 'icons/icon-128.png'
     });
 
   //win.setMenu(null);
