@@ -1,6 +1,8 @@
 /* globals document */
 
-var RecipeManager = require('./RecipeManager');
+require('app-module-path').addPath(__dirname + '/modules/');
+
+var RecipeManager = require('RecipeManager');
 
 $(document).ready(
     function ()
