@@ -1,20 +1,23 @@
 {
-  "name": "recipe-manager",
-  "version": "0.4.0",
-  "description": "Recipe Manager",
-  "main": "main.js",
-  "license": "CC0-1.0",
-  "repository": {
-    "type": "git",
-    "url": "git+https://andrezammit@bitbucket.org/andrezammit/recipe-manager.git"
-  },
-  "devDependencies": {
-    "electron": "^1.3.4",
-    "electron-packager": "^8.2.0"
-  },
-  "dependencies": {
-    "app-module-path": "^2.1.0",
-    "google-auth-library": "^0.9.8",
-    "googleapis": "^12.4.0"
-  }
+	"devDependencies": 
+	{
+		"electron": "^1.3.4",
+		"electron-builder": "^7.15.2",
+		"electron-packager": "^8.2.0"
+	},
+	"dependencies": 
+	{
+		"app-module-path": "^2.1.0",
+		"google-auth-library": "^0.9.8",
+		"googleapis": "^12.4.0"
+	},
+	"build": 
+	{
+		"asar": false
+	},
+	"scripts": 
+	{
+		"pack": "build --dir",
+		"dist": "build"
+	}
 }

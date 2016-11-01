@@ -1,0 +1,17 @@
+{
+	"name": "recipe-manager",
+	"version": "0.4.0",
+	"description": "Recipe Manager",
+	"author": "André Zammit",
+	"main": "./main.js",
+	"license": "CC0-1.0",
+	"repository": {
+		"type": "git",
+		"url": "git+https://andrezammit@bitbucket.org/andrezammit/recipe-manager.git"
+	},
+	"dependencies": {
+		"app-module-path": "^2.1.0",
+		"google-auth-library": "^0.9.8",
+		"googleapis": "^12.4.0"
+	}
+}

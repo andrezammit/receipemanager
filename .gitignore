@@ -1,3 +1,4 @@
 *.data
 *.credentials
 *node_modules
+*dist
