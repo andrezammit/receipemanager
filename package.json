@@ -1,4 +1,7 @@
 {
+	"name": "recipe-manager",
+	"productName": "Recipe Manager",
+	"version": "0.4.0",
 	"devDependencies": 
 	{
 		"electron": "^1.3.4",
@@ -13,7 +16,11 @@
 	},
 	"build": 
 	{
-		"asar": false
+		"appId": "com.electron.recipe-manager",
+		"win":
+		{
+			"target": "nsis"
+		}
 	},
 	"scripts": 
 	{
