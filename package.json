@@ -2,11 +2,13 @@
 	"name": "recipe-manager",
 	"productName": "Recipe Manager",
 	"version": "0.4.0",
-	"devDependencies": 
-	{
-		"electron": "^1.3.4",
-		"electron-builder": "^7.15.2",
-		"electron-packager": "^8.2.0"
+	"description": "Recipe Manager",
+	"author": "André Zammit",
+	"main": "./main.js",
+	"license": "CC0-1.0",
+	"repository": {
+		"type": "git",
+		"url": "git+https://andrezammit@bitbucket.org/andrezammit/recipe-manager.git"
 	},
 	"dependencies": 
 	{
@@ -14,17 +16,16 @@
 		"google-auth-library": "^0.9.8",
 		"googleapis": "^12.4.0"
 	},
-	"build": 
+	"devDependencies": 
 	{
-		"appId": "com.electron.recipe-manager",
-		"win":
-		{
-			"target": "nsis"
-		}
+		"electron": "^1.3.4",
+		"electron-builder": "^7.15.2",
+		"electron-packager": "^8.2.0"
 	},
 	"scripts": 
 	{
-		"pack": "build --dir",
-		"dist": "build"
+		"start": "electron .",
+		"debug": "electring . --debug",
+		"pack": "electron-packager . --ignore=typings --ignore=.vscode --ignore=.credentials --ignore=jsconfig.json --ignore=.gitignore --ignore=.jshintrc --icon=app/icons/icon.ico --overwrite --out=dist"
 	}
 }
