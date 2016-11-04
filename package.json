@@ -26,6 +26,6 @@
 	{
 		"start": "electron .",
 		"debug": "electring . --debug",
-		"pack": "electron-packager . --ignore=typings --ignore=.vscode --ignore=.credentials --ignore=jsconfig.json --ignore=.gitignore --ignore=.jshintrc --icon=app/icons/icon.ico --overwrite --out=dist"
+		"pack": "electron-packager . --ignore=\"(\\icons|\\.gitignore|\\.jshintrc|\\.vscode|\\.data|\\.credentials|jsconfig.json|typings)\" --icon=icons/icon.ico --overwrite --out=dist"
 	}
 }
