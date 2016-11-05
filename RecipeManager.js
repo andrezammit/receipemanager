@@ -26,87 +26,74 @@ var _currentResultsType = -1;
 var _currentResultsDiv = null;
 
 $(document).ready(
-	function()
-	{
+	function () {
 		loadDatabase(
-			function()
-			{
+			function () {
 				_currDate = getCurrentDate();
 
 				fillCalendarView(_currDate);
 				fillTagContainers();
 			});
-	    	
-	    	setHandlers();
+
+		setHandlers();
 	});
 
-function setHandlers()
-{
+function setHandlers() {
 	$("#searchBox")
 		.on("input",
-			function()
-			{
-	    		onSearchBoxChanged();
-			})
+		function () {
+			onSearchBoxChanged();
+		})
 		.on("click",
-			function(event)
-			{
-	    		event.stopPropagation();
-			})
+		function (event) {
+			event.stopPropagation();
+		})
 		.keydown(
-			function(event)
-			{
-				switch (event.keyCode)
-				{
-					case KEY_ENTER:
-						onSearchBoxEnterPressed();
-						break;
+		function (event) {
+			switch (event.keyCode) {
+				case KEY_ENTER:
+					onSearchBoxEnterPressed();
+					break;
 
-					case KEY_UP:
-						onSearchBoxUpPressed();
-						break;
+				case KEY_UP:
+					onSearchBoxUpPressed();
+					break;
 
-					case KEY_DOWN:
-						onSearchBoxDownPressed();
-						break;
-				}
-			})
+				case KEY_DOWN:
+					onSearchBoxDownPressed();
+					break;
+			}
+		})
 		.focusin(
-			function(event)
-			{
-				$("#suggestions").show();
-				event.stopPropagation();
-			});
+		function (event) {
+			$("#suggestions").show();
+			event.stopPropagation();
+		});
 
 	$("#suggestions").focusout(
-		function()
-		{
+		function () {
 			$("#suggestions").hide();
 		});
 
 	$("#header").on("click",
-		function()
-		{
+		function () {
 			$("#suggestions").hide();
 		});
 
 	$("#container").on("click",
-		function()
-		{
+		function () {
 			$("#suggestions").hide();
 		});
 
 	$("#recipeSuggestions")
-		.on("mouseover", 
-			function()
-			{
-				$("#recipeSuggestions").data("hovered", true);
-			})
+		.on("mouseover",
+		function () {
+			$("#recipeSuggestions").data("hovered", true);
+		})
 		.on("mouseout",
-			function()
-			{
-				$("#recipeSuggestions").data("hovered", false);
-			});
+		function () {
+			$("#recipeSuggestions").data("hovered", false);
+		});
 
 	$("#calendarLink").on("click", onCalendarLinkClick);
 	$("#title").on("click", onTitleClick);
@@ -138,7 +125,7 @@ function setHandlers()
 	tagDlg.find(".btnClose, .closeButton").on("click", onTagCloseClick);
 
 	var dayMenuDlg = $("#dayMenu");
-	
+
 	dayMenuDlg.find(".closeButton").on("click", onDayMenuCloseClick);
 
 	$("#recipeContainer").sortable(
@@ -152,72 +139,65 @@ function setHandlers()
 		});
 
 	$("#dialogContainer").children().draggable(
-		{ 
+		{
 			containment: "#dialogContainer",
 			cursor: "move"
 		});
 
 	$("#content")
-		.on("scroll", 
-			function() 
-			{
-				var contentDiv = $("#content");
+		.on("scroll",
+		function () {
+			var contentDiv = $("#content");
 
-			    var yPos = contentDiv.scrollTop();
-			    var pageHeight = contentDiv.height();
+			var yPos = contentDiv.scrollTop();
+			var pageHeight = contentDiv.height();
 
-			    var limitFromBottom = pageHeight * 0.75;
-				    
-			    if (yPos > limitFromBottom) 
-			    {
-			        chrome.runtime.sendMessage(
-			    	{
-			    		command: "getBunchOfResults",
-			    	}, 
-			    	function(response) 
-				    {
-				    	console.log("Search reply.");
-				    	showSearchResults(response, false);
+			var limitFromBottom = pageHeight * 0.75;
+
+			if (yPos > limitFromBottom) {
+				chrome.runtime.sendMessage(
+					{
+						command: "getBunchOfResults",
+					},
+					function (response) {
+						console.log("Search reply.");
+						showSearchResults(response, false);
 					});
-	    		}
-			});
-	
+			}
+		});
+
 	$(window).on("resize",
-		function()
-		{
+		function () {
 			refreshDayRecipes();
 		});
 
 	$("#dialogContainer").keydown(
-		function(event)
-			{
-				if (event.keyCode !== KEY_ESC)
-					return;
+		function (event) {
+			if (event.keyCode !== KEY_ESC)
+				return;
 
-				var dialog = $("#dialogContainer").find("div:visible:first");
+			var dialog = $("#dialogContainer").find("div:visible:first");
 
-				var btnCancel = dialog.find(".btnCancel");
+			var btnCancel = dialog.find(".btnCancel");
 
-				if (btnCancel.length !== 0 && btnCancel.is(":visible"))
-				{
-					btnCancel.click();
-					return;
-				}
+			if (btnCancel.length !== 0 && btnCancel.is(":visible")) {
+				btnCancel.click();
+				return;
+			}
 
-				dialog.find(".closeButton").click();
-			});
+			dialog.find(".closeButton").click();
+		});
 }
 
-function onRecipeDragStopped(e, ui)
-{
+function onRecipeDragStopped(e, ui) {
 	console.log("drag stopped");
 
 	var nextRecipe = null;
 	var nextRecipeDiv = ui.item.next();
 
 	if (nextRecipeDiv.length === 0)
-        return;
-        
+		return;
+
 	nextRecipe = nextRecipeDiv.data("recipe");
 
 	var recipe = ui.item.data("recipe");
@@ -231,50 +211,43 @@ function onRecipeDragStopped(e, ui)
 	fillDayRecipes(dayDiv);
 }
 
-function moveRecipeInDateEntry(recipeToMove, nextRecipe)
-{
+function moveRecipeInDateEntry(recipeToMove, nextRecipe) {
 	var dayMenuDlg = $("#dayMenu");
 	var dateEntry = dayMenuDlg.data("dateEntry");
 
 	var recipe = null;
 
-	for (var cnt = 0; cnt < dateEntry.recipes.length; cnt++)
-	{
+	for (var cnt = 0; cnt < dateEntry.recipes.length; cnt++) {
 		recipe = dateEntry.recipes[cnt];
 
-		if (recipe === recipeToMove)
-		{
+		if (recipe === recipeToMove) {
 			dateEntry.recipes.splice(cnt, 1);
 			break;
 		}
 	}
 
-	for (cnt = 0; cnt < dateEntry.recipes.length; cnt++)
-	{
+	for (cnt = 0; cnt < dateEntry.recipes.length; cnt++) {
 		recipe = dateEntry.recipes[cnt];
 
-		if (recipe === nextRecipe)
-		{
+		if (recipe === nextRecipe) {
 			dateEntry.recipes.splice(cnt, 0, recipeToMove);
 			break;
 		}
 	}
 
 	chrome.runtime.sendMessage(
-	{
-		command: "updateDateEntry",
-		dateEntry: dateEntry
-	});
+		{
+			command: "updateDateEntry",
+			dateEntry: dateEntry
+		});
 }
 
-function showLoadingView(show)
-{
+function showLoadingView(show) {
 	var resultsDiv = $("#results");
 	var loadingDiv = $("#loading");
 	var calendarDiv = $("#calendar");
 
-	if (show === true)
-	{
+	if (show === true) {
 		resultsDiv.hide();
 		calendarDiv.hide();
 
@@ -287,13 +260,11 @@ function showLoadingView(show)
 	calendarDiv.hide();
 }
 
-function showResultsView(show)
-{	
+function showResultsView(show) {
 	var resultsDiv = $("#results");
 	var calendarDiv = $("#calendar");
 
-	if (show === true)
-	{
+	if (show === true) {
 		resultsDiv.show();
 		calendarDiv.hide();
 
@@ -304,59 +275,61 @@ function showResultsView(show)
 	calendarDiv.show();
 }
 
-function loadDatabase(onLoadDatabaseDone)
-{
+function loadDatabase(onLoadDatabaseDone) {
 	chrome.runtime.sendMessage(
-	{
-		command: "loadDatabase",
-	}, 
-	function() 
-    {
-    	console.log("Database loaded.");
+		{
+			command: "loadDatabase",
+		},
+		function () {
+			console.log("Database loaded.");
 
-    	if (typeof onLoadDatabaseDone != "undefined")
-    		onLoadDatabaseDone();
-	});
+			if (typeof onLoadDatabaseDone != "undefined")
+				onLoadDatabaseDone();
+		});
 }
 
-function importDatabase(data, onImportDatabaseDone)
-{
+function importDatabase(data, onImportDatabaseDone) {
 	chrome.runtime.sendMessage(
-	{
-		command: "importDatabase",
-		data: data
-	}, 
-	function() 
-    {
-    	console.log("Database imported.");
+		{
+			command: "importDatabase",
+			data: data
+		},
+		function () {
+			console.log("Database imported.");
 
-    	if (typeof onImportDatabaseDone != "undefined")
-    		onImportDatabaseDone();
-	});
+			if (typeof onImportDatabaseDone != "undefined")
+				onImportDatabaseDone();
+		});
 }
 
-function saveDatabase(onSaveDatabaseDone)
-{
+function saveDatabase(onSaveDatabaseDone) {
 	chrome.runtime.sendMessage(
-	{
-		command: "saveDatabase"
-	}, 
-	function() 
-    {
-    	console.log("Database saved.");
+		{
+			command: "saveDatabase"
+		},
+		function () {
+			console.log("Database saved.");
 
-    	if (typeof onSaveDatabaseDone != "undefined")
-    		onSaveDatabaseDone();
-	});
+			if (typeof onSaveDatabaseDone != "undefined")
+				onSaveDatabaseDone();
+		});
 }
 
-function onSearchBoxChanged()
-{
+function getDatabaseData(onDatabaseData) {
+	chrome.runtime.sendMessage(
+		{
+			command: "getDatabaseData"
+		},
+		function (data) {
+			onDatabaseData(data);
+		}
+	)
+}
+function onSearchBoxChanged() {
 	var searchBox = $("#searchBox");
 	var searchText = searchBox.val();
 
-	if (searchText === "")
-	{
+	if (searchText === "") {
 		$("#suggestions").empty();
 		return;
 	}
@@ -365,29 +338,24 @@ function onSearchBoxChanged()
 		{
 			command: "getSearchSuggestions",
 			searchText: searchText,
-		}, 
-		function(response) 
-	    {
-	    	showSearchSuggestions(response);
+		},
+		function (response) {
+			showSearchSuggestions(response);
 		});
 }
 
-function addSearchSuggestion(suggestionsDiv, tag)
-{
+function addSearchSuggestion(suggestionsDiv, tag) {
 	var suggestionDiv = $("<div class='suggestion'>#" + tag.name + "</div>");
 
 	suggestionDiv.on("click",
-		function()
-		{
+		function () {
 			var searchText = $("#searchBox").val();
 			var index = searchText.lastIndexOf(",");
 
-			if (index === -1)
-			{
+			if (index === -1) {
 				searchText = "#" + tag.name;
 			}
-			else
-			{
+			else {
 				searchText = searchText.substring(0, index);
 				searchText += ", #" + tag.name;
 			}
@@ -401,27 +369,23 @@ function addSearchSuggestion(suggestionsDiv, tag)
 		});
 
 	suggestionDiv.hover(
-		function()
-       	{ 
-       		$("#suggestions").children().removeClass("suggestionHover");
+		function () {
+			$("#suggestions").children().removeClass("suggestionHover");
 			$(this).addClass("suggestionHover");
 		},
-		function()
-		{ 
+		function () {
 			$(this).removeClass("suggestionHover");
 		});
 
 	suggestionsDiv.append(suggestionDiv);
 }
 
-function showSearchSuggestions(results)
-{
+function showSearchSuggestions(results) {
 	var suggestionsDiv = $("#suggestions");
 	suggestionsDiv.empty();
 
 	var size = results.tags.length;
-	for (var cnt = 0; cnt < size; cnt++)
-	{
+	for (var cnt = 0; cnt < size; cnt++) {
 		var tag = results.tags[cnt];
 		console.log(cnt + " - " + tag.name);
 
@@ -431,12 +395,10 @@ function showSearchSuggestions(results)
 	suggestionsDiv.show();
 }
 
-function onSearchBoxEnterPressed()
-{
+function onSearchBoxEnterPressed() {
 	var suggestion = $("#suggestions").children(".suggestionHover");
 
-	if (suggestion.length !== 0)
-	{
+	if (suggestion.length !== 0) {
 		suggestion.click();
 		return;
 	}
@@ -444,8 +406,7 @@ function onSearchBoxEnterPressed()
 	var searchBox = $("#searchBox");
 	var searchText = searchBox.val();
 
-	if (searchText === "")
-	{
+	if (searchText === "") {
 		showResultsView(false);
 		return;
 	}
@@ -460,28 +421,24 @@ function onSearchBoxEnterPressed()
 		{
 			command: "search",
 			searchText: searchText,
-		}, 
-		function(response) 
-	    {
-	    	console.log("Search reply.");
-	    	showSearchResults(response);
+		},
+		function (response) {
+			console.log("Search reply.");
+			showSearchResults(response);
 		});
 
 	$("#suggestions").hide();
 }
 
-function onSearchBoxDownPressed()
-{
+function onSearchBoxDownPressed() {
 	var suggestionsDiv = $("#suggestions");
 	var currentSuggestion = suggestionsDiv.find(".suggestionHover");
 
 	var nextSuggestion = null;
-	if (currentSuggestion.length === 0 || currentSuggestion.next().length === 0)
-	{
+	if (currentSuggestion.length === 0 || currentSuggestion.next().length === 0) {
 		nextSuggestion = suggestionsDiv.find(":first-child");
 	}
-	else
-	{
+	else {
 		nextSuggestion = currentSuggestion.next();
 	}
 
@@ -492,8 +449,7 @@ function onSearchBoxDownPressed()
 	nextSuggestion.addClass("suggestionHover");
 }
 
-function onSearchBoxUpPressed()
-{
+function onSearchBoxUpPressed() {
 	var suggestionsDiv = $("#suggestions");
 	var currentSuggestion = suggestionsDiv.find(".suggestionHover");
 
@@ -501,12 +457,10 @@ function onSearchBoxUpPressed()
 		return;
 
 	var prevSuggestion = null;
-	if (currentSuggestion.prev().length === 0)
-	{
+	if (currentSuggestion.prev().length === 0) {
 		prevSuggestion = suggestionsDiv.find(":last-child");
 	}
-	else
-	{
+	else {
 		prevSuggestion = currentSuggestion.prev();
 	}
 
@@ -517,125 +471,107 @@ function onSearchBoxUpPressed()
 	prevSuggestion.addClass("suggestionHover");
 }
 
-function getBookById(id, onGetBookByIdDone)
-{
+function getBookById(id, onGetBookByIdDone) {
 	chrome.runtime.sendMessage(
 		{
 			command: "getObjectById",
 			id: id,
 			type: RESULT_TYPE_BOOK
-		}, 
-		function(response) 
-	    {
-	    	onGetBookByIdDone(response);
+		},
+		function (response) {
+			onGetBookByIdDone(response);
 		});
 }
 
-function getSectionById(id, onGetSectionByIdDone)
-{
+function getSectionById(id, onGetSectionByIdDone) {
 	chrome.runtime.sendMessage(
 		{
 			command: "getObjectById",
 			id: id,
 			type: RESULT_TYPE_SECTION
-		}, 
-		function(response) 
-	    {
-	    	onGetSectionByIdDone(response);
+		},
+		function (response) {
+			onGetSectionByIdDone(response);
 		});
 }
 
-function getRecipeById(id, onGetRecipeByIdDone)
-{
+function getRecipeById(id, onGetRecipeByIdDone) {
 	chrome.runtime.sendMessage(
 		{
 			command: "getObjectById",
 			id: id,
 			type: RESULT_TYPE_RECIPE
-		}, 
-		function(response) 
-	    {
-	    	onGetRecipeByIdDone(response);
+		},
+		function (response) {
+			onGetRecipeByIdDone(response);
 		});
 }
 
-function getTagById(id, onGetTagByIdDone)
-{
+function getTagById(id, onGetTagByIdDone) {
 	chrome.runtime.sendMessage(
 		{
 			command: "getObjectById",
 			id: id,
 			type: RESULT_TYPE_TAG
-		}, 
-		function(response) 
-	    {
-	    	onGetTagByIdDone(response);
+		},
+		function (response) {
+			onGetTagByIdDone(response);
 		});
 }
 
-function getDateEntryById(id, onGetDateEntryByIdDone)
-{
+function getDateEntryById(id, onGetDateEntryByIdDone) {
 	chrome.runtime.sendMessage(
 		{
 			command: "getObjectById",
 			id: id,
 			type: RESULT_TYPE_DATEENTRY
-		}, 
-		function(response) 
-	    {
-	    	onGetDateEntryByIdDone(response);
+		},
+		function (response) {
+			onGetDateEntryByIdDone(response);
 		});
 }
 
-function getTagControlById(parent, id)
-{
+function getTagControlById(parent, id) {
 	var tagControls = parent.find(".tagControl").children();
 
 	var size = tagControls.length;
-	for (var cnt = 0; cnt < size; cnt++) 
-	{
+	for (var cnt = 0; cnt < size; cnt++) {
 		var tagControl = $(tagControls[cnt]);
 
 		if (tagControl.data("id") == id)
 			return tagControl;
-   	}
+	}
 
-   	return null;
+	return null;
 }
 
-function onCalendarLinkClick()
-{
+function onCalendarLinkClick() {
 	clearSearchBox();
 
 	$("#calendar").show();
 	$("#results").hide();
 }
 
-function onLoadDataClick()
-{
+function onLoadDataClick() {
 	chrome.fileSystem.chooseEntry(
 		{
-			type: "openFile", 
-			accepts: [ { extensions: ["json"] } ], 
-			acceptsMultiple: false 
-		}, 
-		function(fileEntry) 
-		{
+			type: "openFile",
+			accepts: [{ extensions: ["json"] }],
+			acceptsMultiple: false
+		},
+		function (fileEntry) {
 			fileEntry = fileEntry[0];
 
 			fileEntry.file(
-				function(file)
-				{
+				function (file) {
 					var reader = new FileReader();
 
-					reader.onloadend = 
-						function()
-						{
+					reader.onloadend =
+						function () {
 							importDatabase(this.result,
-								function()
-								{
+								function () {
 									_currDate = getCurrentDate();
-									
+
 									fillCalendarView(_currDate);
 									fillTagContainers();
 								});
@@ -646,18 +582,61 @@ function onLoadDataClick()
 		});
 }
 
-function onSaveDataClick()
-{
-	saveDatabase();
+function saveToFile(fileEntry) {
+	saveDatabase(fileEntry);
+
+	getDatabaseData(
+		function (data) {
+			var contents = JSON.stringify(data);
+
+			fileEntry.createWriter(
+				function (fileWriter) {
+					var truncated = false;
+					var blob = new Blob([contents]);
+
+					fileWriter.onwriteend =
+						function (e) {
+							if (!truncated) {
+								truncated = true;
+								// You need to explicitly set the file size to truncate
+								// any content that might have been there before
+								this.truncate(blob.size);
+								return;
+							}
+
+							status.innerText = 'Export completed';
+						};
+
+					fileWriter.onerror =
+						function (e) {
+							status.innerText = 'Export failed: ' + e.toString();
+						};
+
+					fileWriter.write(blob);
+				});
+		}
+	);
 }
 
-function onTitleClick()
-{
+function onSaveDataClick() {
+	chrome.fileSystem.chooseEntry(
+		{
+			type: 'saveFile',
+			suggestedName: 'RecipeManager.json',
+			accepts: [{
+				description: 'JSON files (*.json)',
+				extensions: ['json']
+			}],
+			acceptsAllTypes: true
+		},
+		saveToFile);
+}
+
+function onTitleClick() {
 	var sidebarDiv = $("#sidebar");
 	var sidebarWidth = sidebarDiv.width();
 
-	if (_sidebarVisible)
-	{
+	if (_sidebarVisible) {
 		sidebarDiv.css("margin-left", "-" + sidebarWidth + "px");
 
 		_sidebarVisible = false;
@@ -669,19 +648,16 @@ function onTitleClick()
 	_sidebarVisible = true;
 }
 
-function getPrevMonthDate(date)
-{
+function getPrevMonthDate(date) {
 	var prevMonthDate = new Date(date);
 
-	if (date.getMonth() === 0)
-	{
+	if (date.getMonth() === 0) {
 		var year = date.getFullYear();
 
 		prevMonthDate.setYear(--year);
 		prevMonthDate.setMonth(11);
 	}
-	else
-	{
+	else {
 		var month = date.getMonth();
 		prevMonthDate.setMonth(--month);
 	}
@@ -689,19 +665,16 @@ function getPrevMonthDate(date)
 	return prevMonthDate;
 }
 
-function getNextMonthDate(date)
-{
+function getNextMonthDate(date) {
 	var nextMonthDate = new Date(date);
 
-	if (date.month == 11)
-	{
+	if (date.month == 11) {
 		var year = date.getFullYear();
 
 		nextMonthDate.setYear(++year);
 		nextMonthDate.setMonth(0);
 	}
-	else
-	{
+	else {
 		var month = date.getMonth();
 		nextMonthDate.setMonth(++month);
 	}
@@ -709,27 +682,22 @@ function getNextMonthDate(date)
 	return nextMonthDate;
 }
 
-function onPrevMonthClick()
-{
+function onPrevMonthClick() {
 	_currDate = getPrevMonthDate(_currDate);
 	fillCalendarView(_currDate);
 }
 
-function onNextMonthClick()
-{
+function onNextMonthClick() {
 	_currDate = getNextMonthDate(_currDate);
 	fillCalendarView(_currDate);
 }
 
-function getCurrentDate()
-{
+function getCurrentDate() {
 	return new Date();
 }
 
-function getDaysInMonth(month)
-{
-	switch (month)
-	{
+function getDaysInMonth(month) {
+	switch (month) {
 		case 3:
 		case 5:
 		case 8:
@@ -743,10 +711,8 @@ function getDaysInMonth(month)
 	return 31;
 }
 
-function getMonthName(month)
-{
-	switch (month)
-	{
+function getMonthName(month) {
+	switch (month) {
 		case 0:
 			return "January";
 
@@ -785,8 +751,7 @@ function getMonthName(month)
 	}
 }
 
-function fillCalendarView(date)
-{
+function fillCalendarView(date) {
 	var monthName = getMonthName(date.getMonth());
 
 	var monthTitleDiv = $("#currMonth");
@@ -802,19 +767,17 @@ function fillCalendarView(date)
 
 	var days = getDaysInMonth(date.getMonth());
 	var lastDay = getDayOfWeek(days, date.getMonth(), date.getFullYear());
-	
+
 	var daysToAdd = 7 - lastDay;
-	
+
 	var totalDays = firstDay + days + daysToAdd;
 
-	if ((totalDays / 7) < 6)
-	{
+	if ((totalDays / 7) < 6) {
 		daysToAdd += 7;
 		totalDays += 7;
 	}
 
-	if ((totalDays / 7) < 6)
-	{
+	if ((totalDays / 7) < 6) {
 		firstDay += 7;
 		totalDays += 7;
 	}
@@ -824,8 +787,7 @@ function fillCalendarView(date)
 
 	var dummyDay = null;
 
-	for (var cnt = 0; cnt < firstDay; cnt++)
-	{
+	for (var cnt = 0; cnt < firstDay; cnt++) {
 		var prevMonthDay = prevMonthDays - (firstDay - cnt - 1);
 
 		dummyDay = $("<div class='dayCell dummyDay'><div class='day'>" + prevMonthDay + "</div></div>");
@@ -834,8 +796,7 @@ function fillCalendarView(date)
 		daysDiv.append(dummyDay);
 	}
 
-	for (cnt = 0; cnt < days; cnt++)
-	{
+	for (cnt = 0; cnt < days; cnt++) {
 		var day = cnt + 1;
 
 		var dateData = new Date(date);
@@ -849,8 +810,7 @@ function fillCalendarView(date)
 		daysDiv.append(dayDiv);
 	}
 
-	for (cnt = 0; cnt < daysToAdd; cnt++)
-	{
+	for (cnt = 0; cnt < daysToAdd; cnt++) {
 		dummyDay = $("<div class='dayCell dummyDay'><div class='day'>" + (cnt + 1) + "</div></div>");
 		dummyDay.on("click", onNextMonthClick);
 
@@ -860,26 +820,23 @@ function fillCalendarView(date)
 	refreshDayRecipes();
 }
 
-function getDateIdFromDate(date)
-{
+function getDateIdFromDate(date) {
 	return date.getDate() + "-" + date.getMonth() + "-" + date.getFullYear();
 }
 
-function fillDayRecipes(dayDiv)
-{
+function fillDayRecipes(dayDiv) {
 	var date = dayDiv.data("date");
 	var dateId = getDateIdFromDate(date);
 
-	getDateEntryById(dateId, 
-		function(dateEntry)
-		{
+	getDateEntryById(dateId,
+		function (dateEntry) {
 			if (dateEntry === null)
 				return;
 
 			dayDiv.children(".dayViewRecipe").remove();
-			
+
 			var height = dayDiv.height();
-			
+
 			var padding = 5;
 			var recipeMargin = 5;
 			var dayNumberHeight = 18 + padding;
@@ -891,8 +848,7 @@ function fillDayRecipes(dayDiv)
 
 			var addMoreEntry = false;
 
-			if (maxRecipesToShow < dateEntry.recipes.length)
-			{
+			if (maxRecipesToShow < dateEntry.recipes.length) {
 				addMoreEntry = true;
 				maxRecipesToShow--;
 			}
@@ -900,16 +856,14 @@ function fillDayRecipes(dayDiv)
 			var dayViewRecipe = null;
 			var recipesToShow = Math.min(dateEntry.recipes.length, maxRecipesToShow);
 
-			for (var cnt = 0; cnt < recipesToShow; cnt++)
-			{
+			for (var cnt = 0; cnt < recipesToShow; cnt++) {
 				var recipe = dateEntry.recipes[cnt];
 
 				dayViewRecipe = $("<div class='dayViewRecipe'>" + recipe.name + "</div>");
 				dayDiv.append(dayViewRecipe);
 			}
 
-			if (addMoreEntry === true)
-			{
+			if (addMoreEntry === true) {
 				dayViewRecipe = $("<div class='dayViewRecipe'>More...</div>");
 				dayDiv.append(dayViewRecipe);
 			}
@@ -918,40 +872,33 @@ function fillDayRecipes(dayDiv)
 
 			var dayNumberDiv = dayDiv.children(".day");
 
-			if (recipesToShow > 0)
-			{
+			if (recipesToShow > 0) {
 				dayNumberDiv.css("font-weight", "bold");
 			}
-			else
-			{
+			else {
 				dayNumberDiv.css("font-weight", "normal");
 			}
 		});
 }
 
-function refreshDayRecipes()
-{
+function refreshDayRecipes() {
 	var dayDivs = $(".availDay");
 
-	for (var cnt = 0; cnt < dayDivs.length; cnt++)
-	{
+	for (var cnt = 0; cnt < dayDivs.length; cnt++) {
 		var dayDiv = $(dayDivs[cnt]);
 		fillDayRecipes(dayDiv);
 	}
 }
 
-function onDayClicked(event)
-{
+function onDayClicked(event) {
 	var dayDiv = $(event.target);
 	var date = dayDiv.data("date");
 
 	var dateId = getDateIdFromDate(date);
 
 	getDateEntryById(dateId,
-		function(dateEntry)
-		{
-			if (dateEntry === null)
-			{
+		function (dateEntry) {
+			if (dateEntry === null) {
 				dateEntry = new DateEntry();
 				dateEntry.id = dateId;
 			}
@@ -966,22 +913,20 @@ function onDayClicked(event)
 			showDialog(dayMenuDiv);
 
 			$("#recipeSuggestions").empty();
-			
+
 			$(".recipeEntry").remove();
 			$(".addRecipeEntry").remove();
 
 			$("#dateHeader").text(date.toDateString());
 
-			for (var cnt = 0; cnt < dateEntry.recipes.length; cnt++)
-			{
+			for (var cnt = 0; cnt < dateEntry.recipes.length; cnt++) {
 				var recipe = dateEntry.recipes[cnt];
 				addDateRecipeEntry(dateEntry, recipe);
 			}
 
 			var addRecipeEntry = $("<div class='addRecipeEntry'>Add Recipe...</div>");
-			addRecipeEntry.on("click", 
-				function()
-				{
+			addRecipeEntry.on("click",
+				function () {
 					onAddRecipeEntryClick();
 				});
 
@@ -989,8 +934,7 @@ function onDayClicked(event)
 		});
 }
 
-function onAddRecipeEntryClick()
-{
+function onAddRecipeEntryClick() {
 	var addRecipeEntry = $(".addRecipeEntry");
 	var inputState = addRecipeEntry.data("inputState");
 
@@ -1004,49 +948,43 @@ function onAddRecipeEntryClick()
 	addRecipeInput.focus();
 
 	addRecipeInput
-		.on("input", 
-			function()
-			{
-				onAddRecipeInputChanged(addRecipeInput);
-			})
+		.on("input",
+		function () {
+			onAddRecipeInputChanged(addRecipeInput);
+		})
 		.blur(
-			function()
-			{
-				if ($("#recipeSuggestions").data("hovered") === true)
-					return;
+		function () {
+			if ($("#recipeSuggestions").data("hovered") === true)
+				return;
 
-				addRecipeEntry.html("Add Recipe...");
-				addRecipeEntry.data("inputState", false);
+			addRecipeEntry.html("Add Recipe...");
+			addRecipeEntry.data("inputState", false);
 
-				addRecipeEntry.off("blur");
-			})
+			addRecipeEntry.off("blur");
+		})
 		.keydown(
-			function(event)
-			{
-				switch (event.keyCode)
-				{
-					case KEY_ENTER:
-						onRecipeSearchEnterPressed();
-						break;
+		function (event) {
+			switch (event.keyCode) {
+				case KEY_ENTER:
+					onRecipeSearchEnterPressed();
+					break;
 
-					case KEY_UP:
-						onRecipeSearchUpPressed();
-						break;
+				case KEY_UP:
+					onRecipeSearchUpPressed();
+					break;
 
-					case KEY_DOWN:
-						onRecipeSearchDownPressed();
-						break;
-				}
-			});
+				case KEY_DOWN:
+					onRecipeSearchDownPressed();
+					break;
+			}
+		});
 }
 
-function onRecipeSearchEnterPressed()
-{
+function onRecipeSearchEnterPressed() {
 	var suggestionsDiv = $("#recipeSuggestions");
 	var currentSuggestion = suggestionsDiv.find(".recipeSuggestionHover");
 
-	if (currentSuggestion.length !== 0)
-	{
+	if (currentSuggestion.length !== 0) {
 		currentSuggestion.click();
 		return;
 	}
@@ -1067,10 +1005,9 @@ function onRecipeSearchEnterPressed()
 		{
 			command: "updateDateEntry",
 			dateEntry: dateEntry
-		}, 
-		function() 
-	    {
-	    	addDateRecipeEntry(dateEntry, newDateRecipe);
+		},
+		function () {
+			addDateRecipeEntry(dateEntry, newDateRecipe);
 
 			addRecipeInput.blur();
 
@@ -1082,19 +1019,17 @@ function onRecipeSearchEnterPressed()
 		});
 }
 
-function addDateRecipeEntry(dateEntry, newDateRecipe)
-{
+function addDateRecipeEntry(dateEntry, newDateRecipe) {
 	var newRecipeEntry = $("<div class='recipeEntry'></div>");
-	    	
+
 	var recipeEntryName = $("<div class='recipeEntryName'>" + newDateRecipe.name + "</div>");
 	newRecipeEntry.append(recipeEntryName);
-	
+
 	var recipeEntryDelete = $("<div class='recipeEntryButton'><img src='images/delete.png' class='recipeEntryIcon'></div>");
 	newRecipeEntry.append(recipeEntryDelete);
 
 	recipeEntryDelete.on("click",
-		function()
-		{
+		function () {
 			removeRecipeFromDateEntry(dateEntry, newDateRecipe);
 			newRecipeEntry.remove();
 
@@ -1112,8 +1047,7 @@ function addDateRecipeEntry(dateEntry, newDateRecipe)
 	recipeContainer.append(newRecipeEntry);
 }
 
-function onRecipeEntryClick(event)
-{
+function onRecipeEntryClick(event) {
 	var recipeEntry = $(event.target).parent();
 
 	var recipe = recipeEntry.data("recipe");
@@ -1122,41 +1056,34 @@ function onRecipeEntryClick(event)
 		showRecipe(recipe.id);
 }
 
-function removeRecipeFromDateEntry(dateEntry, recipeToRemove)
-{
-	for (var cnt = 0; cnt < dateEntry.recipes.length; cnt++)
-	{
+function removeRecipeFromDateEntry(dateEntry, recipeToRemove) {
+	for (var cnt = 0; cnt < dateEntry.recipes.length; cnt++) {
 		var recipe = dateEntry.recipes[cnt];
 
-		if (recipe === recipeToRemove)
-		{
+		if (recipe === recipeToRemove) {
 			dateEntry.recipes.splice(cnt, 1);
 			break;
 		}
 	}
 
 	chrome.runtime.sendMessage(
-	{
-		command: "updateDateEntry",
-		dateEntry: dateEntry
-	}, 
-	function() 
-    {
-	});
+		{
+			command: "updateDateEntry",
+			dateEntry: dateEntry
+		},
+		function () {
+		});
 }
 
-function onRecipeSearchDownPressed()
-{
+function onRecipeSearchDownPressed() {
 	var suggestionsDiv = $("#recipeSuggestions");
 	var currentSuggestion = suggestionsDiv.find(".recipeSuggestionHover");
 
 	var nextSuggestion = null;
-	if (currentSuggestion.length === 0 || currentSuggestion.next().length === 0)
-	{
+	if (currentSuggestion.length === 0 || currentSuggestion.next().length === 0) {
 		nextSuggestion = suggestionsDiv.find(":first-child");
 	}
-	else
-	{
+	else {
 		nextSuggestion = currentSuggestion.next();
 	}
 
@@ -1167,8 +1094,7 @@ function onRecipeSearchDownPressed()
 	nextSuggestion.addClass("recipeSuggestionHover");
 }
 
-function onRecipeSearchUpPressed()
-{
+function onRecipeSearchUpPressed() {
 	var suggestionsDiv = $("#recipeSuggestions");
 	var currentSuggestion = suggestionsDiv.find(".recipeSuggestionHover");
 
@@ -1176,12 +1102,10 @@ function onRecipeSearchUpPressed()
 		return;
 
 	var prevSuggestion = null;
-	if (currentSuggestion.prev().length === 0)
-	{
+	if (currentSuggestion.prev().length === 0) {
 		prevSuggestion = suggestionsDiv.find(":last-child");
 	}
-	else
-	{
+	else {
 		prevSuggestion = currentSuggestion.prev();
 	}
 
@@ -1192,12 +1116,10 @@ function onRecipeSearchUpPressed()
 	prevSuggestion.addClass("recipeSuggestionHover");
 }
 
-function onAddRecipeInputChanged(addRecipeInput)
-{
+function onAddRecipeInputChanged(addRecipeInput) {
 	var searchText = addRecipeInput.val();
 
-	if (searchText === "")
-	{
+	if (searchText === "") {
 		$("#recipeSuggestions").empty();
 		return;
 	}
@@ -1206,15 +1128,13 @@ function onAddRecipeInputChanged(addRecipeInput)
 		{
 			command: "getRecipeSuggestions",
 			searchText: searchText,
-		}, 
-		function(response) 
-	    {
-	    	showRecipeSuggestions(addRecipeInput, response);
+		},
+		function (response) {
+			showRecipeSuggestions(addRecipeInput, response);
 		});
 }
 
-function showRecipeSuggestions(addRecipeInput, results)
-{
+function showRecipeSuggestions(addRecipeInput, results) {
 	var recipeSuggestions = $("#recipeSuggestions");
 
 	var inputPos = addRecipeInput.position();
@@ -1234,8 +1154,7 @@ function showRecipeSuggestions(addRecipeInput, results)
 	addRecipeSuggestion(recipeSuggestions, customRecipe);
 
 	var size = results.recipes.length;
-	for (var cnt = 0; cnt < size; cnt++)
-	{
+	for (var cnt = 0; cnt < size; cnt++) {
 		var recipe = results.recipes[cnt];
 		console.log(cnt + " - " + recipe.name);
 
@@ -1243,16 +1162,14 @@ function showRecipeSuggestions(addRecipeInput, results)
 	}
 }
 
-function addRecipeSuggestion(recipeSuggestionsDiv, recipe)
-{
+function addRecipeSuggestion(recipeSuggestionsDiv, recipe) {
 	var recipeSuggestionDiv = $("<div class='recipeSuggestion'>" + recipe.name + "</div>");
 
 	if (recipe.id === 0)
 		recipeSuggestionDiv.addClass("recipeSuggestionHover");
 
 	recipeSuggestionDiv.on("click",
-		function(event)
-		{
+		function (event) {
 			$("#recipeSearch").val(recipe.name);
 			$("#recipeSearch").data("recipeId", recipe.id);
 
@@ -1265,21 +1182,18 @@ function addRecipeSuggestion(recipeSuggestionsDiv, recipe)
 		});
 
 	recipeSuggestionDiv.hover(
-		function()
-       	{ 
-       		$("#recipeSuggestions").children().removeClass("recipeSuggestionHover");
+		function () {
+			$("#recipeSuggestions").children().removeClass("recipeSuggestionHover");
 			$(this).addClass("recipeSuggestionHover");
 		},
-		function()
-		{ 
+		function () {
 			$(this).removeClass("recipeSuggestionHover");
 		});
 
 	recipeSuggestionsDiv.append(recipeSuggestionDiv);
 }
 
-function getDayOfWeek(day, month, year)
-{
+function getDayOfWeek(day, month, year) {
 	var date = new Date(year, month, day, 1, 1, 1, 1);
 	var weekDay = date.getDay();
 
@@ -1289,38 +1203,32 @@ function getDayOfWeek(day, month, year)
 	return weekDay;
 }
 
-function showSearchResults(results, clearResults)
-{
+function showSearchResults(results, clearResults) {
 	if (typeof clearResults == "undefined" || clearResults === true)
 		clearSearchResults();
 
 	_currentResults = results;
 
-	if (results.books)
-	{
+	if (results.books) {
 		addResultsSection("Books", RESULT_TYPE_BOOK, results.books);
 	}
 
-	if (results.sections)
-	{
+	if (results.sections) {
 		addResultsSection("Sections", RESULT_TYPE_SECTION, results.sections);
 	}
 
-	if (results.recipes)
-	{
+	if (results.recipes) {
 		addResultsSection("Recipes", RESULT_TYPE_RECIPE, results.recipes);
 	}
 
-	if (results.tags)
-	{
+	if (results.tags) {
 		addResultsSection("Tags", RESULT_TYPE_TAG, results.tags);
 	}
 
 	showLoadingView(false);
 }
 
-function clearSearchResults()
-{
+function clearSearchResults() {
 	var resultsDiv = $("#results");
 	resultsDiv.empty();
 
@@ -1329,10 +1237,8 @@ function clearSearchResults()
 	_currentResultsDiv = null;
 }
 
-function addResultsSection(name, type, results)
-{
-	if (_currentResultsType != type)
-	{
+function addResultsSection(name, type, results) {
+	if (_currentResultsType != type) {
 		var sectionDiv = $("<div class='resultSection'></div>");
 		var sectionHeader = $("<div class='sectionHeader'></div>");
 
@@ -1354,10 +1260,8 @@ function addResultsSection(name, type, results)
 	addResults(_currentResultsDiv, type, results);
 }
 
-function addResults(sectionDiv, type, results)
-{
-	switch (type)
-	{
+function addResults(sectionDiv, type, results) {
+	switch (type) {
 		case RESULT_TYPE_BOOK:
 			addBookResults(sectionDiv, results);
 			return;
@@ -1376,23 +1280,20 @@ function addResults(sectionDiv, type, results)
 	}
 }
 
-function addBookResults(sectionDiv, entries)
-{
+function addBookResults(sectionDiv, entries) {
 	var sectionAdd = sectionDiv.find(".sectionAdd");
 
 	sectionAdd.css("display", "flex");
 
 	sectionAdd.off("click");
 	sectionAdd.on("click",
-		function(e)
-		{
+		function (e) {
 			onAddClick(RESULT_TYPE_BOOK);
 			e.stopPropagation();
 		});
 
 	var size = entries.length;
-	for (var cnt = 0; cnt < size; cnt++)
-	{
+	for (var cnt = 0; cnt < size; cnt++) {
 		var book = entries[cnt];
 		var entryDiv = $("<div class='resultEntry'>" + book.name + "</div>");
 
@@ -1403,43 +1304,36 @@ function addBookResults(sectionDiv, entries)
 	}
 }
 
-function addSectionResults(sectionDiv, sectionGroups)
-{
+function addSectionResults(sectionDiv, sectionGroups) {
 	var sectionGroup = null;
 	var sectionAdd = sectionDiv.find(".sectionAdd");
 
-	if (sectionGroups.length > 1)
-	{
+	if (sectionGroups.length > 1) {
 		sectionAdd.hide();
 	}
-	else
-	{
+	else {
 		sectionAdd.css("display", "flex");
 
 		sectionGroup = sectionGroups[0];
 
 		sectionAdd.off("click");
 		sectionAdd.on("click",
-			function(e)
-			{
+			function (e) {
 				onAddClick(RESULT_TYPE_SECTION, sectionGroup.bookId);
 				e.stopPropagation();
 			});
 	}
-		
+
 	var groups = sectionGroups.length;
-	for (var i = 0; i < groups; i++)
-	{
+	for (var i = 0; i < groups; i++) {
 		sectionGroup = sectionGroups[i];
 		addSectionResultPath(sectionDiv, sectionGroup, onAddSectionResultPathDone);
 	}
 }
 
-function onAddSectionResultPathDone(sectionDiv, sectionGroup)
-{
+function onAddSectionResultPathDone(sectionDiv, sectionGroup) {
 	var sections = sectionGroup.sections.length;
-	for (var j = 0; j < sections; j++)
-	{
+	for (var j = 0; j < sections; j++) {
 		var section = sectionGroup.sections[j];
 		var entryDiv = $("<div class='resultEntry'>" + section.name + "</div>");
 
@@ -1447,20 +1341,17 @@ function onAddSectionResultPathDone(sectionDiv, sectionGroup)
 			entryDiv.addClass("addNewEntry");
 
 		addResultEntry(sectionDiv, RESULT_TYPE_SECTION, section, entryDiv);
-	}	
+	}
 }
 
-function addSectionResultPath(sectionDiv, sectionGroup, onAddSectionResultPathDone)
-{
+function addSectionResultPath(sectionDiv, sectionGroup, onAddSectionResultPathDone) {
 	getBookById(sectionGroup.bookId,
-		function(book)
-		{
+		function (book) {
 			var resultPathDiv = $("<div class='resultPath'></div>");
 
 			var bookPathDiv = $("<div class='resultSubPath'>Book: " + book.name + "</div>");
-			bookPathDiv.on("click", 
-				function()
-				{
+			bookPathDiv.on("click",
+				function () {
 					onSearchResultClick(RESULT_TYPE_BOOK, book.id);
 				});
 
@@ -1471,33 +1362,28 @@ function addSectionResultPath(sectionDiv, sectionGroup, onAddSectionResultPathDo
 		});
 }
 
-function addRecipeResults(sectionDiv, recipeGroups)
-{	
+function addRecipeResults(sectionDiv, recipeGroups) {
 	var recipeGroup = null;
 	var sectionAdd = sectionDiv.find(".sectionAdd");
 
-	if (recipeGroups.length > 1)
-	{
+	if (recipeGroups.length > 1) {
 		sectionAdd.hide();
 	}
-	else
-	{
+	else {
 		sectionAdd.css("display", "flex");
 
 		recipeGroup = recipeGroups[0];
 
 		sectionAdd.off("click");
 		sectionAdd.on("click",
-			function(e)
-			{
+			function (e) {
 				onAddClick(RESULT_TYPE_RECIPE, recipeGroup.sectionId);
 				e.stopPropagation();
 			});
 	}
-	
+
 	var groups = recipeGroups.length;
-	for (var i = 0; i < groups; i++)
-	{
+	for (var i = 0; i < groups; i++) {
 		recipeGroup = recipeGroups[i];
 
 		if (_lastSectionId != recipeGroup.sectionId)
@@ -1505,17 +1391,14 @@ function addRecipeResults(sectionDiv, recipeGroups)
 	}
 }
 
-function addRecipeResult(sectionDiv, recipe)
-{
+function addRecipeResult(sectionDiv, recipe) {
 	var entryDiv = $("<div class='resultEntry'></div>");
 	entryDiv.append("<div class='recipeName'>" + recipe.name + "</div>");
 
-	if (recipe.id === 0)
-	{
+	if (recipe.id === 0) {
 		entryDiv.addClass("addNewEntry");
 	}
-	else
-	{
+	else {
 		var recipeInfo = "pg. " + recipe.page;
 
 		if (recipe.isCooked === 1 || recipe.isCooked === true)
@@ -1531,39 +1414,32 @@ function addRecipeResult(sectionDiv, recipe)
 	addResultEntry(sectionDiv, RESULT_TYPE_RECIPE, recipe, entryDiv);
 }
 
-function onAddRecipeResultPathDone(sectionDiv, recipeGroup)
-{
+function onAddRecipeResultPathDone(sectionDiv, recipeGroup) {
 	_lastSectionId = recipeGroup.sectionId;
-		
+
 	var recipes = recipeGroup.recipes.length;
-	for (var j = 0; j < recipes; j++)
-	{
+	for (var j = 0; j < recipes; j++) {
 		var recipe = recipeGroup.recipes[j];
 		addRecipeResult(sectionDiv, recipe);
-	}	
+	}
 }
 
-function addRecipeResultPath(sectionDiv, recipeGroup, onAddRecipeResultPathDone)
-{
+function addRecipeResultPath(sectionDiv, recipeGroup, onAddRecipeResultPathDone) {
 	getSectionById(recipeGroup.sectionId,
-		function (section)
-		{
-			getBookById(section.bookId, 
-				function (book)
-				{
+		function (section) {
+			getBookById(section.bookId,
+				function (book) {
 					var resultPathDiv = $("<div class='resultPath'></div>");
 
 					var bookPathDiv = $("<div class='resultSubPath'>Book: " + book.name + "</div>");
-					bookPathDiv.on("click", 
-						function()
-						{
+					bookPathDiv.on("click",
+						function () {
 							onSearchResultClick(RESULT_TYPE_BOOK, book.id);
 						});
 
 					var sectionPathDiv = $("<div class='resultSubPath'>Section: " + section.name + "</div>");
-						sectionPathDiv.on("click", 
-						function()
-						{
+					sectionPathDiv.on("click",
+						function () {
 							onSearchResultClick(RESULT_TYPE_SECTION, section.id);
 						});
 
@@ -1577,23 +1453,20 @@ function addRecipeResultPath(sectionDiv, recipeGroup, onAddRecipeResultPathDone)
 		});
 }
 
-function addTagResults(sectionDiv, entries)
-{
+function addTagResults(sectionDiv, entries) {
 	var sectionAdd = sectionDiv.find(".sectionAdd");
 
 	sectionAdd.css("display", "flex");
 
 	sectionAdd.off("click");
 	sectionAdd.on("click",
-		function(e)
-		{
+		function (e) {
 			onAddClick(RESULT_TYPE_TAG);
 			e.stopPropagation();
 		});
 
 	var size = entries.length;
-	for (var cnt = 0; cnt < size; cnt++)
-	{
+	for (var cnt = 0; cnt < size; cnt++) {
 		var tag = entries[cnt];
 		var entryDiv = $("<div class='resultEntry'>" + tag.name + "</div>");
 
@@ -1601,29 +1474,24 @@ function addTagResults(sectionDiv, entries)
 	}
 }
 
-function addResultEntry(sectionDiv, type, entry, entryDiv)
-{
+function addResultEntry(sectionDiv, type, entry, entryDiv) {
 	var resultDiv = $("<div class='result'></div>");
 	resultDiv.append(entryDiv);
 
-	if (entryDiv.hasClass("addNewEntry"))
-	{
-		resultDiv.on("click", 
-			function()
-			{
+	if (entryDiv.hasClass("addNewEntry")) {
+		resultDiv.on("click",
+			function () {
 				var sectionAdd = sectionDiv.find(".sectionAdd");
 				sectionAdd.click();
 			});
 	}
-	else
-	{
+	else {
 		addStarRating(resultDiv, type, entry.id);
 		addEditButton(resultDiv, type, entry.id);
 		addDeleteButton(resultDiv, type, entry.id);
 
-		resultDiv.on("click", 
-			function()
-			{
+		resultDiv.on("click",
+			function () {
 				onSearchResultClick(type, entry.id);
 			});
 	}
@@ -1631,13 +1499,11 @@ function addResultEntry(sectionDiv, type, entry, entryDiv)
 	sectionDiv.append(resultDiv);
 }
 
-function addEditButton(resultDiv, type, id)
-{
+function addEditButton(resultDiv, type, id) {
 	var editButton = $("<div class='resultButtons'><img src='images/pencil.png' class='resultIcon'></div>");
 
-	editButton.on("click", 
-		function(e)
-		{
+	editButton.on("click",
+		function (e) {
 			onEditClick(type, id);
 			e.stopPropagation();
 		});
@@ -1645,115 +1511,99 @@ function addEditButton(resultDiv, type, id)
 	resultDiv.append(editButton);
 }
 
-function addDeleteButton(resultDiv, type, id)
-{
+function addDeleteButton(resultDiv, type, id) {
 	var deleteButton = $("<div class='resultButtons'><img src='images/delete.png' class='resultIcon'></div>");
 
-	deleteButton.on("click", 
-		function(e)
-		{
+	deleteButton.on("click",
+		function (e) {
 			onDeleteClick(type, id,
-				function()
-				{
+				function () {
 					resultDiv.remove();
 				});
-			
+
 			e.stopPropagation();
 		});
 
 	resultDiv.append(deleteButton);
 }
 
-function showStarRating(recipeId, parent, setNewRating, initialRating)
-{    
-    var starButton1 = $("<div class='resultButtons starButton'><img src='images/star.png' class='resultIcon'></div>");
+function showStarRating(recipeId, parent, setNewRating, initialRating) {
+	var starButton1 = $("<div class='resultButtons starButton'><img src='images/star.png' class='resultIcon'></div>");
 	var starButton2 = $("<div class='resultButtons starButton'><img src='images/star.png' class='resultIcon'></div>");
 	var starButton3 = $("<div class='resultButtons starButton'><img src='images/star.png' class='resultIcon'></div>");
 
-	function setInitialRating()
-	{
+	function setInitialRating() {
 		var starButtons = parent.children(".starButton");
 		starButtons.removeClass("starFull");
 
-		for (var cnt = 0; cnt < initialRating; cnt++)
-		{
+		for (var cnt = 0; cnt < initialRating; cnt++) {
 			var starButton = $(starButtons[cnt]);
 			starButton.addClass("starFull");
 		}
 	}
-    
-    function updateRating(rating)
-    {
-        setNewRating(rating);
 
-        initialRating = rating;
-        setInitialRating();
-    }
+	function updateRating(rating) {
+		setNewRating(rating);
+
+		initialRating = rating;
+		setInitialRating();
+	}
 
 	starButton1
 		.hover(
-			function()
-			{
-				starButton1.addClass("starFull");	
-				starButton2.removeClass("starFull");
-				starButton3.removeClass("starFull");
-			})
+		function () {
+			starButton1.addClass("starFull");
+			starButton2.removeClass("starFull");
+			starButton3.removeClass("starFull");
+		})
 		.mouseout(setInitialRating)
-		.on("click", 
-			function(e)
-			{
-				onStarClick(recipeId, 1,
-                    function() 
-                    {
-                        updateRating(1);
-                    });
-				
-				e.stopPropagation();
-			});
+		.on("click",
+		function (e) {
+			onStarClick(recipeId, 1,
+				function () {
+					updateRating(1);
+				});
+
+			e.stopPropagation();
+		});
 
 	starButton2
 		.hover(
-			function()
-			{
-				starButton1.addClass("starFull");	
-				starButton2.addClass("starFull");
-				starButton3.removeClass("starFull");
-			})
+		function () {
+			starButton1.addClass("starFull");
+			starButton2.addClass("starFull");
+			starButton3.removeClass("starFull");
+		})
 		.mouseout(setInitialRating)
-		.on("click", 
-			function(e)
-			{
-				onStarClick(recipeId, 2,
-					function()
-					{
-                        updateRating(2);                           
-					});
-				
-				e.stopPropagation();
-			});
+		.on("click",
+		function (e) {
+			onStarClick(recipeId, 2,
+				function () {
+					updateRating(2);
+				});
+
+			e.stopPropagation();
+		});
 
 	starButton3
 		.hover(
-			function()
-			{
-				starButton1.addClass("starFull");	
-				starButton2.addClass("starFull");
-				starButton3.addClass("starFull");
-			})
+		function () {
+			starButton1.addClass("starFull");
+			starButton2.addClass("starFull");
+			starButton3.addClass("starFull");
+		})
 		.mouseout(setInitialRating)
-		.on("click", 
-			function(e)
-			{
-				onStarClick(recipeId, 3,
-					function()
-					{
-                        updateRating(3);                           						
-					});
-				
-				e.stopPropagation();
-			});
+		.on("click",
+		function (e) {
+			onStarClick(recipeId, 3,
+				function () {
+					updateRating(3);
+				});
 
-    parent.children(".starButton").remove();
+			e.stopPropagation();
+		});
+
+	parent.children(".starButton").remove();
 
 	parent.append(starButton1);
 	parent.append(starButton2);
@@ -1762,42 +1612,35 @@ function showStarRating(recipeId, parent, setNewRating, initialRating)
 	setInitialRating();
 }
 
-function addStarRating(resultDiv, type, id)
-{
+function addStarRating(resultDiv, type, id) {
 	if (type != RESULT_TYPE_RECIPE)
 		return;
 
-    var entryDiv = resultDiv.children(".resultEntry");
+	var entryDiv = resultDiv.children(".resultEntry");
 	var rating = entryDiv.data("rating");
-        
-    function setNewRating(rating)
-	{
-		getRecipeById(id, 
-			function(recipe)
-			{	
+
+	function setNewRating(rating) {
+		getRecipeById(id,
+			function (recipe) {
 				recipe.rating = rating;
 
-				updateRecipe(recipe, 
-					function()
-					{
+				updateRecipe(recipe,
+					function () {
 						var entryDiv = resultDiv.children(".resultEntry");
 						entryDiv.data("rating", rating);
 					});
 			});
 	}
-    
-    showStarRating(id, resultDiv, setNewRating, rating);
+
+	showStarRating(id, resultDiv, setNewRating, rating);
 }
 
-function onStarClick(id, rating, onStarClickDone)
-{
+function onStarClick(id, rating, onStarClickDone) {
 	onStarClickDone();
 }
 
-function onSearchResultClick(type, id)
-{
-	switch (type)
-	{
+function onSearchResultClick(type, id) {
+	switch (type) {
 		case RESULT_TYPE_BOOK:
 			showBookSections(id);
 			return;
@@ -1816,65 +1659,56 @@ function onSearchResultClick(type, id)
 	}
 }
 
-function showBooks()
-{
+function showBooks() {
 	clearSearchBox();
 
 	chrome.runtime.sendMessage(
-	{
-		command: "getAllBooks",
-	}, 
-	function(response) 
-    {
-    	console.log("Search reply.");
-    	showSearchResults(response);
-	});
+		{
+			command: "getAllBooks",
+		},
+		function (response) {
+			console.log("Search reply.");
+			showSearchResults(response);
+		});
 }
 
-function showBookSections(id)
-{
+function showBookSections(id) {
 	clearSearchBox();
 
 	chrome.runtime.sendMessage(
-	{
-		command: "getBookSections",
-		id: id,
-	}, 
-	function(response) 
-    {
-    	console.log("Search reply.");
-    	showSearchResults(response);
-	});
+		{
+			command: "getBookSections",
+			id: id,
+		},
+		function (response) {
+			console.log("Search reply.");
+			showSearchResults(response);
+		});
 }
 
-function showSectionRecipes(id)
-{
+function showSectionRecipes(id) {
 	clearSearchBox();
 
 	chrome.runtime.sendMessage(
-	{
-		command: "getSectionRecipes",
-		id: id,
-	}, 
-	function(response) 
-    {
-    	console.log("Search reply.");
-    	showSearchResults(response);
-	});
+		{
+			command: "getSectionRecipes",
+			id: id,
+		},
+		function (response) {
+			console.log("Search reply.");
+			showSearchResults(response);
+		});
 }
 
-function showRecipeDlg(recipe, isNewEntry)
-{
+function showRecipeDlg(recipe, isNewEntry) {
 	var recipeDlg = $("#recipe");
 
 	getSectionById(recipe.sectionId,
-		function(section)
-		{
+		function (section) {
 			recipeDlg.find("#sectionCtrl").val(section.name);
 
 			getBookById(section.bookId,
-				function(book)
-				{
+				function (book) {
 					recipeDlg.find("#bookCtrl").val(book.name);
 				});
 		});
@@ -1884,34 +1718,31 @@ function showRecipeDlg(recipe, isNewEntry)
 	recipeDlg.find("#cookedCtrl").prop("checked", recipe.isCooked);
 	recipeDlg.find("#interestingCtrl").prop("checked", recipe.isInteresting);
 	recipeDlg.find("#commentCtrl").val(recipe.comment);
-    
-    var ratingCtrl = recipeDlg.find("#ratingCtrl");
-    
-    function setNewRating(rating)
-    {
-        ratingCtrl.data("rating", rating);    
-    }
-    
-    showStarRating(recipe.id, ratingCtrl, setNewRating, recipe.rating);
-    setNewRating(recipe.rating);
-    
+
+	var ratingCtrl = recipeDlg.find("#ratingCtrl");
+
+	function setNewRating(rating) {
+		ratingCtrl.data("rating", rating);
+	}
+
+	showStarRating(recipe.id, ratingCtrl, setNewRating, recipe.rating);
+	setNewRating(recipe.rating);
+
 	checkTags(recipeDlg, recipe.tagIds);
 
 	var btnOK = recipeDlg.find(".btnOK");
 	btnOK.off("click");
 
-	btnOK.on("click", 
-		function()
-		{
+	btnOK.on("click",
+		function () {
 			onRecipeOKClick(recipe.id, recipe);
 		});
 
 	var btnCancel = recipeDlg.find(".btnCancel");
 	btnCancel.off("click");
 
-	btnCancel.on("click", 
-		function()
-		{
+	btnCancel.on("click",
+		function () {
 			if (isNewEntry === true)
 				recipe.id = 0;
 
@@ -1921,23 +1752,19 @@ function showRecipeDlg(recipe, isNewEntry)
 	showDialog(recipeDlg);
 }
 
-function showRecipe(id, parentId)
-{
+function showRecipe(id, parentId) {
 	resetRecipeDlg();
 
-	if (id === 0)
-	{
+	if (id === 0) {
 		onRecipeCloseClick();
 		return;
 	}
 
 	getRecipeById(id,
-		function(recipe)
-		{
+		function (recipe) {
 			var isNewEntry = false;
 
-			if (recipe === null)
-			{
+			if (recipe === null) {
 				isNewEntry = true;
 
 				recipe = new Recipe();
@@ -1946,9 +1773,8 @@ function showRecipe(id, parentId)
 				recipe.sectionId = parentId;
 
 				getSectionById(parentId,
-					function(section)
-					{
-						recipe.tagIds = section.tagIds;		
+					function (section) {
+						recipe.tagIds = section.tagIds;
 						onRecipeEditClick();
 
 						showRecipeDlg(recipe, isNewEntry);
@@ -1961,42 +1787,36 @@ function showRecipe(id, parentId)
 		});
 }
 
-function showTagRecipes(id)
-{
+function showTagRecipes(id) {
 	chrome.runtime.sendMessage(
-	{
-		command: "getTagRecipes",
-		id: id,
-	}, 
-	function(response) 
-    {
-    	showSearchResults(response);
-	});
+		{
+			command: "getTagRecipes",
+			id: id,
+		},
+		function (response) {
+			showSearchResults(response);
+		});
 }
 
-function showTags()
-{
+function showTags() {
 	clearSearchBox();
 
 	chrome.runtime.sendMessage(
-	{
-		command: "getAllTags",
-	}, 
-	function(response) 
-    {
-    	console.log("Search reply.");
-    	showSearchResults(response);
-	});
+		{
+			command: "getAllTags",
+		},
+		function (response) {
+			console.log("Search reply.");
+			showSearchResults(response);
+		});
 }
 
-function onRecipeCloseClick()
-{
+function onRecipeCloseClick() {
 	closeDialog($("#recipe"));
 	resetRecipeDlg();
 }
 
-function onRecipeOKClick(id, recipe)
-{
+function onRecipeOKClick(id, recipe) {
 	var recipeDlg = $("#recipe");
 
 	recipe.name = recipeDlg.find("#titleCtrl").val();
@@ -2004,35 +1824,31 @@ function onRecipeOKClick(id, recipe)
 	recipe.isCooked = recipeDlg.find("#cookedCtrl").prop("checked");
 	recipe.isInteresting = recipeDlg.find("#interestingCtrl").prop("checked");
 	recipe.comment = recipeDlg.find("#commentCtrl").val();
-    recipe.rating = recipeDlg.find("#ratingCtrl").data("rating");
-    
+	recipe.rating = recipeDlg.find("#ratingCtrl").data("rating");
+
 	recipe.tagIds = getCheckedTagIds(recipeDlg);
 
-	updateRecipe(recipe, 
-		function()
-		{
+	updateRecipe(recipe,
+		function () {
 			showRecipe(id);
 			refreshResultsView();
 		});
 }
 
-function updateRecipe(recipe, updateRecipeDone)
-{
+function updateRecipe(recipe, updateRecipeDone) {
 	chrome.runtime.sendMessage(
-	{
-		command: "updateRecipe",
-		id: recipe.id,
-		recipe: recipe
-	}, 
-	function() 
-    {
-    	updateRecipeInResults(recipe);
-		updateRecipeDone();
-	});
+		{
+			command: "updateRecipe",
+			id: recipe.id,
+			recipe: recipe
+		},
+		function () {
+			updateRecipeInResults(recipe);
+			updateRecipeDone();
+		});
 }
 
-function resetRecipeDlg()
-{
+function resetRecipeDlg() {
 	var recipeDlg = $("#recipe");
 
 	recipeDlg.find("#cookedCtrl, #interestingCtrl, #ratingCtrl").attr("disabled", true);
@@ -2044,11 +1860,10 @@ function resetRecipeDlg()
 	var allTagControls = recipeDlg.find(".tagControl").children();
 
 	allTagControls.attr("disabled", true);
-	allTagControls.prop("checked", false);		
+	allTagControls.prop("checked", false);
 }
 
-function onRecipeEditClick()
-{
+function onRecipeEditClick() {
 	var recipeDlg = $("#recipe");
 
 	recipeDlg.find("#cookedCtrl, #interestingCtrl, #ratingCtrl").removeAttr("disabled");
@@ -2062,50 +1877,45 @@ function onRecipeEditClick()
 	recipeDlg.find("#titleCtrl").focus();
 }
 
-function fillTagContainers()
-{
+function fillTagContainers() {
 	chrome.runtime.sendMessage(
-	{
-		command: "getAllTags",
-	}, 
-	function(response) 
-    {
-    	var tags = response.tags;
-
-    	if (tags.length == 1)
-    		return;
-
-    	var tagContainer = $(".tagContainer");
-
-		var tagLabels = tagContainer.find(".tagLabels");
-		var tagControls = tagContainer.find(".tagControls");
-
-		tagLabels.empty();
-		tagControls.empty();
-
-		var size = tags.length;
-		for (var cnt = 0; cnt < size; cnt++)
 		{
-			var tag = tags[cnt];
+			command: "getAllTags",
+		},
+		function (response) {
+			var tags = response.tags;
 
-			var tagLabel = $("<div class='tagLabel'>" + tag.name + "</div>");
-			var tagControlDiv = $("<div class='tagControl'></div>");
-			var tagControl = $("<input type='checkbox' disabled/>");
+			if (tags.length == 1)
+				return;
 
-			tagControlDiv.append(tagControl);
-			tagControl.data("id", tag.id);
+			var tagContainer = $(".tagContainer");
 
-			tagLabels.append(tagLabel);
-			tagControls.append(tagControlDiv);
-		}
-	});
+			var tagLabels = tagContainer.find(".tagLabels");
+			var tagControls = tagContainer.find(".tagControls");
+
+			tagLabels.empty();
+			tagControls.empty();
+
+			var size = tags.length;
+			for (var cnt = 0; cnt < size; cnt++) {
+				var tag = tags[cnt];
+
+				var tagLabel = $("<div class='tagLabel'>" + tag.name + "</div>");
+				var tagControlDiv = $("<div class='tagControl'></div>");
+				var tagControl = $("<input type='checkbox' disabled/>");
+
+				tagControlDiv.append(tagControl);
+				tagControl.data("id", tag.id);
+
+				tagLabels.append(tagLabel);
+				tagControls.append(tagControlDiv);
+			}
+		});
 }
 
-function checkTags(parent, tagIds)
-{
+function checkTags(parent, tagIds) {
 	var size = tagIds.length;
-	for (var cnt = 0; cnt < size; cnt++)
-	{
+	for (var cnt = 0; cnt < size; cnt++) {
 		var tagControl = getTagControlById(parent, tagIds[cnt]);
 
 		if (tagControl === null)
@@ -2115,42 +1925,36 @@ function checkTags(parent, tagIds)
 	}
 }
 
-function getCheckedTagIds(parent)
-{
+function getCheckedTagIds(parent) {
 	var checkedTagIds = [];
 	var tagControls = parent.find(".tagControl").children();
 
 	var size = tagControls.length;
-	for (var cnt = 0; cnt < size; cnt++) 
-	{
+	for (var cnt = 0; cnt < size; cnt++) {
 		var tagControl = $(tagControls[cnt]);
-		
+
 		if (!tagControl.prop("checked"))
 			continue;
 
 		checkedTagIds.push(tagControl.data("id"));
-   	}
+	}
 
-   	return checkedTagIds;
+	return checkedTagIds;
 }
 
-function showSection(id, parentId)
-{
+function showSection(id, parentId) {
 	resetSectionDlg();
 
-	if (id === 0)
-	{
+	if (id === 0) {
 		onSectionCloseClick();
 		return;
 	}
 
 	getSectionById(id,
-		function(section)
-		{
+		function (section) {
 			var isNewEntry = false;
 
-			if (section === null)
-			{
+			if (section === null) {
 				isNewEntry = true;
 
 				section = new Section();
@@ -2168,18 +1972,16 @@ function showSection(id, parentId)
 			var btnOK = sectionDlg.find(".btnOK");
 			btnOK.off("click");
 
-			btnOK.on("click", 
-				function()
-				{
+			btnOK.on("click",
+				function () {
 					onSectionOKClick(id, section);
 				});
 
 			var btnCancel = sectionDlg.find(".btnCancel");
 			btnCancel.off("click");
 
-			btnCancel.on("click", 
-				function()
-				{
+			btnCancel.on("click",
+				function () {
 					if (isNewEntry === true)
 						id = 0;
 
@@ -2190,8 +1992,7 @@ function showSection(id, parentId)
 		});
 }
 
-function onSectionOKClick(id, section)
-{
+function onSectionOKClick(id, section) {
 	var sectionDlg = $("#section");
 	section.name = sectionDlg.find("#titleCtrl").val();
 
@@ -2199,21 +2000,19 @@ function onSectionOKClick(id, section)
 	section.tagIds = getCheckedTagIds(sectionDlg);
 
 	chrome.runtime.sendMessage(
-	{
-		command: "updateSection",
-		id: id,
-		section: section,
-		tagIdDiff: tagIdDiff
-	}, 
-	function() 
-    {
-		showSection(id, section.bookId);
-		refreshResultsView();
-	});
+		{
+			command: "updateSection",
+			id: id,
+			section: section,
+			tagIdDiff: tagIdDiff
+		},
+		function () {
+			showSection(id, section.bookId);
+			refreshResultsView();
+		});
 }
 
-function resetSectionDlg()
-{
+function resetSectionDlg() {
 	var sectionDlg = $("#section");
 
 	sectionDlg.find("#titleCtrl").attr("readonly", true);
@@ -2224,11 +2023,10 @@ function resetSectionDlg()
 	var allTagControls = sectionDlg.find(".tagControl").children();
 
 	allTagControls.attr("disabled", true);
-	allTagControls.prop("checked", false);		
+	allTagControls.prop("checked", false);
 }
 
-function onSectionEditClick()
-{
+function onSectionEditClick() {
 	var sectionDlg = $("#section");
 
 	sectionDlg.find("#titleCtrl").removeAttr("readonly");
@@ -2240,58 +2038,49 @@ function onSectionEditClick()
 	sectionDlg.find("#titleCtrl").focus();
 }
 
-function onSectionCloseClick()
-{
+function onSectionCloseClick() {
 	closeDialog($("#section"));
 	resetSectionDlg();
 }
 
-function getCheckedTagsDiff(parent, oldTagIds)
-{
-	var tagsDiff = 
-	{
-		added: [],
-		removed: []
-	};
+function getCheckedTagsDiff(parent, oldTagIds) {
+	var tagsDiff =
+		{
+			added: [],
+			removed: []
+		};
 
 	var tagControls = parent.find(".tagControl").children();
 
 	var size = tagControls.length;
-	for (var cnt = 0; cnt < size; cnt++) 
-	{
+	for (var cnt = 0; cnt < size; cnt++) {
 		var tagControl = $(tagControls[cnt]);
 		var tagId = tagControl.data("id");
 
-		if (tagControl.prop("checked") && oldTagIds.indexOf(tagId) == -1)
-		{
+		if (tagControl.prop("checked") && oldTagIds.indexOf(tagId) == -1) {
 			tagsDiff.added.push(tagId);
 		}
-		else if (!tagControl.prop("checked") && oldTagIds.indexOf(tagId) != -1)
-		{
+		else if (!tagControl.prop("checked") && oldTagIds.indexOf(tagId) != -1) {
 			tagsDiff.removed.push(tagId);
 		}
-   	}
+	}
 
-   	return tagsDiff;
+	return tagsDiff;
 }
 
-function showBook(id)
-{
+function showBook(id) {
 	resetBookDlg();
 
-	if (id === 0)
-	{
+	if (id === 0) {
 		onBookCloseClick();
 		return;
 	}
 
 	getBookById(id,
-		function (book)
-		{
+		function (book) {
 			var isNewEntry = false;
 
-			if (book === null)
-			{
+			if (book === null) {
 				isNewEntry = true;
 
 				book = new Book();
@@ -2306,18 +2095,16 @@ function showBook(id)
 			var btnOK = bookDlg.find(".btnOK");
 			btnOK.off("click");
 
-			btnOK.on("click", 
-				function()
-				{
+			btnOK.on("click",
+				function () {
 					onBookOKClick(id, book);
 				});
 
 			var btnCancel = bookDlg.find(".btnCancel");
 			btnCancel.off("click");
 
-			btnCancel.on("click", 
-				function()
-				{
+			btnCancel.on("click",
+				function () {
 					if (isNewEntry === true)
 						id = 0;
 
@@ -2328,8 +2115,7 @@ function showBook(id)
 		});
 }
 
-function resetBookDlg()
-{
+function resetBookDlg() {
 	var bookDlg = $("#book");
 
 	bookDlg.find("#titleCtrl").attr("readonly", true);
@@ -2338,8 +2124,7 @@ function resetBookDlg()
 	bookDlg.find(".btnOK, .btnCancel").hide();
 }
 
-function onBookEditClick()
-{
+function onBookEditClick() {
 	var bookDlg = $("#book");
 
 	bookDlg.find("#titleCtrl").removeAttr("readonly");
@@ -2350,34 +2135,29 @@ function onBookEditClick()
 	bookDlg.find("#titleCtrl").focus();
 }
 
-function onBookCloseClick()
-{
+function onBookCloseClick() {
 	closeDialog($("#book"));
 	resetBookDlg();
 }
 
-function onBookOKClick(id, book)
-{
+function onBookOKClick(id, book) {
 	var bookDlg = $("#book");
 	book.name = bookDlg.find("#titleCtrl").val();
 
 	chrome.runtime.sendMessage(
-	{
-		command: "updateBook",
-		id: id,
-		book: book,
-	}, 
-	function() 
-    {
-		showBook(id);
-		refreshResultsView();
-	});
+		{
+			command: "updateBook",
+			id: id,
+			book: book,
+		},
+		function () {
+			showBook(id);
+			refreshResultsView();
+		});
 }
 
-function onEditClick(type, id)
-{
-	switch (type)
-	{
+function onEditClick(type, id) {
+	switch (type) {
 		case RESULT_TYPE_RECIPE:
 			showRecipe(id);
 			return;
@@ -2396,10 +2176,8 @@ function onEditClick(type, id)
 	}
 }
 
-function onDeleteClick(type, id, onDeleteDone)
-{
-	switch (type)
-	{
+function onDeleteClick(type, id, onDeleteDone) {
+	switch (type) {
 		case RESULT_TYPE_RECIPE:
 			deleteRecipe(id, onDeleteDone);
 			return;
@@ -2414,65 +2192,55 @@ function onDeleteClick(type, id, onDeleteDone)
 	}
 }
 
-function deleteRecipe(id, onDeleteRecipeDone)
-{
+function deleteRecipe(id, onDeleteRecipeDone) {
 	chrome.runtime.sendMessage(
-	{
-		command: "deleteObject",
-		type: RESULT_TYPE_RECIPE,
-		id: id,
-		removeFromParent: true
-	}, 
-	function() 
-    {
-    	if (typeof onDeleteRecipeDone != "undefined")
-			onDeleteRecipeDone();
-	});
+		{
+			command: "deleteObject",
+			type: RESULT_TYPE_RECIPE,
+			id: id,
+			removeFromParent: true
+		},
+		function () {
+			if (typeof onDeleteRecipeDone != "undefined")
+				onDeleteRecipeDone();
+		});
 }
 
-function deleteSection(id, onDeleteSectionDone)
-{
+function deleteSection(id, onDeleteSectionDone) {
 	chrome.runtime.sendMessage(
-	{
-		command: "deleteObject",
-		type: RESULT_TYPE_SECTION,
-		id: id,
-		removeFromParent: true
-	}, 
-	function() 
-    {
-    	if (typeof onDeleteSectionDone != "undefined")
-			onDeleteSectionDone();
-	});
+		{
+			command: "deleteObject",
+			type: RESULT_TYPE_SECTION,
+			id: id,
+			removeFromParent: true
+		},
+		function () {
+			if (typeof onDeleteSectionDone != "undefined")
+				onDeleteSectionDone();
+		});
 }
 
-function deleteBook(id, onDeleteBookDone)
-{
+function deleteBook(id, onDeleteBookDone) {
 	chrome.runtime.sendMessage(
-	{
-		command: "deleteObject",
-		type: RESULT_TYPE_BOOK,
-		id: id,
-	}, 
-	function() 
-    {
-		if (typeof onDeleteBookDone != "undefined")
-			onDeleteBookDone();
-	});
+		{
+			command: "deleteObject",
+			type: RESULT_TYPE_BOOK,
+			id: id,
+		},
+		function () {
+			if (typeof onDeleteBookDone != "undefined")
+				onDeleteBookDone();
+		});
 }
 
-function refreshResultsView()
-{
+function refreshResultsView() {
 	showSearchResults(_currentResults);
 }
 
-function onAddClick(type, parentId)
-{
+function onAddClick(type, parentId) {
 	getNextAvailableId(type,
-		function(id)
-		{
-			switch (type)
-			{
+		function (id) {
+			switch (type) {
 				case RESULT_TYPE_RECIPE:
 					showRecipe(id, parentId);
 					return;
@@ -2492,36 +2260,30 @@ function onAddClick(type, parentId)
 		});
 }
 
-function getNextAvailableId(type, onGetNextAvailableIdDone)
-{
+function getNextAvailableId(type, onGetNextAvailableIdDone) {
 	chrome.runtime.sendMessage(
-	{
-		command: "getNextAvailableId",
-		type: type
-	}, 
-	function(response) 
-    {
-		onGetNextAvailableIdDone(response);
-	});
+		{
+			command: "getNextAvailableId",
+			type: type
+		},
+		function (response) {
+			onGetNextAvailableIdDone(response);
+		});
 }
 
-function showTag(id)
-{
+function showTag(id) {
 	resetTagDlg();
 
-	if (id === 0)
-	{
+	if (id === 0) {
 		onTagCloseClick();
 		return;
 	}
 
 	getTagById(id,
-		function(tag)
-		{
+		function (tag) {
 			var isNewEntry = false;
 
-			if (tag === null)
-			{
+			if (tag === null) {
 				isNewEntry = true;
 
 				tag = new Tag();
@@ -2536,18 +2298,16 @@ function showTag(id)
 			var btnOK = tagDlg.find(".btnOK");
 			btnOK.off("click");
 
-			btnOK.on("click", 
-				function()
-				{
+			btnOK.on("click",
+				function () {
 					onTagOKClick(id, tag);
 				});
 
 			var btnCancel = tagDlg.find(".btnCancel");
 			btnCancel.off("click");
 
-			btnCancel.on("click", 
-				function()
-				{
+			btnCancel.on("click",
+				function () {
 					if (isNewEntry === true)
 						id = 0;
 
@@ -2558,8 +2318,7 @@ function showTag(id)
 		});
 }
 
-function resetTagDlg()
-{
+function resetTagDlg() {
 	var tagDlg = $("#tag");
 
 	tagDlg.find("#titleCtrl").attr("readonly", true);
@@ -2568,8 +2327,7 @@ function resetTagDlg()
 	tagDlg.find(".btnOK, .btnCancel").hide();
 }
 
-function onTagEditClick()
-{
+function onTagEditClick() {
 	var tagDlg = $("#tag");
 
 	tagDlg.find("#titleCtrl").removeAttr("readonly");
@@ -2580,74 +2338,63 @@ function onTagEditClick()
 	tagDlg.find("#titleCtrl").focus();
 }
 
-function onTagCloseClick()
-{
+function onTagCloseClick() {
 	closeDialog($("#tag"));
 	resetTagDlg();
 }
 
-function onTagOKClick(id, tag)
-{
+function onTagOKClick(id, tag) {
 	var tagDlg = $("#tag");
 	tag.name = tagDlg.find("#titleCtrl").val();
 
 	chrome.runtime.sendMessage(
-	{
-		command: "updateTag",
-		id: id,
-		tag: tag,
-	}, 
-	function() 
-    {
-		showTag(id);
-		fillTagContainers();
+		{
+			command: "updateTag",
+			id: id,
+			tag: tag,
+		},
+		function () {
+			showTag(id);
+			fillTagContainers();
 
-		refreshResultsView();
-	});
+			refreshResultsView();
+		});
 }
 
-function resetDayMenu()
-{
+function resetDayMenu() {
 	$("#recipeSuggestions").empty();
-			
+
 	$(".recipeEntry").remove();
 	$(".addRecipeEntry").remove();
 }
 
-function onDayMenuCloseClick()
-{
+function onDayMenuCloseClick() {
 	closeDialog($("#dayMenu"));
 	resetDayMenu();
 }
 
-function showDialog(dialogDiv)
-{
+function showDialog(dialogDiv) {
 	$("#dialogContainer").css("display", "flex").focus();
 	dialogDiv.css("display", "flex");
 }
 
-function closeDialog(dialogDiv)
-{
+function closeDialog(dialogDiv) {
 	$("#dialogContainer").hide();
 	dialogDiv.hide();
 }
 
-function clearSearchBox()
-{
+function clearSearchBox() {
 	$("#searchBox").val("");
 }
 
-function updateRecipeInResults(updatedRecipe)
-{
+function updateRecipeInResults(updatedRecipe) {
 	var recipeUpdated = false;
 	var recipeGroups = _currentResults.recipes;
 
-	for (var group = 0; group < recipeGroups.length; group++)
-	{
+	for (var group = 0; group < recipeGroups.length; group++) {
 		var recipeGroup = recipeGroups[group];
 
-		for (var recipe = 0; recipe < recipeGroup.recipes.length; recipe++)
-		{
+		for (var recipe = 0; recipe < recipeGroup.recipes.length; recipe++) {
 			var tmpRecipe = recipeGroup.recipes[recipe];
 
 			if (updatedRecipe.id != tmpRecipe.id)

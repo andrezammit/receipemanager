@@ -1,7 +1,7 @@
 {
   "name": "Recipe Manager",
   "description": "Recipe manager application.",
-  "version": "0.4",
+  "version": "0.5",
   "manifest_version": 2,
   "app": {
     "background": {
@@ -15,7 +15,7 @@
   "permissions": [
     "syncFileSystem",
     { 
-      "fileSystem": ["retainEntries"] 
+      "fileSystem": ["write", "retainEntries"] 
     }
   ]
 }

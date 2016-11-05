@@ -95,6 +95,12 @@ chrome.runtime.onMessage.addListener(
             }
             break;
 
+            case "getDatabaseData":
+            {
+                sendResponse(_db);
+                return true;
+            }
+
             case "importDatabase":
             {
                 importDatabase(request.data,
