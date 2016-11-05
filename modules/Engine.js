@@ -128,11 +128,24 @@ function importDatabase(importPath, callback)
             var exportData = JSON.parse(exportJSON);
 
             _dbVersion = exportData.dbVersion;
-            var zipData = exportData.data;
 
-            var zipBuffer = new Buffer(zipData, 'base64');
+            var jsonData = '';
 
-            var jsonData = zlib.inflateSync(zipBuffer).toString();
+            if (_dbVersion !== undefined)
+            {
+                // We need to skip this if the database is really old.
+
+                var zipData = exportData.data;
+
+                var zipBuffer = new Buffer(zipData, 'base64');
+                jsonData = zlib.inflateSync(zipBuffer).toString();
+            }
+            else
+            {
+                _dbVersion = 1;
+                jsonData = exportJSON;
+            }
+
             _db = JSON.parse(jsonData);
 
             uploadZippedDatabase(jsonData, _dbVersion);
@@ -233,7 +246,7 @@ function uploadCloudDatabase(zipData, newDbVersion, callback)
 
     var fileData = zipData.toString('base64');
 
-    GoogleAPI.updateDatabase(fileData, newDbVersion, 
+    GoogleAPI.updateDatabase(fileData, newDbVersion,
         function (error, file)
         {
             if (error)
@@ -284,8 +297,8 @@ function createCloudDatabase(data, dbVersion, callback)
 
     var fileData = JSON.stringify(data);
 
-    GoogleAPI.addDatabase(fileData, dbVersion, 
-        function(error, file)
+    GoogleAPI.addDatabase(fileData, dbVersion,
+        function (error, file)
         {
             if (error)
             {
@@ -1642,7 +1655,7 @@ function loadDatabase(callback)
                 createCloudDatabase(_db, _dbVersion, callback);
                 return;
             }
-            
+
             if (_dbVersion === remoteDbVersion)
             {
                 console.log("Local database is the latest version.");
@@ -1705,14 +1718,14 @@ exports.getBunchOfResults = getBunchOfResults;
 exports.getRecipeSuggestions = getRecipeSuggestions;
 exports.getSearchSuggestions = getSearchSuggestions;
 
-exports.authenticate = 
-    function(mainWindow, callback)
+exports.authenticate =
+    function (mainWindow, callback)
     {
         GoogleAPI.authenticate(mainWindow, callback);
     };
 
-exports.initGoogleCalendar = 
-    function(callback)
+exports.initGoogleCalendar =
+    function (callback)
     {
         GoogleAPI.initCalendar(callback);
     };
