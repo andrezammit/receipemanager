@@ -62,6 +62,7 @@ function getNewToken(mainWindow, callback)
     var oAuthWin = new BrowserWindow(
         {
             parent: mainWindow,
+            alwaysOnTop: true,
             modal: true,
             width: 800,
             height: 600
