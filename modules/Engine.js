@@ -1706,9 +1706,9 @@ exports.getRecipeSuggestions = getRecipeSuggestions;
 exports.getSearchSuggestions = getSearchSuggestions;
 
 exports.authenticate = 
-    function(callback)
+    function(mainWindow, callback)
     {
-        GoogleAPI.authenticate(callback);
+        GoogleAPI.authenticate(mainWindow, callback);
     };
 
 exports.initGoogleCalendar = 

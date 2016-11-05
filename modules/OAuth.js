@@ -15,7 +15,7 @@ var _oAuth2Client = new _googleAuth.OAuth2(_clientId, _secret, "urn:ietf:wg:oaut
 
 var _token = null;
 
-function checkAuth(callback) 
+function checkAuth(mainWindow, callback) 
 {
     fs.readFile(Defines.getTokenPath(),
         function (error, token) 
@@ -23,7 +23,7 @@ function checkAuth(callback)
             if (error) 
             {
                 console.log("Google authentication token not found.");
-                getNewToken(callback);
+                getNewToken(mainWindow, callback);
             }
             else 
             {
@@ -49,7 +49,7 @@ function checkAuth(callback)
         });
 }
 
-function getNewToken(callback)
+function getNewToken(mainWindow, callback)
 {
     var authUrl = _oAuth2Client.generateAuthUrl(
         {
@@ -61,6 +61,7 @@ function getNewToken(callback)
 
     var oAuthWin = new BrowserWindow(
         {
+            parent: mainWindow,
             modal: true,
             width: 800,
             height: 600

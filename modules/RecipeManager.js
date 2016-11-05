@@ -43,7 +43,9 @@ function start()
 							fillTagContainers();
 						});
 
-					Engine.authenticate(onAuthenticateReady);
+					var mainWindow = app.getCurrentWindow();
+
+					Engine.authenticate(mainWindow, onAuthenticateReady);
 					setHandlers();
 				});
 		});
