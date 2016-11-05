@@ -133,7 +133,7 @@ function addDatabase(fileData, newDbVersion, callback)
 
 function addFile(fileName, fileData, appProperties, callback)
 {
-    _googleDrive.files.insert(
+    _googleDrive.files.create(
         {
             auth: OAuth.getClient(),
             resource:
