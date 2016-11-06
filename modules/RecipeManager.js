@@ -139,7 +139,7 @@ function setHandlers()
 		{
 			$("#suggestions").hide();
 		});
-
+	
 	$("#header").on("click",
 		function()
 		{
@@ -150,6 +150,14 @@ function setHandlers()
 		function()
 		{
 			$("#suggestions").hide();
+			$("#recipeSuggestions").hide();
+		});
+
+	$("#dialogContainer").on("click",
+		function()
+		{
+			$("#suggestions").hide();
+			$("#recipeSuggestions").hide();
 		});
 
 	$("#recipeSuggestions")
