@@ -198,6 +198,8 @@ function fillCalendarView(date)
 		daysDiv.append(dummyDay);
 	}
 
+	var todayDate = new Date();
+
 	for (cnt = 0; cnt < days; cnt++)
 	{
 		var day = cnt + 1;
@@ -207,9 +209,9 @@ function fillCalendarView(date)
 
 		var isToday = false;
 
-		if (dateData.getDate() === _currDate.getDate() &&
-			dateData.getMonth() === _currDate.getMonth() &&
-			dateData.getFullYear() === _currDate.getFullYear())
+		if (dateData.getDate() === todayDate.getDate() &&
+			dateData.getMonth() === todayDate.getMonth() &&
+			dateData.getFullYear() === todayDate.getFullYear())
 		{
 			isToday = true;
 		}
