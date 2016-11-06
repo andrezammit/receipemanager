@@ -370,6 +370,14 @@ function addRecipeSuggestion(recipeSuggestionsDiv, recipe)
 {
 	var recipeSuggestionDiv = $("<div class='recipeSuggestion'>" + recipe.name + "</div>");
 
+	var section = null;
+
+	if (recipe.sectionId !== null)
+		section = Engine.getSectionById(recipe.sectionId);
+
+	if (section !== null)
+		recipeSuggestionDiv.append($("<span class='recipeTooltip'>" + section.name.trim() + "; page: " + recipe.page + "</span>"));
+
 	if (recipe.id === 0)
 		recipeSuggestionDiv.addClass("recipeSuggestionHover");
 

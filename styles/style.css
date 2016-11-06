@@ -956,6 +956,31 @@ button
    	background-color: white;
 }
 
+.recipeSuggestion:hover .recipeTooltip 
+{
+    display: block;
+}
+
+.recipeTooltip 
+{
+    display: none;
+
+    position: absolute;
+    z-index: 1000;
+
+    width: 435px;
+    height: 14px;
+
+    margin-left: 30px;
+    margin-top: -13px;
+
+    padding: 4px;
+
+    font-size: small;
+    
+    background-color: rgba(232,232,232,0.9);
+}
+
 .recipeSuggestionHover
 {
 	color: black;
