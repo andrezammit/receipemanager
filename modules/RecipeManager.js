@@ -1252,7 +1252,8 @@ function onRecipeEditClick()
 
 function fillTagContainers()
 {
-	var tags = Engine.getAllTags();
+	var results = Engine.getAllTags();
+	var tags = results.tags;
 
 	if (tags.length == 1)
 		return;
