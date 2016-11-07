@@ -1756,7 +1756,7 @@ exports.updateBook =
 exports.updateRecipe =
     function (id, updatedRecipe, callback)
     {
-        updateRecipe(id, updateRecipe);
+        updateRecipe(id, updatedRecipe);
         saveDatabase(callback);
     };
 

@@ -550,10 +550,15 @@ function onTitleClick()
 
 function showSearchResults(results, clearResults)
 {
-	if (typeof clearResults == "undefined" || clearResults === true)
+	clearResults = clearResults || null;
+	
+	if (clearResults !== null || clearResults === true)
 		clearSearchResults();
 
 	_currentResults = results;
+
+	if (_currentResults === null)
+		return;
 
 	if (results.books)
 	{
@@ -1708,6 +1713,9 @@ function clearSearchBox()
 
 function updateRecipeInResults(updatedRecipe)
 {
+	if (_currentResults === null)
+		return;
+
 	var recipeUpdated = false;
 	var recipeGroups = _currentResults.recipes;
 
