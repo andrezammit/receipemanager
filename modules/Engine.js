@@ -1701,6 +1701,42 @@ function getSectionById(id)
     return getObjectById(id, Defines.RESULT_TYPE_SECTION);
 }
 
+function getNextAvailableId(type)
+{
+    var array = null;
+
+    switch (type)
+    {
+        case Defines.RESULT_TYPE_RECIPE:
+            array = _db.recipes;
+            break;
+
+        case Defines.RESULT_TYPE_SECTION:
+            array = _db.sections;
+            break;
+
+        case Defines.RESULT_TYPE_BOOK:
+            array = _db.books;
+            break;
+
+        case Defines.RESULT_TYPE_TAG:
+            array = _db.tags;
+            break;
+    }
+
+    var isIdAvailable = false;
+    var id = array[array.length - 1].id;
+
+    do
+    {
+        id++;
+        isIdAvailable = getObjectById(id, type) === null;
+    }
+    while (!isIdAvailable);
+
+    return id;
+}
+
 exports.setupEnvironment = setupEnvironment;
 exports.loadLocalDatabase = loadLocalDatabase;
 exports.loadDatabase = loadDatabase;
@@ -1717,6 +1753,7 @@ exports.getSectionRecipes = getSectionRecipes;
 exports.getBunchOfResults = getBunchOfResults;
 exports.getRecipeSuggestions = getRecipeSuggestions;
 exports.getSearchSuggestions = getSearchSuggestions;
+exports.getNextAvailableId = getNextAvailableId;
 
 exports.authenticate =
     function (mainWindow, callback)
