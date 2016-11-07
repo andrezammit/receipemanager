@@ -910,7 +910,7 @@ function addDeleteButton(resultDiv, type, id)
 		function(e)
 		{
 			showLoader();
-			Engine.deleteObject(type, id, true, hideLoader);
+			Engine.deleteObject(id, type, true, hideLoader);
 
 			e.stopPropagation();
 		});
