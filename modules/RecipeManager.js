@@ -552,7 +552,7 @@ function showSearchResults(results, clearResults)
 {
 	clearResults = clearResults || null;
 	
-	if (clearResults !== null || clearResults === true)
+	if (clearResults === null || clearResults === true)
 		clearSearchResults();
 
 	_currentResults = results;
