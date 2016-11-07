@@ -34,6 +34,7 @@ function Book()
 function Section()
 {
 	this.id = 0;
+	this.bookId = null;
 	this.name = "";
 	this.recipeIds = [];
 	this.tagIds = [];
