@@ -166,9 +166,9 @@ function fillCalendarView(date)
 
 	var days = getDaysInMonth(date.getMonth());
 	var lastDay = getDayOfWeek(days, date.getMonth(), date.getFullYear());
-	
+
 	var daysToAdd = 7 - lastDay;
-	
+
 	var totalDays = firstDay + days + daysToAdd;
 
 	if ((totalDays / 7) < 6)
@@ -218,7 +218,7 @@ function fillCalendarView(date)
 
 		var dayDiv = $("<div class='dayCell availDay'><div class='day'>" + day + "</div></div>");
 		dayDiv.data("date", dateData);
-		
+
 		if (isToday)
 			dayDiv.addClass("todayCell");
 
@@ -382,7 +382,7 @@ function addRecipeSuggestion(recipeSuggestionsDiv, recipe)
 		recipeSuggestionDiv.addClass("recipeSuggestionHover");
 
 	recipeSuggestionDiv.on("click",
-		function(event)
+		function (event)
 		{
 			$("#recipeSearch").val(recipe.name);
 			$("#recipeSearch").data("recipeId", recipe.id);
@@ -396,13 +396,13 @@ function addRecipeSuggestion(recipeSuggestionsDiv, recipe)
 		});
 
 	recipeSuggestionDiv.hover(
-		function()
-       	{ 
-       		$("#recipeSuggestions").children().removeClass("recipeSuggestionHover");
+		function ()
+		{
+			$("#recipeSuggestions").children().removeClass("recipeSuggestionHover");
 			$(this).addClass("recipeSuggestionHover");
 		},
-		function()
-		{ 
+		function ()
+		{
 			$(this).removeClass("recipeSuggestionHover");
 		});
 
@@ -468,40 +468,40 @@ function onAddRecipeEntryClick()
 	addRecipeInput.focus();
 
 	addRecipeInput
-		.on("input", 
-			function()
-			{
-				onAddRecipeInputChanged(addRecipeInput);
-			})
+		.on("input",
+		function ()
+		{
+			onAddRecipeInputChanged(addRecipeInput);
+		})
 		.blur(
-			function()
-			{
-				if ($("#recipeSuggestions").data("hovered") === true)
-					return;
+		function ()
+		{
+			if ($("#recipeSuggestions").data("hovered") === true)
+				return;
 
-				addRecipeEntry.html("Add Recipe...");
-				addRecipeEntry.data("inputState", false);
+			addRecipeEntry.html("Add Recipe...");
+			addRecipeEntry.data("inputState", false);
 
-				addRecipeEntry.off("blur");
-			})
+			addRecipeEntry.off("blur");
+		})
 		.keydown(
-			function(event)
+		function (event)
+		{
+			switch (event.keyCode)
 			{
-				switch (event.keyCode)
-				{
-					case Defines.KEY_ENTER:
-						onRecipeSearchEnterPressed();
-						break;
+				case Defines.KEY_ENTER:
+					onRecipeSearchEnterPressed();
+					break;
 
-					case Defines.KEY_UP:
-						onRecipeSearchUpPressed();
-						break;
+				case Defines.KEY_UP:
+					onRecipeSearchUpPressed();
+					break;
 
-					case Defines.KEY_DOWN:
-						onRecipeSearchDownPressed();
-						break;
-				}
-			});
+				case Defines.KEY_DOWN:
+					onRecipeSearchDownPressed();
+					break;
+			}
+		});
 }
 
 function onRecipeSearchUpPressed()
@@ -591,15 +591,31 @@ function onRecipeSearchEnterPressed()
 function addDateRecipeEntry(dateEntry, newDateRecipe)
 {
 	var newRecipeEntry = $("<div class='recipeEntry'></div>");
-	    	
+
+	var recipe = Engine.getRecipeById(newDateRecipe.id);
+
+	if (recipe !== null)
+		newDateRecipe.name = recipe.name;
+
 	var recipeEntryName = $("<div class='recipeEntryName'>" + newDateRecipe.name + "</div>");
 	newRecipeEntry.append(recipeEntryName);
-	
+
 	var recipeEntryDelete = $("<div class='recipeEntryButton'><img src='images/delete.png' class='recipeEntryIcon'></div>");
 	newRecipeEntry.append(recipeEntryDelete);
 
+	if (recipe !== null)
+	{
+		var section = null;
+
+		if (recipe.sectionId !== null)
+			section = Engine.getSectionById(recipe.sectionId);
+
+		if (section !== null)
+			newRecipeEntry.append($("<span class='recipeTooltip'>" + section.name.trim() + "; page: " + recipe.page + "</span>"));
+	}
+
 	recipeEntryDelete.on("click",
-		function()
+		function ()
 		{
 			removeRecipeFromDateEntry(dateEntry, newDateRecipe);
 			newRecipeEntry.remove();
@@ -634,8 +650,8 @@ function onRecipeDragStopped(e, ui)
 	var nextRecipeDiv = ui.item.next();
 
 	if (nextRecipeDiv.length === 0)
-        return;
-        
+		return;
+
 	nextRecipe = nextRecipeDiv.data("recipe");
 
 	var recipe = ui.item.data("recipe");
@@ -707,7 +723,7 @@ function syncCalendar()
 	RecipeManager.showLoader();
 
 	Engine.syncCalendar(month, year,
-		function()
+		function ()
 		{
 			RecipeManager.hideLoader();
 		}

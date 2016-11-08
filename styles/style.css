@@ -881,6 +881,17 @@ button
 	pointer-events: auto;	
 }
 
+.recipeEntry .recipeTooltip
+{
+    width: 447px;
+    margin-top: 13px;
+}
+
+.recipeEntry:hover .recipeTooltip
+{
+	display: block;	
+}
+
 .recipeEntryButton
 {
 	opacity: 0;
