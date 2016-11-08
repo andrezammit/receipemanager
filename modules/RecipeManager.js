@@ -581,6 +581,11 @@ function showSearchResults(results, clearResults)
 	}
 
 	showLoadingView(false);
+
+	$(".resultEntry").quickfit(
+		{		
+			max: 14
+		});
 }
 
 function clearSearchResults()

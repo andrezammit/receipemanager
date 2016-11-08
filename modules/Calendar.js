@@ -632,6 +632,11 @@ function addDateRecipeEntry(dateEntry, newDateRecipe)
 
 	var recipeContainer = $("#recipeContainer");
 	recipeContainer.append(newRecipeEntry);
+
+	recipeEntryName.quickfit(
+		{
+			max: 22
+		});
 }
 
 function onRecipeEntryClick(event)
