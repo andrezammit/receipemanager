@@ -550,9 +550,10 @@ function onTitleClick()
 
 function showSearchResults(results, clearResults)
 {
-	clearResults = clearResults || null;
+	if (clearResults === undefined)
+		clearResults = true;
 	
-	if (clearResults === null || clearResults === true)
+	if (clearResults === true)
 		clearSearchResults();
 
 	_currentResults = results;
