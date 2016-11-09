@@ -273,6 +273,8 @@ body
 {
 	display: flex;
 
+    align-items: center;
+
 	padding-top: 5px;
     padding-bottom: 5px;
     padding-left: 10px;
@@ -859,6 +861,8 @@ button
 .recipeEntry, .addRecipeEntry
 {
 	display: flex;
+
+    align-items: center;
 
     width: 100%;
     font-size: 22px;
