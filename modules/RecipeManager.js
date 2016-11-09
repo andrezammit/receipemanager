@@ -179,6 +179,7 @@ function setHandlers()
 	$("#books").on("click", showBooks);
 	$("#tags").on("click", showTags);
 	$("#syncCalendar").on("click", Calendar.syncCalendar);
+	$("#webImport").on("click", onWebImportClick);
 
 	var recipeDlg = $("#recipe");
 
@@ -784,7 +785,10 @@ function addRecipeResult(sectionDiv, recipe)
 	}
 	else
 	{
-		var recipeInfo = "pg. " + recipe.page;
+		var recipeInfo = "";
+		
+		if (recipe.page !== "")
+			recipeInfo += "pg. " + recipe.page;
 
 		if (recipe.isCooked === 1 || recipe.isCooked === true)
 			recipeInfo += "; Cooked";
@@ -1770,6 +1774,11 @@ function hideLoader()
 function hideSplash()
 {
 	$("#splash").fadeOut();
+}
+
+function onWebImportClick()
+{
+	Engine.webImport("http://www.yummly.co.uk/recipe/Mexican-Chicken-And-Rice-Casserole-1189077", hideLoader);
 }
 
 exports.showDialog = showDialog;

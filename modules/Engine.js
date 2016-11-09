@@ -1,5 +1,6 @@
 var fs = require('fs');
 var zlib = require('zlib');
+var request = require('request');
 
 var Defines = require('./Defines.js');
 var GoogleAPI = require('./GoogleAPI');
@@ -476,60 +477,7 @@ function updateDateEntryInGoogleCalendar(dateEntry, callback)
     })(dateEntry);
 
     checkIfReady();
-
-    // , dateEntry.recipes[0],
-    //     function(error, event)
-    //     {
-    //         if (event === null)
-    //         {
-    //             createGoogleCalendarEvent(dateEntry.id, dateEntry.recipes[0],
-    //                 function (error)
-    //                 {
-    //                     console.log('Google Calendar event created.');
-    //                     return;
-    //                 });
-
-    //             return; 
-    //         }
-
-
-    //     });
 }
-
-//     _googleCalendar.events.list(
-//         {
-//             auth: _oAuth2Client,
-//             calendarId: 'primary',
-//             timeMin: (new Date()).toISOString(),
-//             maxResults: 10,
-//             singleEvents: true,
-//             orderBy: 'startTime'
-//         },
-//         function (error, response)
-//         {
-//             if (error)
-//             {
-//                 console.log('Failed to load Google Calendar. ' + error);
-//                 return;
-//             }
-
-//             var events = response.items;
-//             if (events.length === 0)
-//             {
-//                 console.log('No upcoming events found.');
-//             }
-//             else
-//             {
-//                 console.log('Upcoming 10 events:');
-//                 for (var i = 0; i < events.length; i++)
-//                 {
-//                     var event = events[i];
-//                     var start = event.start.dateTime || event.start.date;
-//                     console.log('%s - %s', start, event.summary);
-//                 }
-//             }
-//         });
-// });
 
 function getObjectById(id, type)
 {
@@ -564,6 +512,45 @@ function getObjectById(id, type)
         var object = array[cnt];
 
         if (object.id == id)
+            return object;
+    }
+
+    return null;
+}
+
+function getObjectByName(name, type)
+{
+    var array = null;
+
+    switch (type)
+    {
+        case Defines.RESULT_TYPE_RECIPE:
+            array = _db.recipes;
+            break;
+
+        case Defines.RESULT_TYPE_SECTION:
+            array = _db.sections;
+            break;
+
+        case Defines.RESULT_TYPE_BOOK:
+            array = _db.books;
+            break;
+
+        case Defines.RESULT_TYPE_TAG:
+            array = _db.tags;
+            break;
+
+        case Defines.RESULT_TYPE_DATEENTRY:
+            array = _db.calendar;
+            break;
+    }
+
+    var size = array.length;
+    for (var cnt = 0; cnt < size; cnt++) 
+    {
+        var object = array[cnt];
+
+        if (object.name === name)
             return object;
     }
 
@@ -1737,6 +1724,65 @@ function getNextAvailableId(type)
     return id;
 }
 
+function webImport(url, callback)
+{
+    var book = getObjectByName("Web Imports", Defines.RESULT_TYPE_BOOK);
+    
+    if (book === null) 
+    {
+        book = new Defines.Book();
+        book.id = getNextAvailableId(Defines.RESULT_TYPE_BOOK);
+        book.name = "Web Imports";
+
+        updateBook(book.id, book);
+    }
+
+    var section = getObjectByName("Yummly", Defines.RESULT_TYPE_SECTION);
+
+    if (section === null) 
+    {
+        section = new Defines.Section();
+        section.id = getNextAvailableId(Defines.RESULT_TYPE_SECTION);
+        section.name = "Yummly";
+        section.bookId = book.id;
+
+        updateSection(section.id, section);
+    }
+
+    request(url,
+        function(error, response, html)
+        {
+            if (error !== null)
+            {
+                callback(error);
+                return;
+            }
+
+            html = $(html);
+
+            var primaryInfo = html.find(".primary-info");
+
+            if (primaryInfo.length === 0)
+            {
+                callback();
+                return;
+            }
+
+            var recipeName = primaryInfo.first().find("h1").text();
+            console.log(recipeName);
+
+            var recipe = new Defines.Recipe();
+            
+            recipe.id = getNextAvailableId(Defines.RESULT_TYPE_RECIPE);
+            recipe.name = recipeName;
+            recipe.comment = url;
+            recipe.sectionId = section.id;
+
+            updateRecipe(recipe.id, recipe);
+            saveDatabase(callback);
+        });
+}
+
 exports.setupEnvironment = setupEnvironment;
 exports.loadLocalDatabase = loadLocalDatabase;
 exports.loadDatabase = loadDatabase;
@@ -1754,6 +1800,7 @@ exports.getBunchOfResults = getBunchOfResults;
 exports.getRecipeSuggestions = getRecipeSuggestions;
 exports.getSearchSuggestions = getSearchSuggestions;
 exports.getNextAvailableId = getNextAvailableId;
+exports.webImport = webImport;
 
 exports.authenticate =
     function (mainWindow, callback)
