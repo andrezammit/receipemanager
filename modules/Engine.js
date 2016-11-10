@@ -1,10 +1,9 @@
 var fs = require('fs');
 var zlib = require('zlib');
-var request = require('request');
 
 var Defines = require('./Defines');
 var GoogleAPI = require('./GoogleAPI');
-var RecipeManager = require('./RecipeManager');
+var WebImport = require('./WebImport');
 
 var _dbVersion = 0;
 var _db = new Defines.Database();
@@ -1725,65 +1724,6 @@ function getNextAvailableId(type)
     return id;
 }
 
-function webImport(url, callback)
-{
-    var book = getObjectByName("Web Imports", Defines.RESULT_TYPE_BOOK);
-    
-    if (book === null) 
-    {
-        book = new Defines.Book();
-        book.id = getNextAvailableId(Defines.RESULT_TYPE_BOOK);
-        book.name = "Web Imports";
-
-        updateBook(book.id, book);
-    }
-
-    var section = getObjectByName("Yummly", Defines.RESULT_TYPE_SECTION);
-
-    if (section === null) 
-    {
-        section = new Defines.Section();
-        section.id = getNextAvailableId(Defines.RESULT_TYPE_SECTION);
-        section.name = "Yummly";
-        section.bookId = book.id;
-
-        updateSection(section.id, section);
-    }
-
-    request(url,
-        function(error, response, html)
-        {
-            if (error !== null)
-            {
-                callback(error);
-                return;
-            }
-
-            html = $(html);
-
-            var primaryInfo = html.find(".primary-info");
-
-            if (primaryInfo.length === 0)
-            {
-                callback();
-                return;
-            }
-
-            var recipeName = primaryInfo.first().find("h1").text();
-            console.log(recipeName);
-
-            var recipe = new Defines.Recipe();
-            
-            recipe.id = getNextAvailableId(Defines.RESULT_TYPE_RECIPE);
-            recipe.name = recipeName;
-            recipe.comment = url;
-            recipe.sectionId = section.id;
-			recipe.tagIds = section.tagIds;
-
-            RecipeManager.showRecipe(recipe.id, recipe.sectionId, recipe);
-        });
-}
-
 exports.setupEnvironment = setupEnvironment;
 exports.loadLocalDatabase = loadLocalDatabase;
 exports.loadDatabase = loadDatabase;
@@ -1801,7 +1741,9 @@ exports.getBunchOfResults = getBunchOfResults;
 exports.getRecipeSuggestions = getRecipeSuggestions;
 exports.getSearchSuggestions = getSearchSuggestions;
 exports.getNextAvailableId = getNextAvailableId;
-exports.webImport = webImport;
+exports.getObjectByName = getObjectByName;
+
+exports.webImport = WebImport.import;
 
 exports.authenticate =
     function (mainWindow, callback)

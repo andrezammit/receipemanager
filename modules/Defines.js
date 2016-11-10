@@ -76,6 +76,9 @@ var KEY_DOWN 				= 40;
 var KEY_ENTER				= 13;
 var KEY_ESC					= 27;
 
+var SITE_UNKNOWN			= 0;
+var SITE_YUMMLY				= 1;
+
 var _baseDir = path.dirname(require.main.filename);
 
 var _tokenDir = _baseDir + '/.credentials/';
@@ -144,3 +147,6 @@ exports.RESULT_TYPE_DATEENTRY = RESULT_TYPE_DATEENTRY;
 exports.RESULT_TYPE_RECIPE = RESULT_TYPE_RECIPE;
 exports.RESULT_TYPE_SECTION = RESULT_TYPE_SECTION;
 exports.RESULT_TYPE_TAG = RESULT_TYPE_TAG;
+
+exports.SITE_UNKNOWN = SITE_UNKNOWN; 
+exports.SITE_YUMMLY = SITE_YUMMLY;

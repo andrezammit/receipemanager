@@ -1786,6 +1786,7 @@ function hideSplash()
 
 function onWebImportClick()
 {
+	showLoader();
 	Engine.webImport("http://www.yummly.co.uk/recipe/Mexican-Chicken-And-Rice-Casserole-1189077", hideLoader);
 }
 
