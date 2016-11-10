@@ -2,8 +2,9 @@ var fs = require('fs');
 var zlib = require('zlib');
 var request = require('request');
 
-var Defines = require('./Defines.js');
+var Defines = require('./Defines');
 var GoogleAPI = require('./GoogleAPI');
+var RecipeManager = require('./RecipeManager');
 
 var _dbVersion = 0;
 var _db = new Defines.Database();
@@ -1777,9 +1778,9 @@ function webImport(url, callback)
             recipe.name = recipeName;
             recipe.comment = url;
             recipe.sectionId = section.id;
+			recipe.tagIds = section.tagIds;
 
-            updateRecipe(recipe.id, recipe);
-            saveDatabase(callback);
+            RecipeManager.showRecipe(recipe.id, recipe.sectionId, recipe);
         });
 }
 
