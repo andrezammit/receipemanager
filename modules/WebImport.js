@@ -9,6 +9,9 @@ function detectSite(url)
     if (url.indexOf("yummly.co") !== -1)
         return Defines.SITE_YUMMLY;
 
+    if (url.indexOf("acelineentertainment.com") !== -1)
+        return Defines.SITE_ACELINE;
+
     return Defines.SITE_UNKNOWN;
 }
 
@@ -18,7 +21,12 @@ function getSiteName(site)
     {
         case Defines.SITE_YUMMLY:
             return "Yummly";
+
+        case Defines.SITE_ACELINE:
+            return "Aceline Entertainment";
     }
+
+    return "";
 }
 
 function yummlyImport(html, recipe)
@@ -29,6 +37,21 @@ function yummlyImport(html, recipe)
         return false;
 
     var recipeName = primaryInfo.first().find("h1").text();
+
+    if (recipeName === "")
+        return false;
+
+    recipe.name = recipeName;
+}
+
+function acelineImport(html, recipe)
+{
+    var entryTitle = html.find(".entry-title");
+
+    if (entryTitle.length === 0)
+        return false;
+
+    var recipeName = entryTitle.first().text().trim();
 
     if (recipeName === "")
         return false;
@@ -94,6 +117,10 @@ function webImport(url, callback)
             {
                 case Defines.SITE_YUMMLY:
                     yummlyImport(html, recipe);
+                    break;
+
+                case Defines.SITE_ACELINE:
+                    acelineImport(html, recipe);
                     break;
             }
 
