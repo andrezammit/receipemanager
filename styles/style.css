@@ -1116,3 +1116,27 @@ button
 	
     opacity: 0.1;
 }
+
+#enterURL
+{
+    position: fixed;
+
+    display: none;
+    flex-wrap: wrap;
+
+	width: 500px;
+
+    padding: 35px 25px 12px 25px;
+    
+    background-color: antiquewhite;
+
+    top: 115px;
+    left: calc(100% / 2 - 250px);
+
+    box-shadow: 0 0 14px 1px rgba(50, 50, 50, 0.75);
+}
+
+#enterUrl .dialogFooter > .btnOK, #enterUrl .dialogFooter > .btnCancel
+{
+	display: block;
+}

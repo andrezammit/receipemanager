@@ -1784,10 +1784,42 @@ function hideSplash()
 	$("#splash").fadeOut();
 }
 
+function resetEnterURLDlg()
+{
+	var enterURLDlg = $("#enterURL");
+	enterURLDlg.find("#urlCtrl").val("");
+}
+
 function onWebImportClick()
 {
-	showLoader();
-	Engine.webImport("http://www.yummly.co.uk/recipe/Mexican-Chicken-And-Rice-Casserole-1189077", hideLoader);
+	resetEnterURLDlg();
+
+	var enterURLDlg = $("#enterURL");
+
+	var btnOK = enterURLDlg.find(".btnOK");
+	btnOK.off("click");
+
+	btnOK.on("click",
+		function ()
+		{
+			var url = enterURLDlg.find("#urlCtrl").val();
+
+			closeDialog(enterURLDlg);
+			
+			showLoader();
+			Engine.webImport(url, hideLoader);
+		});
+
+	var btnCancel = enterURLDlg.find(".btnCancel");
+	btnCancel.off("click");
+
+	btnCancel.on("click",
+		function ()
+		{
+			closeDialog(enterURLDlg);
+		});
+
+	showDialog(enterURLDlg);
 }
 
 exports.showDialog = showDialog;
