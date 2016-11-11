@@ -916,7 +916,16 @@ function addDeleteButton(resultDiv, type, id)
 		function(e)
 		{
 			showLoader();
-			Engine.deleteObject(id, type, true, hideLoader);
+			Engine.deleteObject(id, type, true, 
+				function(error)
+				{
+					hideLoader();
+
+					if (error !== undefined && error !== null)
+						return;
+
+					resultDiv.remove();
+				});
 
 			e.stopPropagation();
 		});
