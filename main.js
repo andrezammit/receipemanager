@@ -31,7 +31,7 @@ function createWindow()
 	var template =
 		[
 			{
-				label: "Application",
+				label: "Recipe Manager",
 				submenu:
 				[
 					{ label: "About Application", selector: "orderFrontStandardAboutPanel:" },
@@ -50,6 +50,20 @@ function createWindow()
 					{ label: "Copy", accelerator: "CmdOrCtrl+C", selector: "copy:" },
 					{ label: "Paste", accelerator: "CmdOrCtrl+V", selector: "paste:" },
 					{ label: "Select All", accelerator: "CmdOrCtrl+A", selector: "selectAll:" }
+				]
+			},
+			{
+				label: "View",
+				submenu:
+				[
+					{ label: "Reload", accelerator: "CmdOrCtrl+R", click: 
+						function(item, focusedWindow) 
+						{ 
+							if (focusedWindow !== null)
+								focusedWindow.reload(); 
+						} 
+					},
+					{ label: "Debug", accelerator: "CmdOrCtrl+F12", click: function() { win.webContents.openDevTools(); } }
 				]
 			}
 		];
