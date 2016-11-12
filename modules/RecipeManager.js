@@ -7,7 +7,7 @@ var _lastSectionId = -1;
 var _currentResultsType = -1;
 var _currentResultsDiv = null;
 
-var app = require('electron').remote; 
+var app = require('electron').remote;
 
 var Engine = require('./Engine');
 var Defines = require('./Defines');
@@ -63,7 +63,7 @@ function onAuthenticateReady()
 
 	function isAllLoaded()
 	{
-		return isDatabaseLoaded === true && 
+		return isDatabaseLoaded === true &&
 			isCalendarLoaded === true;
 	}
 
@@ -77,7 +77,7 @@ function onAuthenticateReady()
 	}
 
 	Engine.loadDatabase(
-		function() 
+		function () 
 		{
 			Calendar.fillCalendarView();
 			fillTagContainers();
@@ -87,12 +87,12 @@ function onAuthenticateReady()
 		});
 
 	Engine.initGoogleCalendar(
-		function()
+		function ()
 		{
 			console.log('Google Calendar loaded.');
-			
+
 			isCalendarLoaded = true;
-			hideLoaderIfLoaded();			
+			hideLoaderIfLoaded();
 		});
 }
 
@@ -100,77 +100,77 @@ function setHandlers()
 {
 	$("#searchBox")
 		.on("input",
-			function()
-			{
-	    		onSearchBoxChanged();
-			})
+		function ()
+		{
+			onSearchBoxChanged();
+		})
 		.on("click",
-			function(event)
-			{
-	    		event.stopPropagation();
-			})
+		function (event)
+		{
+			event.stopPropagation();
+		})
 		.keydown(
-			function(event)
+		function (event)
+		{
+			switch (event.keyCode)
 			{
-				switch (event.keyCode)
-				{
-					case Defines.KEY_ENTER:
-						onSearchBoxEnterPressed();
-						break;
+				case Defines.KEY_ENTER:
+					onSearchBoxEnterPressed();
+					break;
 
-					case Defines.KEY_UP:
-						onSearchBoxUpPressed();
-						break;
+				case Defines.KEY_UP:
+					onSearchBoxUpPressed();
+					break;
 
-					case Defines.KEY_DOWN:
-						onSearchBoxDownPressed();
-						break;
-				}
-			})
+				case Defines.KEY_DOWN:
+					onSearchBoxDownPressed();
+					break;
+			}
+		})
 		.focusin(
-			function(event)
-			{
-				$("#suggestions").show();
-				event.stopPropagation();
-			});
+		function (event)
+		{
+			$("#suggestions").show();
+			event.stopPropagation();
+		});
 
 	$("#suggestions").focusout(
-		function()
+		function ()
 		{
 			$("#suggestions").hide();
 		});
-	
+
 	$("#header").on("click",
-		function()
+		function ()
 		{
 			$("#suggestions").hide();
 		});
 
 	$("#container").on("click",
-		function()
+		function ()
 		{
 			$("#suggestions").hide();
 			$("#recipeSuggestions").hide();
 		});
 
 	$("#dialogContainer").on("click",
-		function()
+		function ()
 		{
 			$("#suggestions").hide();
 			$("#recipeSuggestions").hide();
 		});
 
 	$("#recipeSuggestions")
-		.on("mouseover", 
-			function()
-			{
-				$("#recipeSuggestions").data("hovered", true);
-			})
+		.on("mouseover",
+		function ()
+		{
+			$("#recipeSuggestions").data("hovered", true);
+		})
 		.on("mouseout",
-			function()
-			{
-				$("#recipeSuggestions").data("hovered", false);
-			});
+		function ()
+		{
+			$("#recipeSuggestions").data("hovered", false);
+		});
 
 	$("#calendarLink").on("click", onCalendarLinkClick);
 	$("#title").on("click", onTitleClick);
@@ -179,6 +179,7 @@ function setHandlers()
 	$("#books").on("click", showBooks);
 	$("#tags").on("click", showTags);
 	$("#syncCalendar").on("click", Calendar.syncCalendar);
+	$("#webImport").on("click", onWebImportClick);
 
 	var recipeDlg = $("#recipe");
 
@@ -201,57 +202,57 @@ function setHandlers()
 	tagDlg.find(".btnClose, .closeButton").on("click", onTagCloseClick);
 
 	var dayMenuDlg = $("#dayMenu");
-	
+
 	dayMenuDlg.find(".closeButton").on("click", onDayMenuCloseClick);
 
 	$("#dialogContainer").children().draggable(
-		{ 
+		{
 			containment: "#dialogContainer",
 			cursor: "move"
 		});
 
 	$("#content")
-		.on("scroll", 
-			function() 
+		.on("scroll",
+		function () 
+		{
+			var contentDiv = $("#content");
+
+			var yPos = contentDiv.scrollTop();
+			var pageHeight = contentDiv.height();
+
+			var limitFromBottom = pageHeight * 0.75;
+
+			if (yPos > limitFromBottom) 
 			{
-				var contentDiv = $("#content");
+				var results = Engine.getBunchOfResults();
+				showSearchResults(results, false);
+			}
+		});
 
-			    var yPos = contentDiv.scrollTop();
-			    var pageHeight = contentDiv.height();
-
-			    var limitFromBottom = pageHeight * 0.75;
-				    
-			    if (yPos > limitFromBottom) 
-			    {
-					var results = Engine.getBunchOfResults();
-				    showSearchResults(results, false);
-	    		}
-			});
-	
 	$(window).on("resize",
-		function()
+		function ()
 		{
 			Calendar.refreshDayRecipes();
 		});
 
 	$("#dialogContainer").keydown(
-		function(event)
+		function (event)
+		{
+			if (event.keyCode !== Defines.KEY_ESC)
+				return;
+
+			var dialog = $("#dialogContainer").find("div:visible:first");
+
+			var btnCancel = dialog.find(".btnCancel");
+
+			if (btnCancel.length !== 0 && btnCancel.is(":visible"))
 			{
-				if (event.keyCode !== Defines.KEY_ESC)
-					return;
+				btnCancel.click();
+				return;
+			}
 
-				var dialog = $("#dialogContainer").find("div:visible:first");
-
-				var btnCancel = dialog.find(".btnCancel");
-
-				if (btnCancel.length !== 0 && btnCancel.is(":visible"))
-				{
-					btnCancel.click();
-					return;
-				}
-
-				dialog.find(".closeButton").click();
-			});
+			dialog.find(".closeButton").click();
+		});
 
 	Calendar.setHandlers();
 }
@@ -277,7 +278,7 @@ function showLoadingView(show)
 }
 
 function showResultsView(show)
-{	
+{
 	var resultsDiv = $("#results");
 	var calendarDiv = $("#calendar");
 
@@ -313,7 +314,7 @@ function addSearchSuggestion(suggestionsDiv, tag)
 	var suggestionDiv = $("<div class='suggestion'>#" + tag.name + "</div>");
 
 	suggestionDiv.on("click",
-		function()
+		function ()
 		{
 			var searchText = $("#searchBox").val();
 			var index = searchText.lastIndexOf(",");
@@ -337,13 +338,13 @@ function addSearchSuggestion(suggestionsDiv, tag)
 		});
 
 	suggestionDiv.hover(
-		function()
-       	{ 
-       		$("#suggestions").children().removeClass("suggestionHover");
+		function ()
+		{
+			$("#suggestions").children().removeClass("suggestionHover");
 			$(this).addClass("suggestionHover");
 		},
-		function()
-		{ 
+		function ()
+		{
 			$(this).removeClass("suggestionHover");
 		});
 
@@ -456,9 +457,9 @@ function getTagControlById(parent, id)
 
 		if (tagControl.data("id") == id)
 			return tagControl;
-   	}
+	}
 
-   	return null;
+	return null;
 }
 
 function onCalendarLinkClick()
@@ -485,7 +486,7 @@ function onLoadDataClick()
 			showLoader();
 
 			Engine.importDatabase(fileNames[0],
-				function(error)
+				function (error)
 				{
 					hideLoader();
 
@@ -511,7 +512,7 @@ function onSaveDataClick()
 				console.log("No file selected.");
 				return;
 			}
-			
+
 			showLoader();
 			Engine.exportDatabase(fileName, hideLoader);
 		});
@@ -524,7 +525,7 @@ function showSidebar(show)
 
 	if (show)
 	{
-		sidebarDiv.css("margin-left", "0px");		
+		sidebarDiv.css("margin-left", "0px");
 	}
 	else
 	{
@@ -535,13 +536,13 @@ function showSidebar(show)
 function onTitleClick()
 {
 	var isSidebarOpen = LocalSettings.isSidebarOpen();
-	
+
 	showSidebar(!isSidebarOpen);
 	LocalSettings.setSidebarOpen(!isSidebarOpen);
 
 	showLoader();
 	LocalSettings.save(
-		function()
+		function ()
 		{
 			hideLoader();
 		}
@@ -552,7 +553,7 @@ function showSearchResults(results, clearResults)
 {
 	if (clearResults === undefined)
 		clearResults = true;
-	
+
 	if (clearResults === true)
 		clearSearchResults();
 
@@ -584,7 +585,7 @@ function showSearchResults(results, clearResults)
 	showLoadingView(false);
 
 	$(".resultEntry").quickfit(
-		{		
+		{
 			max: 14
 		});
 }
@@ -654,7 +655,7 @@ function addBookResults(sectionDiv, entries)
 
 	sectionAdd.off("click");
 	sectionAdd.on("click",
-		function(e)
+		function (e)
 		{
 			onAddClick(Defines.RESULT_TYPE_BOOK);
 			e.stopPropagation();
@@ -690,13 +691,13 @@ function addSectionResults(sectionDiv, sectionGroups)
 
 		sectionAdd.off("click");
 		sectionAdd.on("click",
-			function(e)
+			function (e)
 			{
 				onAddClick(Defines.RESULT_TYPE_SECTION, sectionGroup.bookId);
 				e.stopPropagation();
 			});
 	}
-		
+
 	var groups = sectionGroups.length;
 	for (var i = 0; i < groups; i++)
 	{
@@ -717,7 +718,7 @@ function onAddSectionResultPathDone(sectionDiv, sectionGroup)
 			entryDiv.addClass("addNewEntry");
 
 		addResultEntry(sectionDiv, Defines.RESULT_TYPE_SECTION, section, entryDiv);
-	}	
+	}
 }
 
 function addSectionResultPath(sectionDiv, sectionGroup, onAddSectionResultPathDone)
@@ -740,7 +741,7 @@ function addSectionResultPath(sectionDiv, sectionGroup, onAddSectionResultPathDo
 }
 
 function addRecipeResults(sectionDiv, recipeGroups)
-{	
+{
 	var recipeGroup = null;
 	var sectionAdd = sectionDiv.find(".sectionAdd");
 
@@ -756,13 +757,13 @@ function addRecipeResults(sectionDiv, recipeGroups)
 
 		sectionAdd.off("click");
 		sectionAdd.on("click",
-			function(e)
+			function (e)
 			{
 				onAddClick(Defines.RESULT_TYPE_RECIPE, recipeGroup.sectionId);
 				e.stopPropagation();
 			});
 	}
-	
+
 	var groups = recipeGroups.length;
 	for (var i = 0; i < groups; i++)
 	{
@@ -784,7 +785,10 @@ function addRecipeResult(sectionDiv, recipe)
 	}
 	else
 	{
-		var recipeInfo = "pg. " + recipe.page;
+		var recipeInfo = "";
+
+		if (recipe.page !== "")
+			recipeInfo += "pg. " + recipe.page;
 
 		if (recipe.isCooked === 1 || recipe.isCooked === true)
 			recipeInfo += "; Cooked";
@@ -802,13 +806,13 @@ function addRecipeResult(sectionDiv, recipe)
 function onAddRecipeResultPathDone(sectionDiv, recipeGroup)
 {
 	_lastSectionId = recipeGroup.sectionId;
-		
+
 	var recipes = recipeGroup.recipes.length;
 	for (var j = 0; j < recipes; j++)
 	{
 		var recipe = recipeGroup.recipes[j];
 		addRecipeResult(sectionDiv, recipe);
-	}	
+	}
 }
 
 function addRecipeResultPath(sectionDiv, recipeGroup, onAddRecipeResultPathDone)
@@ -848,7 +852,7 @@ function addTagResults(sectionDiv, entries)
 
 	sectionAdd.off("click");
 	sectionAdd.on("click",
-		function(e)
+		function (e)
 		{
 			onAddClick(Defines.RESULT_TYPE_TAG);
 			e.stopPropagation();
@@ -871,8 +875,8 @@ function addResultEntry(sectionDiv, type, entry, entryDiv)
 
 	if (entryDiv.hasClass("addNewEntry"))
 	{
-		resultDiv.on("click", 
-			function()
+		resultDiv.on("click",
+			function ()
 			{
 				var sectionAdd = sectionDiv.find(".sectionAdd");
 				sectionAdd.click();
@@ -884,8 +888,8 @@ function addResultEntry(sectionDiv, type, entry, entryDiv)
 		addEditButton(resultDiv, type, entry.id);
 		addDeleteButton(resultDiv, type, entry.id);
 
-		resultDiv.on("click", 
-			function()
+		resultDiv.on("click",
+			function ()
 			{
 				onSearchResultClick(type, entry.id);
 			});
@@ -898,8 +902,8 @@ function addEditButton(resultDiv, type, id)
 {
 	var editButton = $("<div class='resultButtons'><img src='images/pencil.png' class='resultIcon'></div>");
 
-	editButton.on("click", 
-		function(e)
+	editButton.on("click",
+		function (e)
 		{
 			onEditClick(type, id);
 			e.stopPropagation();
@@ -912,8 +916,8 @@ function addDeleteButton(resultDiv, type, id)
 {
 	var deleteButton = $("<div class='resultButtons'><img src='images/delete.png' class='resultIcon'></div>");
 
-	deleteButton.on("click", 
-		function(e)
+	deleteButton.on("click",
+		function (e)
 		{
 			showLoader();
 			Engine.deleteObject(id, type, true, 
@@ -934,8 +938,8 @@ function addDeleteButton(resultDiv, type, id)
 }
 
 function showStarRating(recipeId, parent, setNewRating, initialRating)
-{    
-    var starButton1 = $("<div class='resultButtons starButton'><img src='images/star.png' class='resultIcon'></div>");
+{
+	var starButton1 = $("<div class='resultButtons starButton'><img src='images/star.png' class='resultIcon'></div>");
 	var starButton2 = $("<div class='resultButtons starButton'><img src='images/star.png' class='resultIcon'></div>");
 	var starButton3 = $("<div class='resultButtons starButton'><img src='images/star.png' class='resultIcon'></div>");
 
@@ -950,79 +954,79 @@ function showStarRating(recipeId, parent, setNewRating, initialRating)
 			starButton.addClass("starFull");
 		}
 	}
-    
-    function updateRating(rating)
-    {
-        setNewRating(rating);
 
-        initialRating = rating;
-        setInitialRating();
-    }
+	function updateRating(rating)
+	{
+		setNewRating(rating);
+
+		initialRating = rating;
+		setInitialRating();
+	}
 
 	starButton1
 		.hover(
-			function()
-			{
-				starButton1.addClass("starFull");	
-				starButton2.removeClass("starFull");
-				starButton3.removeClass("starFull");
-			})
+		function ()
+		{
+			starButton1.addClass("starFull");
+			starButton2.removeClass("starFull");
+			starButton3.removeClass("starFull");
+		})
 		.mouseout(setInitialRating)
-		.on("click", 
-			function(e)
-			{
-				onStarClick(recipeId, 1,
-                    function() 
-                    {
-                        updateRating(1);
-                    });
-				
-				e.stopPropagation();
-			});
+		.on("click",
+		function (e)
+		{
+			onStarClick(recipeId, 1,
+				function () 
+				{
+					updateRating(1);
+				});
+
+			e.stopPropagation();
+		});
 
 	starButton2
 		.hover(
-			function()
-			{
-				starButton1.addClass("starFull");	
-				starButton2.addClass("starFull");
-				starButton3.removeClass("starFull");
-			})
+		function ()
+		{
+			starButton1.addClass("starFull");
+			starButton2.addClass("starFull");
+			starButton3.removeClass("starFull");
+		})
 		.mouseout(setInitialRating)
-		.on("click", 
-			function(e)
-			{
-				onStarClick(recipeId, 2,
-					function()
-					{
-                        updateRating(2);                           
-					});
-				
-				e.stopPropagation();
-			});
+		.on("click",
+		function (e)
+		{
+			onStarClick(recipeId, 2,
+				function ()
+				{
+					updateRating(2);
+				});
+
+			e.stopPropagation();
+		});
 
 	starButton3
 		.hover(
-			function()
-			{
-				starButton1.addClass("starFull");	
-				starButton2.addClass("starFull");
-				starButton3.addClass("starFull");
-			})
+		function ()
+		{
+			starButton1.addClass("starFull");
+			starButton2.addClass("starFull");
+			starButton3.addClass("starFull");
+		})
 		.mouseout(setInitialRating)
-		.on("click", 
-			function(e)
-			{
-				onStarClick(recipeId, 3,
-					function()
-					{
-                        updateRating(3);                           						
-					});
-				
-				e.stopPropagation();
-			});
+		.on("click",
+		function (e)
+		{
+			onStarClick(recipeId, 3,
+				function ()
+				{
+					updateRating(3);
+				});
 
-    parent.children(".starButton").remove();
+			e.stopPropagation();
+		});
+
+	parent.children(".starButton").remove();
 
 	parent.append(starButton1);
 	parent.append(starButton2);
@@ -1036,21 +1040,21 @@ function addStarRating(resultDiv, type, id)
 	if (type != Defines.RESULT_TYPE_RECIPE)
 		return;
 
-    var entryDiv = resultDiv.children(".resultEntry");
+	var entryDiv = resultDiv.children(".resultEntry");
 	var rating = entryDiv.data("rating");
-        
-    function setNewRating(rating)
+
+	function setNewRating(rating)
 	{
 		var recipe = Engine.getRecipeById(id);
 		recipe.rating = rating;
 
 		updateRecipe(recipe);
-				
+
 		var entryDiv = resultDiv.children(".resultEntry");
 		entryDiv.data("rating", rating);
 	}
-    
-    showStarRating(id, resultDiv, setNewRating, rating);
+
+	showStarRating(id, resultDiv, setNewRating, rating);
 }
 
 function onStarClick(id, rating, onStarClickDone)
@@ -1083,7 +1087,7 @@ function onSearchResultClick(type, id)
 function showBooks()
 {
 	clearSearchBox();
-	
+
 	var results = Engine.getAllBooks();
 	showSearchResults(results);
 }
@@ -1091,7 +1095,7 @@ function showBooks()
 function showBookSections(id)
 {
 	clearSearchBox();
-	
+
 	var results = Engine.getBookSections(id);
 	showSearchResults(results);
 }
@@ -1099,7 +1103,7 @@ function showBookSections(id)
 function showSectionRecipes(id)
 {
 	clearSearchBox();
-	
+
 	var results = Engine.getSectionRecipes(id);
 	showSearchResults(results);
 }
@@ -1119,24 +1123,24 @@ function showRecipeDlg(recipe, isNewEntry)
 	recipeDlg.find("#cookedCtrl").prop("checked", recipe.isCooked);
 	recipeDlg.find("#interestingCtrl").prop("checked", recipe.isInteresting);
 	recipeDlg.find("#commentCtrl").val(recipe.comment);
-    
-    var ratingCtrl = recipeDlg.find("#ratingCtrl");
-    
-    function setNewRating(rating)
-    {
-        ratingCtrl.data("rating", rating);    
-    }
-    
-    showStarRating(recipe.id, ratingCtrl, setNewRating, recipe.rating);
-    setNewRating(recipe.rating);
-    
+
+	var ratingCtrl = recipeDlg.find("#ratingCtrl");
+
+	function setNewRating(rating)
+	{
+		ratingCtrl.data("rating", rating);
+	}
+
+	showStarRating(recipe.id, ratingCtrl, setNewRating, recipe.rating);
+	setNewRating(recipe.rating);
+
 	checkTags(recipeDlg, recipe.tagIds);
 
 	var btnOK = recipeDlg.find(".btnOK");
 	btnOK.off("click");
 
-	btnOK.on("click", 
-		function()
+	btnOK.on("click",
+		function ()
 		{
 			onRecipeOKClick(recipe.id, recipe);
 		});
@@ -1144,8 +1148,8 @@ function showRecipeDlg(recipe, isNewEntry)
 	var btnCancel = recipeDlg.find(".btnCancel");
 	btnCancel.off("click");
 
-	btnCancel.on("click", 
-		function()
+	btnCancel.on("click",
+		function ()
 		{
 			if (isNewEntry === true)
 				recipe.id = 0;
@@ -1156,7 +1160,7 @@ function showRecipeDlg(recipe, isNewEntry)
 	showDialog(recipeDlg);
 }
 
-function showRecipe(id, parentId)
+function showRecipe(id, parentId, newRecipe)
 {
 	resetRecipeDlg();
 
@@ -1174,13 +1178,21 @@ function showRecipe(id, parentId)
 	{
 		isNewEntry = true;
 
-		recipe = new Defines.Recipe();
+		if (newRecipe === undefined || newRecipe === null)
+		{
+			recipe = new Defines.Recipe();
 
-		recipe.id = id;
-		recipe.sectionId = parentId;
+			recipe.id = id;
+			recipe.sectionId = parentId;
 
-		var section = Engine.getSectionById(parentId);
-		recipe.tagIds = section.tagIds;
+			var section = Engine.getSectionById(parentId);
+			recipe.tagIds = section.tagIds;
+		}
+		else
+		{
+			recipe = newRecipe;
+		}
+
 		onRecipeEditClick();
 	}
 
@@ -1190,7 +1202,7 @@ function showRecipe(id, parentId)
 function showTagRecipes(id)
 {
 	var results = Engine.getTagRecipes(id);
-    showSearchResults(results);
+	showSearchResults(results);
 }
 
 function showTags()
@@ -1216,8 +1228,8 @@ function onRecipeOKClick(id, recipe)
 	recipe.isCooked = recipeDlg.find("#cookedCtrl").prop("checked");
 	recipe.isInteresting = recipeDlg.find("#interestingCtrl").prop("checked");
 	recipe.comment = recipeDlg.find("#commentCtrl").val();
-    recipe.rating = recipeDlg.find("#ratingCtrl").data("rating");
-    
+	recipe.rating = recipeDlg.find("#ratingCtrl").data("rating");
+
 	recipe.tagIds = getCheckedTagIds(recipeDlg);
 
 	updateRecipe(recipe);
@@ -1247,7 +1259,7 @@ function resetRecipeDlg()
 	var allTagControls = recipeDlg.find(".tagControl").children();
 
 	allTagControls.attr("disabled", true);
-	allTagControls.prop("checked", false);		
+	allTagControls.prop("checked", false);
 }
 
 function onRecipeEditClick()
@@ -1321,14 +1333,14 @@ function getCheckedTagIds(parent)
 	for (var cnt = 0; cnt < size; cnt++) 
 	{
 		var tagControl = $(tagControls[cnt]);
-		
+
 		if (!tagControl.prop("checked"))
 			continue;
 
 		checkedTagIds.push(tagControl.data("id"));
-   	}
+	}
 
-   	return checkedTagIds;
+	return checkedTagIds;
 }
 
 function showSection(id, parentId)
@@ -1411,7 +1423,7 @@ function resetSectionDlg()
 	var allTagControls = sectionDlg.find(".tagControl").children();
 
 	allTagControls.attr("disabled", true);
-	allTagControls.prop("checked", false);		
+	allTagControls.prop("checked", false);
 }
 
 function onSectionEditClick()
@@ -1435,11 +1447,11 @@ function onSectionCloseClick()
 
 function getCheckedTagsDiff(parent, oldTagIds)
 {
-	var tagsDiff = 
-	{
-		added: [],
-		removed: []
-	};
+	var tagsDiff =
+		{
+			added: [],
+			removed: []
+		};
 
 	var tagControls = parent.find(".tagControl").children();
 
@@ -1457,9 +1469,9 @@ function getCheckedTagsDiff(parent, oldTagIds)
 		{
 			tagsDiff.removed.push(tagId);
 		}
-   	}
+	}
 
-   	return tagsDiff;
+	return tagsDiff;
 }
 
 function showBook(id)
@@ -1699,7 +1711,7 @@ function onTagOKClick(id, tag)
 function resetDayMenu()
 {
 	$("#recipeSuggestions").empty();
-			
+
 	$(".recipeEntry").remove();
 	$(".addRecipeEntry").remove();
 }
@@ -1770,6 +1782,44 @@ function hideLoader()
 function hideSplash()
 {
 	$("#splash").fadeOut();
+}
+
+function resetEnterURLDlg()
+{
+	var enterURLDlg = $("#enterURL");
+	enterURLDlg.find("#urlCtrl").val("");
+}
+
+function onWebImportClick()
+{
+	resetEnterURLDlg();
+
+	var enterURLDlg = $("#enterURL");
+
+	var btnOK = enterURLDlg.find(".btnOK");
+	btnOK.off("click");
+
+	btnOK.on("click",
+		function ()
+		{
+			var url = enterURLDlg.find("#urlCtrl").val();
+
+			closeDialog(enterURLDlg);
+			
+			showLoader();
+			Engine.webImport(url, hideLoader);
+		});
+
+	var btnCancel = enterURLDlg.find(".btnCancel");
+	btnCancel.off("click");
+
+	btnCancel.on("click",
+		function ()
+		{
+			closeDialog(enterURLDlg);
+		});
+
+	showDialog(enterURLDlg);
 }
 
 exports.showDialog = showDialog;

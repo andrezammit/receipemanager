@@ -1,8 +1,9 @@
 var fs = require('fs');
 var zlib = require('zlib');
 
-var Defines = require('./Defines.js');
+var Defines = require('./Defines');
 var GoogleAPI = require('./GoogleAPI');
+var WebImport = require('./WebImport');
 
 var _dbVersion = 0;
 var _db = new Defines.Database();
@@ -476,60 +477,7 @@ function updateDateEntryInGoogleCalendar(dateEntry, callback)
     })(dateEntry);
 
     checkIfReady();
-
-    // , dateEntry.recipes[0],
-    //     function(error, event)
-    //     {
-    //         if (event === null)
-    //         {
-    //             createGoogleCalendarEvent(dateEntry.id, dateEntry.recipes[0],
-    //                 function (error)
-    //                 {
-    //                     console.log('Google Calendar event created.');
-    //                     return;
-    //                 });
-
-    //             return; 
-    //         }
-
-
-    //     });
 }
-
-//     _googleCalendar.events.list(
-//         {
-//             auth: _oAuth2Client,
-//             calendarId: 'primary',
-//             timeMin: (new Date()).toISOString(),
-//             maxResults: 10,
-//             singleEvents: true,
-//             orderBy: 'startTime'
-//         },
-//         function (error, response)
-//         {
-//             if (error)
-//             {
-//                 console.log('Failed to load Google Calendar. ' + error);
-//                 return;
-//             }
-
-//             var events = response.items;
-//             if (events.length === 0)
-//             {
-//                 console.log('No upcoming events found.');
-//             }
-//             else
-//             {
-//                 console.log('Upcoming 10 events:');
-//                 for (var i = 0; i < events.length; i++)
-//                 {
-//                     var event = events[i];
-//                     var start = event.start.dateTime || event.start.date;
-//                     console.log('%s - %s', start, event.summary);
-//                 }
-//             }
-//         });
-// });
 
 function getObjectById(id, type)
 {
@@ -564,6 +512,45 @@ function getObjectById(id, type)
         var object = array[cnt];
 
         if (object.id == id)
+            return object;
+    }
+
+    return null;
+}
+
+function getObjectByName(name, type)
+{
+    var array = null;
+
+    switch (type)
+    {
+        case Defines.RESULT_TYPE_RECIPE:
+            array = _db.recipes;
+            break;
+
+        case Defines.RESULT_TYPE_SECTION:
+            array = _db.sections;
+            break;
+
+        case Defines.RESULT_TYPE_BOOK:
+            array = _db.books;
+            break;
+
+        case Defines.RESULT_TYPE_TAG:
+            array = _db.tags;
+            break;
+
+        case Defines.RESULT_TYPE_DATEENTRY:
+            array = _db.calendar;
+            break;
+    }
+
+    var size = array.length;
+    for (var cnt = 0; cnt < size; cnt++) 
+    {
+        var object = array[cnt];
+
+        if (object.name === name)
             return object;
     }
 
@@ -1754,6 +1741,9 @@ exports.getBunchOfResults = getBunchOfResults;
 exports.getRecipeSuggestions = getRecipeSuggestions;
 exports.getSearchSuggestions = getSearchSuggestions;
 exports.getNextAvailableId = getNextAvailableId;
+exports.getObjectByName = getObjectByName;
+
+exports.webImport = WebImport.import;
 
 exports.authenticate =
     function (mainWindow, callback)
