@@ -12,6 +12,12 @@ function detectSite(url)
     if (url.indexOf("acelineentertainment.com") !== -1)
         return Defines.SITE_ACELINE;
 
+    if (url.indexOf("bigoven.com") !== -1)
+        return Defines.SITE_BIGOVEN;
+
+    if (url.indexOf("maltatoday.com.mt") !== -1)
+        return Defines.SITE_GOURMET;
+
     return Defines.SITE_UNKNOWN;
 }
 
@@ -24,6 +30,12 @@ function getSiteName(site)
 
         case Defines.SITE_ACELINE:
             return "Aceline Entertainment";
+
+        case Defines.SITE_BIGOVEN:
+            return "BigOven";
+
+        case Defines.SITE_GOURMET:
+            return "Gourmet";
     }
 
     return "";
@@ -51,7 +63,37 @@ function acelineImport(html, recipe)
     if (entryTitle.length === 0)
         return false;
 
-    var recipeName = entryTitle.first().text().trim();
+    var recipeName = entryTitle.get(0).childNodes[0].nodeValue.trim();
+
+    if (recipeName === "")
+        return false;
+
+    recipe.name = recipeName;
+}
+
+function bigOvenImport(html, recipe)
+{
+    var title = html.find(".fn");
+
+    if (title.length === 0)
+        return false;
+
+    var recipeName = title.first().text().trim();
+
+    if (recipeName === "")
+        return false;
+
+    recipe.name = recipeName;
+}
+
+function gourmetImport(html, recipe)
+{
+    var title = html.find(".article_module");
+
+    if (title.length === 0)
+        return false;
+
+    var recipeName = title.first().find("h1").text().trim();
 
     if (recipeName === "")
         return false;
@@ -121,6 +163,14 @@ function webImport(url, callback)
 
                 case Defines.SITE_ACELINE:
                     acelineImport(html, recipe);
+                    break;
+
+                case Defines.SITE_BIGOVEN:
+                    bigOvenImport(html, recipe);
+                    break;
+
+                case Defines.SITE_GOURMET:
+                    gourmetImport(html, recipe);
                     break;
             }
 
