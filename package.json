@@ -27,8 +27,8 @@
 		"start": "electron .",
 		"debug": "electron . --debug",
 		"pack": "npm run pack:osx && npm run pack:win && npm run pack:linux",
-		"pack:win": "electron-packager . --ignore=\"(\\icons|\\.gitignore|\\.jshintrc|\\.vscode|\\.data|\\.credentials|jsconfig.json|typings)\" --asar --platform=win32 --arch=x64 --icon=icons/icon.ico --out=dist",
-		"pack:osx": "electron-packager . --ignore=\"(\\icons|\\.gitignore|\\.jshintrc|\\.vscode|\\.data|\\.credentials|jsconfig.json|typings)\" --asar --platform=darwin --arch=x64 --icon=icons/icon.icns --out=dist",
-		"pack:linux": "electron-packager . --ignore=\"(\\icons|\\.gitignore|\\.jshintrc|\\.vscode|\\.data|\\.credentials|jsconfig.json|typings)\" --asar --platform=linux --arch=x64 --icon=icons/icon.ico --out=dist"
+		"pack:win": "electron-packager . --ignore=\"(\\icons|\\.gitignore|\\.jshintrc|\\.vscode|\\.data|\\.credentials|jsconfig.json|typings)\" --platform=win32 --arch=x64 --icon=icons/icon.ico --out=dist",
+		"pack:osx": "electron-packager . --ignore=\"(\\icons|\\.gitignore|\\.jshintrc|\\.vscode|\\.data|\\.credentials|jsconfig.json|typings)\" --platform=darwin --arch=x64 --icon=icons/icon.icns --out=dist",
+		"pack:linux": "electron-packager . --ignore=\"(\\icons|\\.gitignore|\\.jshintrc|\\.vscode|\\.data|\\.credentials|jsconfig.json|typings)\" --platform=linux --arch=x64 --icon=icons/icon.ico --out=dist"
 	}
 }
