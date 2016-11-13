@@ -71,13 +71,7 @@ function createWindow()
 	Menu.setApplicationMenu(Menu.buildFromTemplate(template));
 
 	if (isDebug)
-	{
 		win.webContents.openDevTools();
-	}
-	else
-	{
-		win.setMenu(null);
-	}
 
 	// and load the index.html of the app.
 	win.loadURL(`file://${__dirname}/index.html`, {});
