@@ -68,6 +68,8 @@ function getNewToken(mainWindow, callback)
             height: 600
         });
 
+    oAuthWin.setMenu(null);
+
     oAuthWin.on('page-title-updated',
         function (event, title)
         {
