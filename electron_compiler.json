@@ -1,0 +1,28 @@
+{
+    "platforms": 
+    [
+        "win32",
+        "linux"
+    ],
+    "uglifyList": 
+    [
+        "modules/",
+        "scripts/launcher.js",
+        "styles/style.css",
+        "main.js"
+    ],
+    "ignoreList": 
+    [
+        "node_modules/",
+        ".git/",
+        ".data/",
+        ".gitignore",
+        ".jshintrc",
+        ".vscode/",
+        ".credentials/",
+        "icons/",
+        "typings/",
+        "typings.json",
+        "jsconfig.json"
+    ]
+}
