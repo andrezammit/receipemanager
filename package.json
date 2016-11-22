@@ -6,29 +6,26 @@
 	"author": "André Zammit",
 	"main": "./main.js",
 	"license": "CC0-1.0",
-	"repository": {
+	"repository":
+	{
 		"type": "git",
 		"url": "git+https://andrezammit@bitbucket.org/andrezammit/recipe-manager.git"
 	},
-	"dependencies": 
+	"dependencies":
 	{
 		"app-module-path": "^2.1.0",
 		"google-auth-library": "^0.9.8",
 		"googleapis": "^12.4.0"
 	},
-	"devDependencies": 
+	"devDependencies":
 	{
 		"electron": "^1.3.4",
 		"electron-builder": "^7.15.2",
 		"electron-packager": "^8.2.0"
 	},
-	"scripts": 
+	"scripts":
 	{
 		"start": "electron .",
 		"debug": "electron . --debug",
-		"pack": "npm run pack:osx && npm run pack:win && npm run pack:linux",
-		"pack:win": "electron-packager . --ignore=\"(\\icons|\\.gitignore|\\.jshintrc|\\.vscode|\\.data|\\.credentials|jsconfig.json|typings)\" --platform=win32 --arch=x64 --icon=icons/icon.ico --out=dist",
-		"pack:osx": "electron-packager . --ignore=\"(\\icons|\\.gitignore|\\.jshintrc|\\.vscode|\\.data|\\.credentials|jsconfig.json|typings)\" --platform=darwin --arch=x64 --icon=icons/icon.icns --out=dist",
-		"pack:linux": "electron-packager . --ignore=\"(\\icons|\\.gitignore|\\.jshintrc|\\.vscode|\\.data|\\.credentials|jsconfig.json|typings)\" --platform=linux --arch=x64 --icon=icons/icon.ico --out=dist"
 	}
 }
