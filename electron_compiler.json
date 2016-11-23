@@ -1,8 +1,7 @@
 {
     "platforms": 
     [
-        "win32",
-        "linux"
+        "win32"
     ],
     "uglifyList": 
     [
@@ -24,5 +23,13 @@
         "typings/",
         "typings.json",
         "jsconfig.json"
-    ]
+    ],
+    "versionString": 
+    {
+        "CompanyName": "André Zammit",
+        "FileDescription": "Recipe Manager application.",
+        "OriginalFilename": "Recipe Manager.exe",
+        "ProductName": "Recipe Manager",
+        "InternalName": "Recipe Manager"
+    }
 }
