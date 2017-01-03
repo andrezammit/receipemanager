@@ -22,7 +22,8 @@
         "icons/",
         "typings/",
         "typings.json",
-        "jsconfig.json"
+        "jsconfig.json",
+	    "electron_compiler.json"
     ],
     "versionString": 
     {
