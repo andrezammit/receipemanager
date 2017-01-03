@@ -1,7 +1,7 @@
 {
 	"name": "recipe-manager",
 	"productName": "Recipe Manager",
-	"version": "1.0.2",
+	"version": "1.0.4",
 	"description": "Recipe Manager",
 	"author": "André Zammit",
 	"main": "./main.js",
