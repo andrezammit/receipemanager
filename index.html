@@ -1,0 +1,215 @@
+<html>
+	<head>
+		<script src="scripts/jquery-3.4.1.min.js"></script>    
+		<script src="scripts/jquery-ui.min.js"></script>
+		<script src="scripts/jquery.quickfit.js"></script>
+
+		<script src="https://apis.google.com/js/api.js"></script>
+		<script src="https://cdn.jsdelivr.net/pako/1.0.3/pako.min.js"></script>
+		
+		<script src="modules/Defines.js"></script>
+		<script src="modules/OAuth.js"></script>
+		<script src="modules/GoogleAPI.js"></script>
+		<script src="modules/Calendar.js"></script>
+		<script src="modules/Engine.js"></script>
+		<script src="modules/RecipeManager.js"></script>
+		<script src="modules/Launcher.js"></script>
+		
+		<link href="https://fonts.googleapis.com/css?family=Trocchi|Ubuntu" rel="stylesheet">
+		<link rel="stylesheet" type="text/css" href="styles/style.css">
+		<link rel="stylesheet" type="text/css" href="styles/loader.css">
+	</head>
+	<body>
+		<div id="splash">
+			<div id="splashImage"></div>
+			<div id="logo">Recipe Manager</div>
+		</div>
+		<div id="header">
+			<div id="header_background" class="background"></div>			
+			<div id="title">
+				Recipe Manager
+			</div>
+			<div id="search">
+				<input id="searchBox" type="text">
+				<div id="suggestions">
+				</div>
+			</div>
+			<div id="loader">
+				<div class="uil-ring-css" style="transform:scale(0.17);">
+					<div>
+					</div>
+				</div>
+			</div>
+		</div>
+		<div id="container">
+			<div id="sidebar">
+				<div id="sidebar_background" class="background"></div>
+				<div class="sidebarSep"></div>
+
+				<div id="calendarLink" class="sidebarItem">Calendar</div>
+				<div class="sidebarSep"></div>
+
+				<div id="books" class="sidebarItem">Books</div>
+				<div id="tags" class="sidebarItem">Tags</div>
+				<div class="sidebarSep"></div>
+
+				<div id="loadData" class="sidebarItem">Load Data</div>
+				<div id="saveData" class="sidebarItem">Save Data</div>
+				<div id="syncCalendar" class="sidebarItem">Sync Calendar</div>
+				<div id="webImport" class="sidebarItem">Web Import</div>
+			</div>
+			<div id="content">
+				<div id="calendar">
+					<div id="calendar_background" class="background"></div>
+					<div id="month">
+						<div id="prevMonth">
+							<<
+						</div>
+						<div id="currMonth">
+						</div>
+						<div id="nextMonth">
+							>>
+						</div>
+					</div>
+					<div id="year">
+					</div>
+					<div id="dayName">
+						<div class="dayName">Monday</div>
+						<div class="dayName">Tuesday</div>
+						<div class="dayName">Wednesday</div>
+						<div class="dayName">Thursday</div>
+						<div class="dayName">Friday</div>
+						<div class="dayName">Saturday</div>
+						<div class="dayName">Sunday</div>
+					</div>
+					<div id="days">
+					</div>
+				</div>
+				<div id="results">
+				</div>
+			</div>
+		</div>
+		<div id="dialogContainer" tabindex="0">
+			<div id="recipe">
+				<div class="closeButton"><img src="images/close.png" class="closeIcon"></div>
+				<div class="labels">
+					<div class="label">Book:</div>
+					<div class="label">Section:</div>
+					<div class="label">Title:</div>
+					<div class="label">Page:</div>
+					<div class="label">Cooked:</div>
+					<div class="label">Interesting:</div>
+					<div class="label">Rating:</div>
+					<div class="label labelTextArea">Comment:</div>
+					<div class="label">Tags:</div>
+				</div>
+				<div class="controls">
+					<div class="control"><input id="bookCtrl" type="text" readonly></div>
+					<div class="control"><input id="sectionCtrl" type="text" readonly></div>
+					<div class="control"><input id="recipeTitleCtrl" type="text" readonly></div>
+					<div class="control"><input id="pageCtrl" type="text" readonly></div>
+					<div class="control"><input id="cookedCtrl" type="checkbox" disabled></div>
+					<div class="control"><input id="interestingCtrl" type="checkbox" disabled></div>
+					<div class="control"><div id="ratingCtrl" disabled></div></div>
+					<div class="control">
+						<textarea id="commentCtrl" type="text" readonly>
+						</textarea>
+					</div>
+					<div class="control">
+						<div class="tagContainer">
+							<div class="tagArea">
+								<div class="tagControls">
+								</div>
+								<div class="tagLabels">
+								</div>
+							</div>
+						</div>
+					</div>
+				</div>
+				<div class="dialogFooter">
+					<button class="btnEdit">Edit</button>
+					<button class="btnClose">Close</button>
+					<button class="btnOK">OK</button>
+					<button class="btnCancel">Cancel</button>
+				</div>
+			</div>
+			<div id="section">
+				<div class="closeButton"><img src="images/close.png" class="closeIcon"></div>
+				<div class="labels">
+					<div class="label">Title:</div>
+					<div class="label">Tags:</div>
+				</div>
+				<div class="controls">
+					<div class="control"><input id="sectionTitleCtrl" type="text" readonly></div>
+					<div class="control">
+						<div class="tagContainer">
+							<div class="tagArea">
+								<div class="tagControls">
+								</div>
+								<div class="tagLabels">
+								</div>
+							</div>
+						</div>
+					</div>
+				</div>
+				<div class="dialogFooter">
+					<button class="btnEdit">Edit</button>
+					<button class="btnClose">Close</button>
+					<button class="btnOK">OK</button>
+					<button class="btnCancel">Cancel</button>
+				</div>
+			</div>
+			<div id="book">
+				<div class="closeButton"><img src="images/close.png" class="closeIcon"></div>
+				<div class="labels">
+					<div class="label">Title:</div>
+				</div>
+				<div class="controls">
+					<div class="control"><input id="bookTitleCtrl" type="text" readonly></div>
+				</div>
+				<div class="dialogFooter">
+					<button class="btnEdit">Edit</button>
+					<button class="btnClose">Close</button>
+					<button class="btnOK">OK</button>
+					<button class="btnCancel">Cancel</button>
+				</div>
+			</div>
+			<div id="tag">
+				<div class="closeButton"><img src="images/close.png" class="closeIcon"></div>
+				<div class="labels">
+					<div class="label">Name:</div>
+				</div>
+				<div class="controls">
+					<div class="control"><input id="tagTitleCtrl" type="text" readonly></div>
+				</div>
+				<div class="dialogFooter">
+					<button class="btnEdit">Edit</button>
+					<button class="btnClose">Close</button>
+					<button class="btnOK">OK</button>
+					<button class="btnCancel">Cancel</button>
+				</div>
+			</div>
+			<div id="enterURL">
+				<div class="closeButton"><img src="images/close.png" class="closeIcon"></div>
+				<div class="labels">
+					<div class="label">URL:</div>
+				</div>
+				<div class="controls">
+					<div class="control"><input id="urlCtrl" type="text"></div>
+				</div>
+				<div class="dialogFooter">
+					<button class="btnOK">OK</button>
+					<button class="btnCancel">Cancel</button>
+				</div>
+			</div>
+			<div id="dayMenu">
+				<div class="closeButton"><img src="images/close.png" class="closeIcon"></div>
+				<div id="dateHeader"></div>
+				<div id="recipeContainer"></div>
+				<div id="recipeSuggestions">
+				</div>
+			</div>
+		</div>
+		<input id="hiddenFileInput" type="file" name="hiddenFileInput" style="display: none;" />
+	</body>
+</html>
