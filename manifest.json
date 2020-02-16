@@ -1,0 +1,14 @@
+{
+    "name": "Recipe Manager",
+    "icons": [
+      {
+        "src": "/icons/icon.png",
+        "type": "image/png",
+        "sizes": "256x256"
+      }
+    ],
+    "start_url": "/index.html",
+    "background_color": "#3367D6",
+    "display": "standalone",
+    "theme_color": "#3367D6"
+  }

@@ -15,6 +15,8 @@ const RecipeManager = (function () {
 
 		// 		processLocalSettings();
 
+		registerServiceWorker();
+
 		Engine.loadLocalDatabase(
 			function (error) {
 				if (error !== null)
@@ -26,6 +28,18 @@ const RecipeManager = (function () {
 
 		OAuth.authenticate(onAuthenticateReady);
 		setHandlers();
+	}
+
+	function registerServiceWorker() {
+		if (navigator.serviceWorker) {
+			navigator.serviceWorker.register("../sw.js", {
+				scope: "."
+			}).then(function (registration) {
+				console.log("ServiceWorker registration successful with scope:", registration.scope);
+			}).catch(function (error) {
+				console.log("ServiceWorker registration failed:", errror);
+			});
+		}
 	}
 
 	// function processLocalSettings()
