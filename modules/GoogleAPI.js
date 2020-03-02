@@ -246,37 +246,47 @@ const GoogleAPI = (function () {
         }
     }
 
+    function getRandomDelay() {
+        return Math.floor(Math.random() * 4) * 500; 
+    }
+
     function createCalendarEvent(event, callback) {
-        gapi.client.calendar.events.insert({
-            calendarId: _calendarId,
-            resource: event
-        }).then(onCalendarEventCreated, onCalendarEventError);
+        setTimeout(
+            function () {
+                gapi.client.calendar.events.insert({
+                    calendarId: _calendarId,
+                    resource: event
+                }).then(onCalendarEventCreated, onCalendarEventError);
 
-        function onCalendarEventCreated() {
-            callback(null);
-        }
+                function onCalendarEventCreated() {
+                    callback(null);
+                }
 
-        function onCalendarEventError(error) {
-            console.log('Failed to add Google Calendar event. ' + error);
-            callback(error);
-        }
+                function onCalendarEventError(error) {
+                    console.log('Failed to add Google Calendar event. ' + error);
+                    callback(error);
+                }
+            }, getRandomDelay());
     }
 
     function deleteCalendarEvent(event, callback) {
-        gapi.client.calendar.events.delete(
-            {
-                calendarId: _calendarId,
-                eventId: event.id
-            }).then(onCalendarEventDeleted, onCalendarEventError);
+        setTimeout(
+            function () {
+                gapi.client.calendar.events.delete(
+                    {
+                        calendarId: _calendarId,
+                        eventId: event.id
+                    }).then(onCalendarEventDeleted, onCalendarEventError);
 
-        function onCalendarEventDeleted() {
-            callback(null);
-        }
+                function onCalendarEventDeleted() {
+                    callback(null);
+                }
 
-        function onCalendarEventError(error) {
-            console.log('Failed to delete Google Calendar event. ' + error);
-            callback(error);
-        }
+                function onCalendarEventError(error) {
+                    console.log('Failed to delete Google Calendar event. ' + error);
+                    callback(error);
+                }
+            }, getRandomDelay());
     }
 
     return {

@@ -191,7 +191,7 @@ const Engine = (function () {
 
         GoogleAPI.createCalendarEvent(event,
             function (error) {
-                if (error !== null)
+                if (error === null)
                     console.log('Created new Google Calendar event.');
 
                 if (callback !== null)
