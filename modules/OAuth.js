@@ -1,45 +1,48 @@
 const OAuth = (function ()
 {
-    const _clientId = "13277472194-1hhadv632f58o9gc5qemlldtju2b4bmr.apps.googleusercontent.com";
-    const _secret = "AIzaSyDM-3uG7lYaxci07SpySBNka3tYD47MpGE";
+    // const _clientId = "13277472194-1hhadv632f58o9gc5qemlldtju2b4bmr.apps.googleusercontent.com";
+    const _clientId = "13277472194-hs9hse9r1oc5tkr65si7uma916r1nenu.apps.googleusercontent.com";
 
     const _scopes = "https://www.googleapis.com/auth/drive.appdata https://www.googleapis.com/auth/calendar";
     const _discoveryDocs = ["https://www.googleapis.com/discovery/v1/apis/drive/v3/rest", "https://www.googleapis.com/discovery/v1/apis/calendar/v3/rest"];
 
+    let tokenClient;
+
     function initClient(callback)
     {
-        let authObj = {
-            apiKey: _secret,
-            clientId: _clientId,
+        const authObj = {
             discoveryDocs: _discoveryDocs,
-            scope: _scopes
         };
 
         gapi.client.init(authObj).then(
             function () {
-                let authInstance = gapi.auth2.getAuthInstance();
-                authInstance.isSignedIn.listen(onSignedInUpdated);
+                tokenClient = google.accounts.oauth2.initTokenClient({
+                    scope: _scopes,
+                    client_id: _clientId,
+                    callback: onSignedInUpdated
+                });
 
-                if (authInstance.isSignedIn.get() === true) {
-                    callback(null);
-                    return;
+                if (gapi.client.getToken() === null) {
+                    tokenClient.requestAccessToken({prompt: 'consent'});
+                } else {
+                    tokenClient.requestAccessToken({prompt: ''});
                 }
-
-                authInstance.signIn();
             }, function (error) {
                 callback(error);
             });
 
-        function onSignedInUpdated(isSignedIn) {
-            if (isSignedIn) {
-                callback(null);
+        async function onSignedInUpdated(resp) {
+            if (resp.error !== undefined) {
+                throw (resp);
             }
+
+            callback(null);
         }
     }
 
     function authenticate(callback)
     {
-        gapi.load('client:auth2',
+        gapi.load('client',
             function ()
             {
                 initClient(callback)
