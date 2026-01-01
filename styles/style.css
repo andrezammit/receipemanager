@@ -55,6 +55,25 @@ body
     background-image: url(../images/food_4.jpg);
 }
 
+#privacyLinks
+{
+    bottom: 0px;
+    width: 100%;
+    display: flex;
+    position: fixed;
+    align-items: flex-end;
+    justify-content: flex-end;
+    background: rgba(255, 255, 255, 0.5);
+}
+
+#privacyLinks a
+{
+    margin: 5px 10px 5px 10px;
+    font-size: small;
+    color: gray;
+    text-decoration: none;
+}
+
 #logo
 {
     display: flex;
