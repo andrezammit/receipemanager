@@ -1,0 +1,25 @@
+{
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "name": "Start HTTPS Server",
+            "type": "node",
+            "request": "launch",
+            "runtimeExecutable": "npx",
+            "runtimeArgs": [
+                "http-server",
+                ".",
+                "-p",
+                "8443",
+                "--ssl",
+                "--cert",
+                "localhost+2.pem",
+                "--key",
+                "localhost+2-key.pem"
+            ],
+            "console": "integratedTerminal",
+            "internalConsoleOptions": "openOnSessionStart",
+            "skipFiles": ["<node_internals>/**"]
+        }
+    ]
+}
